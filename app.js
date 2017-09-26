@@ -6,6 +6,7 @@ const fs = require('fs')
 // 引入Express
 const express = require('express')
 // 引入connect-history-api-fallback
+var history = require('connect-history-api-fallback')
 const app = express()
 // 扩展上传文件的大小
 app.use(bodyParser.json({

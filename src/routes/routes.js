@@ -1,6 +1,7 @@
 /**
  * Created by YYW on 2017/9/26.
  */
+// import App from '../App.vue'
 export default [
   {
     path: '/',

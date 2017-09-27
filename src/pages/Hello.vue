@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    <p>vue测试主文件</p>
+    <div>vue测试主文件</div>
     <router-link to="/dbTest">
       数据库测试入口
     </router-link>
@@ -17,10 +17,8 @@ export default {
   }
 }
 </script>
-
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style  lang="scss" scoped>
-  p {
-    color: red;
-  }
+  @import "../scss/config";
+
 </style>

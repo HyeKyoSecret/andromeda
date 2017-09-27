@@ -8,5 +8,6 @@ export default {
   name: 'app'
 }
 </script>
-<style>
+<style lang="scss">
+  @import "./scss/config";
 </style>

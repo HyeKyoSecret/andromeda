@@ -2,7 +2,7 @@
   <div class="change-user-info">
     <div class="notice">
       <span class="icon">
-        <img src="../img/icon/back.png">
+        <img src="../../img/icon/back.png">
       </span>
       <span class="title">
         我
@@ -11,7 +11,7 @@
     <div class="me-content">
       <div class="user-main">
         <div class="head-img">
-          <img src="../img/photo/head.jpg">
+          <img src="../../img/photo/head.jpg">
         </div>
         <div class="words">
           <div class="name">沈皓清</div>
@@ -20,7 +20,7 @@
           </div>
         </div>
         <div class="icon">
-          <img src="../img/icon/right.png">
+          <img src="../../img/icon/right.png">
         </div>
       </div>
       <div class="user-operation">
@@ -33,7 +33,7 @@
               666666
             </div>
             <div class="icon">
-              <img src="../img/icon/right.png">
+              <img src="../../img/icon/right.png">
             </div>
           </div>
         </div>
@@ -43,14 +43,14 @@
       </div>
       <div class="foot-menu">
         <div class="button">
-          <img src="../img/icon/foot_begin.png">
+          <img src="../../img/icon/foot_begin.png">
           <div>开始</div>
         </div>
         <div class="discovery">
-          <img src="../img/icon/foot_discovery.png">
+          <img src="../../img/icon/foot_discovery.png">
         </div>
         <div class="button">
-          <img src="../img/icon/foot_me.png">
+          <img src="../../img/icon/foot_me.png">
           <div>我</div>
         </div>
       </div>
@@ -58,7 +58,7 @@
   </div>
 </template>
 <style lang='scss' scoped>
-  @import "../scss/config";
+  @import "../../scss/config";
   .change-user-info {
     height: 100%;
     background: $bg-gray;

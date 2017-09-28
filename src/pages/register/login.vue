@@ -1,32 +1,24 @@
 <template>
-  <div class="register">
+  <div class="login">
     <div class="notice">
       <span class="icon">
-        <img src="../img/icon/back.png">
+        <img src="../../img/icon/back.png">
       </span>
       <span class="title">
-        注册
+        登录
       </span>
     </div>
     <div class="logo-show">
       <div class="logo"></div>
       <div class="logo-words"></div>
     </div>
-    <div class="register-input">
+    <div class="login-input">
       <div>
         <input type="text" placeholder="用户名">
         <span class="error-info">这里是错误信息</span>
       </div>
       <div>
-        <input type="text" placeholder="昵称">
-        <span class="error-info"></span>
-      </div>
-      <div>
         <input type="text" placeholder="密码">
-        <span class="error-info"></span>
-      </div>
-      <div>
-        <input type="text" placeholder="再次确认密码">
         <span class="error-info"></span>
       </div>
       <div>
@@ -35,17 +27,14 @@
         <span class="vc"></span>
       </div>
     </div>
-    <div class="licence">
-      <p>点击「注册」，即代表你同意《仙女座用户协议》</p>
-    </div>
-    <div class="register-btn">
-      注册
+    <div class="login-btn">
+      登录
     </div>
     <foot-menu></foot-menu>
   </div>
 </template>
 <script>
-  import FootMenu from '../components/foot-menu.vue'
+  import FootMenu from '../../components/foot-menu.vue'
   export default {
     components: {
       FootMenu
@@ -53,8 +42,8 @@
   }
 </script>
 <style lang='scss' scoped>
-  @import "../scss/config";
-  .register {
+  @import "../../scss/config";
+  .login {
     height: 100%;
     width: 100%;
     background: $bg-gray;
@@ -81,11 +70,11 @@
       width: 100%;
       height: 130px;
     }
-    .register-input {
+    .login-input {
       width: 75%;
       margin: 0 auto;
       border-radius: 9px;
-      height: 248px;
+      height: 149px;
       background: white;
       div {
         width: 96%;
@@ -125,17 +114,7 @@
         }
       }
     }
-    .licence {
-      width: 75%;
-      margin: 20px auto 0 auto;
-      font-size: 12px;
-      color: $w-gray;
-      text-align: center;
-      p {
-        margin: 0;
-      }
-    }
-    .register-btn {
+    .login-btn {
       width: 75%;
       height: 42px;
       border-radius: 8px;

@@ -13,18 +13,28 @@ export default [
   },
   {
     path: '/me',
-    component: resolve => require(['../pages/me.vue'], resolve)
+    component: resolve => require(['../pages/me/me.vue'], resolve),
+    children: [
+      {
+        path: 'message',
+        component: resolve => require(['../pages/me/message.vue'], resolve)
+      }
+    ]
   },
   {
     path: '/change_info',
-    component: resolve => require(['../pages/change_user_info.vue'], resolve)
+    component: resolve => require(['../pages/me/change_user_info.vue'], resolve)
   },
   {
     path: '/look_info',
-    component: resolve => require(['../pages/look_info.vue'], resolve)
+    component: resolve => require(['../pages/me/look_info.vue'], resolve)
   },
   {
     path: '/register',
-    component: resolve => require(['../pages/register.vue'], resolve)
+    component: resolve => require(['../pages/register/register.vue'], resolve)
+  },
+  {
+    path: '/login',
+    component: resolve => require(['../pages/register/login.vue'], resolve)
   }
 ]

@@ -1,11 +1,11 @@
 <template>
-  <div class="me">
+  <div class="look_info">
     <div class="notice">
       <span class="icon">
         <img src="../img/icon/back.png">
       </span>
       <span class="title">
-        我
+        啦啦啦
       </span>
     </div>
     <div class="me-content">
@@ -15,6 +15,12 @@
         </div>
         <div class="words">
           <div class="name">沈皓清</div>
+          <!--<div class="focus-btn">-->
+            <!--+ 关注-->
+          <!--</div>-->
+          <div class="cancel-focus-btn">
+            取消关注
+          </div>
           <div class="sign">
             在乌云和尘埃之后是真理之光，他最终会投射出来并含笑驱散它们。
           </div>
@@ -27,10 +33,6 @@
           <img src="../img/icon/right.png">
         </div>
       </div>
-      <!--<div class="fake-user-main">-->
-        <!--<p>登陆仙女座，</p>-->
-        <!--<p>链接你与Ta们的故事</p>-->
-      <!--</div>-->
       <div class="user-operation">
         <div class="line" v-for='item in operation'>
           <div class="left">
@@ -46,13 +48,32 @@
           </div>
         </div>
       </div>
+      <div class="add-friend">
+        添加好友
+      </div>
+      <div class="delete-friend">
+        删除好友
+      </div>
+      <div class="foot-menu">
+        <div class="button">
+          <img src="../img/icon/foot_begin.png">
+          <div>开始</div>
+        </div>
+        <div class="discovery">
+          <img src="../img/icon/foot_discovery.png">
+        </div>
+        <div class="button">
+          <img src="../img/icon/foot_me.png">
+          <div>我</div>
+        </div>
+      </div>
       <foot-menu></foot-menu>
     </div>
   </div>
 </template>
 <style lang='scss' scoped>
   @import "../scss/config";
-  .me {
+  .look_info {
     height: 100%;
     background: $bg-gray;
     .notice {
@@ -96,11 +117,20 @@
         .words {
           flex: 7;
           height: 100%;
-          font-size: 15px;
           font-weight: 500;
           padding: 0 20px 0 20px;
           .name {
+            display: inline-block;
             margin-top: 8px;
+            font-size: 15px;
+          }
+          .focus-btn, .cancel-focus-btn {
+            display: inline-block;
+            margin-left: 20px;
+            color: $main-color;
+            border: 1px solid $main-color;
+            padding: 2px 8px 2px 8px;
+            border-radius: 5px;
           }
           .sign {
             margin-top: 11px;
@@ -134,27 +164,6 @@
           img {
             height: 25px;
             width: 14px;
-          }
-        }
-      }
-      .fake-user-main {
-        height: 95px;
-        background: white;
-        display: flex;
-        align-items: center;
-        padding: 11px 11px 11px 12px;
-        flex-wrap: nowrap;
-        flex-direction: column;
-        p {
-          width: 100%;
-          text-align: left;
-          margin: 10px 0 0 10px;
-          font-size: 18px;
-          &:first-child {
-            margin-left:32%;
-          }
-          &:last-child {
-            margin-left: 80%
           }
         }
       }
@@ -211,6 +220,61 @@
         }
 
       }
+      .add-friend {
+        height: 42px;
+        line-height: 42px;
+        border-radius: 8px;
+        background: $main-color;
+        font-size: 14px;
+        color: #ffffff;
+        text-align: center;
+        width: 80%;
+        margin: 30px auto 0 auto;
+      }
+      .delete-friend {
+        height: 42px;
+        line-height: 42px;
+        border-radius: 8px;
+        background: $main-red;
+        font-size: 14px;
+        color: #ffffff;
+        text-align: center;
+        width: 80%;
+        margin: 30px auto 0 auto;
+      }
+    }
+    .foot-menu {
+      width: 100%;
+      height: 46px;
+      background: white;
+      position: fixed;
+      bottom: 0;
+      margin: auto;
+      display: flex;
+      .button{
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        text-align: center;
+        img {
+          margin: 4px auto 0 auto;
+          width: 21px;
+          height: 21px;
+        }
+        font-size: 12px;
+      }
+      .discovery {
+        flex: 2;
+        img {
+          position: absolute;
+          top: -13px;
+          left: 50%;
+          width: 58px;
+          height: 44px;
+          margin-left: -29px;
+        }
+      }
     }
   }
 </style>
@@ -221,27 +285,27 @@
       return {
         operation: [
           {
-            name: '我的创作',
+            name: '她的创作',
             icon: require('../img/icon/my_creation.png'),
             path: ''
           },
           {
-            name: '我的订阅',
+            name: '她的订阅',
             icon: require('../img/icon/my_subscription.png'),
             path: ''
           },
           {
-            name: '我的关注',
+            name: '她的关注',
             icon: require('../img/icon/my_focus.png'),
             path: ''
           },
           {
-            name: '我的好友',
+            name: '共同好友',
             icon: require('../img/icon/my_friend.png'),
             path: ''
           },
           {
-            name: '我的轨迹',
+            name: '她的轨迹',
             icon: require('../img/icon/my_trail.png'),
             path: ''
           }

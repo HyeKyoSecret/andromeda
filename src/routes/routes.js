@@ -14,5 +14,17 @@ export default [
   {
     path: '/me',
     component: resolve => require(['../pages/me.vue'], resolve)
+  },
+  {
+    path: '/change_info',
+    component: resolve => require(['../pages/change_user_info.vue'], resolve)
+  },
+  {
+    path: '/look_info',
+    component: resolve => require(['../pages/look_info.vue'], resolve)
+  },
+  {
+    path: '/register',
+    component: resolve => require(['../pages/register.vue'], resolve)
   }
 ]

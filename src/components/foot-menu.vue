@@ -1,23 +1,23 @@
 <template>
   <div class="foot-menu">
-    <div class="button">
+    <router-link tag='div' to= '/begin' class="button">
       <img src="../img/icon/foot_begin.png">
       <div>开始</div>
-    </div>
+    </router-link>
     <div class="discovery">
-      <img src="../img/icon/foot_discovery.png">
+      <router-link tag='div'  to='/discovery'><img src="../img/icon/foot_discovery.png"></router-link>
     </div>
-    <div class="button">
+    <router-link tag ='div' class="button" to='/me'>
       <img src="../img/icon/foot_me.png">
       <div>我</div>
-    </div>
+    </router-link>
   </div>
 </template>
 <style lang="scss" scoped>
   @import "../scss/config";
   .foot-menu {
     width: 100%;
-    height: 46px;
+    height: 48px;
     background: white;
     position: fixed;
     bottom: 0;
@@ -32,20 +32,30 @@
       text-align: center;
       img {
         margin: 4px auto 0 auto;
-        width: 21px;
-        height: 21px;
+        width: 23px;
+        height: 23px;
       }
       font-size: 12px;
     }
     .discovery {
       flex: 2;
+      div{
+        width: 86px;
+        height: 86px;
+        background: white;
+        border-radius: 1000px;
+        position: absolute;
+        top: -24px;
+        left: 50%;
+        margin-left: -43px;
+      }
       img {
         position: absolute;
-        top: -13px;
         left: 50%;
-        width: 58px;
-        height: 44px;
-        margin-left: -29px;
+        top: 12px;
+        width: 55px;
+        height: 41px;
+        margin-left: -30px; // 图标多补1px
       }
     }
   }

@@ -17,7 +17,25 @@ export default [
     children: [
       {
         path: 'message',
-        component: resolve => require(['../pages/me/message.vue'], resolve)
+        component: resolve => require(['../pages/me/message.vue'], resolve),
+        children: [
+          {
+            path: 'words',
+            component: resolve => require(['../components/me/message/words.vue'], resolve)
+          },
+          {
+            path: 'promote',
+            component: resolve => require(['../components/me/message/promote.vue'], resolve)
+          },
+          {
+            path: 'request',
+            component: resolve => require(['../components/me/message/request.vue'], resolve)
+          },
+          {
+            path: 'announcement',
+            component: resolve => require(['../components/me/message/announcement.vue'], resolve)
+          }
+        ]
       }
     ]
   },

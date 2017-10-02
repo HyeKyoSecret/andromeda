@@ -32,7 +32,7 @@
         <!--<p>链接你与Ta们的故事</p>-->
       <!--</div>-->
       <div class="user-operation">
-        <div class="line" v-for='item in operation'>
+        <router-link :to='item.path' tag='div' class="line" v-for='item in operation'>
           <div class="left">
             <img :src='item.icon'>
           </div>
@@ -44,7 +44,7 @@
               <img src="../../img/icon/right.png">
             </div>
           </div>
-        </div>
+        </router-link>
       </div>
       <foot-menu></foot-menu>
       <router-view></router-view>
@@ -224,7 +224,7 @@
           {
             name: '我的消息',
             icon: require('../../img/icon/my_message.png'),
-            path: ''
+            path: '/me/message'
           },
           {
             name: '我的创作',

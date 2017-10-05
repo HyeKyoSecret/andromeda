@@ -47,6 +47,7 @@
       width: 100%;
       display: flex;
       align-items: center;
+      border-bottom: 1px solid $border-gray;
       &:last-child {
         border: none;
         margin-bottom: 70px;

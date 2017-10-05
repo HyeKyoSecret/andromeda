@@ -54,5 +54,9 @@ export default [
   {
     path: '/login',
     component: resolve => require(['../pages/register/login.vue'], resolve)
+  },
+  {
+    path: '*',
+    component: resolve => require(['../pages/error.vue'], resolve)
   }
 ]

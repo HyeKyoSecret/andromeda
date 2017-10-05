@@ -224,7 +224,7 @@
           {
             name: '我的消息',
             icon: require('../../img/icon/my_message.png'),
-            path: '/me/message'
+            path: '/me/message/words'
           },
           {
             name: '我的创作',

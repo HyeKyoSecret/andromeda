@@ -219,6 +219,7 @@
         height: 21px;
       }
       font-size: 12px;
+      color: $font-menu;
     }
     .discovery {
       flex: 2;

@@ -6,7 +6,7 @@ const fs = require('fs')
 // 引入Express
 const express = require('express')
 // 引入connect-history-api-fallback
-// var history = require('connect-history-api-fallback')
+const history = require('connect-history-api-fallback')
 const app = express()
 // 扩展上传文件的大小
 app.use(bodyParser.json({
@@ -19,6 +19,7 @@ app.use(bodyParser.urlencoded({
 }))
 // 加载路由api
 app.use(api)
+app.use(history())
 // 访问静态资源文件 这里是访问所有dist目录下的静态资源文件
 app.use(express.static(path.resolve(__dirname, 'dist')))
 app.get('*', function (req, res) {

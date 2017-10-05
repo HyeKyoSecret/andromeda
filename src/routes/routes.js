@@ -58,5 +58,9 @@ export default [
   {
     path: '/test',
     component: resolve => require(['../pages/test.vue'], resolve)
+  },
+  {
+    path: '*',
+    component: resolve => require(['../pages/error.vue'], resolve)
   }
 ]

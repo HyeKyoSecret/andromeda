@@ -1,12 +1,22 @@
 $main-color: #96D28E;
 $bg-gray: #F3F3F3;
 $w-gray: #929292;
+$font-color: #DBDBDB;
 $border-gray: #D9D9D9;
 $font-menu: #6B0204;
+$menu-color: #670205;
+$main-red: #FC464E;
+$icon-red: #E96D70;
+$icon-blue: #2352AB;
+$icon-yellow: #F4BD73;
 html, body{
   margin: 0;
   padding: 0;
   height: 100%;
+}
+a {
+  text-decoration: none;
+  color: #000;
 }
 #app {
   position: absolute;
@@ -24,5 +34,8 @@ html, body{
 @media (min-width: 768px) {
   #app {
     max-width: 700px;
+    .foot-menu {
+      max-width: 700px;
+    }
   }
 }

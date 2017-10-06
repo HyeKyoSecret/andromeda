@@ -9,28 +9,28 @@
       </span>
     </div>
     <div class="me-content">
-      <div class="user-main">
-        <div class="head-img">
-          <img src="../../img/photo/head.jpg">
-        </div>
-        <div class="words">
-          <div class="name">沈皓清</div>
-          <div class="sign">
-            在乌云和尘埃之后是真理之光，他最终会投射出来并含笑驱散它们。
-          </div>
-          <div class="info">
-            <img src="../../img/icon/zan.png">
-            <div>4399</div>
-          </div>
-        </div>
-        <div class="icon">
-          <img src="../../img/icon/right.png">
-        </div>
-      </div>
-      <!--<div class="fake-user-main">-->
-        <!--<p>登陆仙女座，</p>-->
-        <!--<p>链接你与Ta们的故事</p>-->
+      <!--<div class="user-main">-->
+        <!--<div class="head-img">-->
+          <!--<img src="../../img/photo/head.jpg">-->
+        <!--</div>-->
+        <!--<div class="words">-->
+          <!--<div class="name">沈皓清</div>-->
+          <!--<div class="sign">-->
+            <!--在乌云和尘埃之后是真理之光，他最终会投射出来并含笑驱散它们。-->
+          <!--</div>-->
+          <!--<div class="info">-->
+            <!--<img src="../../img/icon/zan.png">-->
+            <!--<div>4399</div>-->
+          <!--</div>-->
+        <!--</div>-->
+        <!--<div class="icon">-->
+          <!--<img src="../../img/icon/right.png">-->
+        <!--</div>-->
       <!--</div>-->
+      <router-link to='/register' tag="div" class="fake-user-main">
+        <p>登陆仙女座，</p>
+        <p>链接你与Ta们的故事</p>
+      </router-link>
       <div class="user-operation">
         <router-link :to='item.path' tag='div' class="line" v-for='item in operation'>
           <div class="left">

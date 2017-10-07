@@ -27,7 +27,7 @@
           <!--<img src="../../img/icon/right.png">-->
         <!--</div>-->
       <!--</div>-->
-      <router-link to='/register' tag="div" class="fake-user-main">
+      <router-link to='/login' tag="div" class="fake-user-main">
         <p>登陆仙女座，</p>
         <p>链接你与Ta们的故事</p>
       </router-link>
@@ -152,10 +152,10 @@
           margin: 10px 0 0 10px;
           font-size: 18px;
           &:first-child {
-            margin-left: -25%;
+            margin-left: -35%;
           }
           &:last-child {
-            margin-left: 40%
+            margin-left: 35%
           }
         }
       }

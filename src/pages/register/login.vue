@@ -1,7 +1,7 @@
 <template>
   <div class="login">
     <div class="notice">
-      <span class="icon">
+      <span class="icon" @click="$router.go(-1)">
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
@@ -26,6 +26,9 @@
         <span class="error-info"></span>
         <span class="vc"></span>
       </div>
+    </div>
+    <div class="goRegister">
+      您还没有账号？前往<router-link to="/register">注册</router-link>
     </div>
     <div class="login-btn">
       登录
@@ -71,7 +74,7 @@
       height: 130px;
     }
     .login-input {
-      width: 75%;
+      width: 80%;
       margin: 0 auto;
       border-radius: 9px;
       height: 149px;
@@ -114,8 +117,17 @@
         }
       }
     }
+    .goRegister {
+      width: 80%;
+      margin: 20px auto 0 auto;
+      text-align: center;
+      color: $w-gray;
+      a {
+        color: $main-color;
+      }
+    }
     .login-btn {
-      width: 75%;
+      width: 80%;
       height: 42px;
       border-radius: 8px;
       margin: 20px auto 0 auto;
@@ -123,6 +135,7 @@
       color: white;
       text-align: center;
       line-height: 42px;
+      font-size: 14px;
     }
   }
 </style>

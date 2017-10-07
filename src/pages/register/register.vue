@@ -1,7 +1,7 @@
 <template>
   <div class="register">
     <div class="notice">
-      <span class="icon">
+      <span class="icon" @click="$router.go(-1)">
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
@@ -14,20 +14,21 @@
     </div>
     <div class="register-input">
       <div>
-        <input type="text" v-model="userName" placeholder="用户名" @blur="userNameValidator">
+        <input type="text" v-model.trim="userName" placeholder="用户名" @blur="userNameValidator">
         <span class="error-info">{{userNameError}}</span>
       </div>
       <div>
-        <input type="text" v-model="nickName" placeholder="昵称" @blur="nickNameValidator">
+        <input type="text" v-model.trim="nickName" placeholder="昵称" @blur="nickNameValidator">
         <span class="error-info">{{nickNameError}}</span>
       </div>
       <div>
-        <input type="password" v-model="password" placeholder="密码" @blur="passwordValidator">
+        <input type="password" v-model.trim="password" placeholder="密码" @blur="passwordValidator">
         <span class="error-info">{{passwordError}}</span>
       </div>
       <div>
-        <input type="text" v-model="captcha" placeholder="验证码">
-        <span class="vc"></span>
+        <input type="text" v-model.trim="captcha" placeholder="验证码">
+        <span class="vc" v-html='captchaPic' @click="getCaptcha">
+        </span>
       </div>
     </div>
     <div class="licence">
@@ -49,6 +50,7 @@
   export default {
     data () {
       return {
+        captchaPic: null,
         userName: '',
         userNameError: '',
         nickName: '',
@@ -64,10 +66,23 @@
     },
     computed: {
       registerPermit: function () {
-        return this.userCheck && this.nickCheck && this.psCheck
+        return this.userCheck && this.nickCheck && this.psCheck && (this.captcha.length === 5)
       }
     },
+    created: function () {
+      this.getCaptcha()
+    },
     methods: {
+      getCaptcha () {
+        Axios.get('/register/getCaptcha')
+          .then((response) => {
+            this.captchaPic = response.data
+          })
+          .catch((error) => {
+            console.log(error)
+            this.captchaPic = '<span style="line-height: 48px">验证码获取错误</span>'
+          })
+      },
       checkUserRepeated () {
         Axios.post('/register/checkUserRepeated', {
           username: this.userName
@@ -143,6 +158,7 @@
             this.psCheck = false
           }
         } else {
+          this.psCheck = false
           this.passwordError = '密码必须是6-16位的数字字母'
         }
       },
@@ -150,12 +166,14 @@
         Axios.post('/register', {
           username: this.userName,
           nickname: this.nickName,
-          password: this.password
+          password: this.password,
+          captcha: this.captcha
         }).then((response) => {
           Toast({
             message: response.data,
             duration: 700
           })
+          this.getCaptcha()
         })
       }
     },
@@ -227,7 +245,6 @@
           }
           .vc {  // 临时占位 验证码
             flex: 1;
-            background: yellow;
             width: 100%;
             height: 100%;
           }
@@ -250,7 +267,7 @@
       }
     }
     .register-btn {
-      width: 75%;
+      width: 80%;
       height: 42px;
       border-radius: 8px;
       margin: 20px auto 0 auto;
@@ -258,9 +275,10 @@
       color: white;
       text-align: center;
       line-height: 42px;
+      font-size: 14px;
     }
     .fake-register-btn {
-      width: 75%;
+      width: 80%;
       height: 42px;
       border-radius: 8px;
       margin: 20px auto 0 auto;
@@ -268,6 +286,7 @@
       color: white;
       text-align: center;
       line-height: 42px;
+      font-size: 14px;
     }
   }
 </style>

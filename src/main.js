@@ -6,6 +6,10 @@ import VueRouter from 'vue-router'
 import routes from './routes/routes'
 import App from './App.vue'
 import MintUI from 'mint-ui'
+import Axios from 'axios'
+if (process.env.NODE_ENV !== 'production') {
+  Axios.defaults.baseURL = 'http://localhost:8080/api'
+}
 Vue.use(MintUI)
 Vue.use(VueRouter)
 const router = new VueRouter({

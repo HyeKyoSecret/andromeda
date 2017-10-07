@@ -21,7 +21,6 @@
     background: white;
     position: fixed;
     bottom: 0;
-    margin: auto;
     display: flex;
     color: $menu-color;
     .button{

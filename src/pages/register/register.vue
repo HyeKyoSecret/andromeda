@@ -14,31 +14,26 @@
     </div>
     <div class="register-input">
       <div>
-        <input type="text" v-model="userName" placeholder="用户名(邮箱或手机号)" @change="userNameValidator">
+        <input type="text" v-model="userName" placeholder="用户名" @blur="userNameValidator">
         <span class="error-info">{{userNameError}}</span>
       </div>
       <div>
-        <input type="text" v-model="nickName" placeholder="昵称" @change="nickNameValidator">
+        <input type="text" v-model="nickName" placeholder="昵称" @blur="nickNameValidator">
         <span class="error-info">{{nickNameError}}</span>
       </div>
       <div>
-        <input type="password" v-model="password" placeholder="密码" @change="passwordValidator">
+        <input type="password" v-model="password" placeholder="密码" @blur="passwordValidator">
         <span class="error-info">{{passwordError}}</span>
       </div>
       <div>
-        <input type="password" v-model="confirmPs" placeholder="再次确认密码" @change ="confirmPsValidator">
-        <span class="error-info">{{confirmPsError}}</span>
-      </div>
-      <div>
         <input type="text" v-model="captcha" placeholder="验证码">
-        <span class="error-info"></span>
         <span class="vc"></span>
       </div>
     </div>
     <div class="licence">
       <p>点击「注册」，即代表你同意《仙女座用户协议》</p>
     </div>
-    <div class="register-btn" v-if="this.registerPermit">
+    <div class="register-btn" v-if="this.registerPermit" @click ="register">
       注册
     </div>
     <div class="fake-register-btn" v-else>
@@ -48,6 +43,8 @@
   </div>
 </template>
 <script>
+  import Axios from 'axios'
+  import { Toast } from 'mint-ui'
   import FootMenu from '../../components/foot-menu.vue'
   export default {
     data () {
@@ -58,43 +55,80 @@
         nickNameError: '',
         password: '',
         passwordError: '',
-        confirmPs: '',
-        confirmPsError: '',
         captcha: '',
         captchaError: '',
         userCheck: false,
         nickCheck: false,
-        psCheck: false,
-        cfCheck: false
+        psCheck: false
       }
     },
     computed: {
       registerPermit: function () {
-        return this.userCheck && this.nickCheck && this.psCheck && this.cfCheck
+        return this.userCheck && this.nickCheck && this.psCheck
       }
     },
     methods: {
+      checkUserRepeated () {
+        Axios.post('/register/checkUserRepeated', {
+          username: this.userName
+        }).then((response) => {
+          if (response.data === '用户名已经存在') {
+            this.userNameError = response.data
+            this.userCheck = false
+          } else {
+            this.userNameError = ''
+            this.userCheck = true
+          }
+        })
+      },
+      checkNickRepeated () {
+        Axios.post('/register/checkNickRepeated', {
+          nickname: this.nickName
+        }).then((response) => {
+          if (response.data === '昵称已经存在') {
+            this.nickNameError = response.data
+            this.nickCheck = false
+          } else {
+            this.nickNameError = ''
+            this.nickCheck = true
+          }
+        })
+      },
       userNameValidator () {
-        let emailReg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/
-        let phoneReg = /^1[3|4|5|7|8][0-9]{9}$/
-        if (this.userName && (emailReg.test(this.userName) || phoneReg.test(this.userName))) {
-          // 正常逻辑
-          this.userNameError = ''
-          this.userCheck = true
+        let userReg = /^[0-9a-zA-Z_]+$/    // 字母数字下划线
+        if (this.userName.length >= 6 && this.userName.length <= 16) {
+          if (this.userName && (userReg.test(this.userName))) {
+            this.userNameError = ''
+            // 运行用户名重名检查
+            this.checkUserRepeated()
+          } else {
+            this.userNameError = '用户名只能包含字母、数字、下划线'
+            this.userCheck = false
+          }
         } else {
-          this.userNameError = '用户名格式错误'
-          this.userCheck = false
+          this.userNameError = '用户名必须在6-16位之间'
         }
       },
       nickNameValidator () {
-        let nickReg = /^[\u4E00-\u9FA5A-Za-z0-9_]+$/
-        if (this.nickName && nickReg.test(this.nickName)) {
-          // 正常逻辑，昵称不能重复
-          this.nickNameError = ''
-          this.nickCheck = true
+        let nickReg = /^[\u4E00-\u9FA5A-Za-z0-9]+$/
+        if (this.nickName.length >= 2 && this.nickName.length <= 7) {     // 位数检查
+          if (this.nickName && nickReg.test(this.nickName)) {     // 正则检查
+            this.nickNameError = ''
+            this.nickCheck = true
+            // 正常逻辑，昵称不能重复
+            if (this.nickName !== this.userName) {             // 不与用户名重复检查
+              this.checkNickRepeated()                         // 不重名检查
+            } else {
+              this.nickNameError = '昵称不得与用户名相同'
+              this.nickCheck = false
+            }
+          } else {
+            this.nickNameError = '昵称只能包含字母、数字、中文'
+            this.nickCheck = false
+          }
         } else {
-          this.nickNameError = '昵称只能包含字母数字和下划线'
           this.nickCheck = false
+          this.nickNameError = '昵称长度必须在2-7位之间'
         }
       },
       passwordValidator () {
@@ -112,14 +146,17 @@
           this.passwordError = '密码必须是6-16位的数字字母'
         }
       },
-      confirmPsValidator () {
-        if (this.confirmPs !== this.password) {
-          this.confirmPsError = '两次输入的密码不一致'
-          this.cfCheck = false
-        } else {
-          this.confirmPsError = ''
-          this.cfCheck = true
-        }
+      register () {
+        Axios.post('/register', {
+          username: this.userName,
+          nickname: this.nickName,
+          password: this.password
+        }).then((response) => {
+          Toast({
+            message: response.data,
+            duration: 700
+          })
+        })
       }
     },
     components: {
@@ -129,6 +166,7 @@
 </script>
 <style lang='scss' scoped>
   @import "../../scss/config";
+  @import "../../scss/style.css";
   .register {
     height: 100%;
     width: 100%;
@@ -160,7 +198,7 @@
       width: 80%;
       margin: 0 auto;
       border-radius: 9px;
-      height: 248px;
+      height: 200px;
       background: white;
       div {
         width: 96%;

@@ -46,9 +46,9 @@
           </div>
         </router-link>
       </div>
-      <foot-menu></foot-menu>
       <router-view></router-view>
     </div>
+    <foot-menu></foot-menu>
   </div>
 </template>
 <style lang='scss' scoped>
@@ -140,22 +140,22 @@
       }
       .fake-user-main {
         height: 95px;
+        width: 100%;
         background: white;
         display: flex;
         align-items: center;
-        padding: 11px 11px 11px 12px;
+        padding: 11px 0 11px 0;
         flex-wrap: nowrap;
         flex-direction: column;
         p {
-          width: 100%;
           text-align: left;
           margin: 10px 0 0 10px;
           font-size: 18px;
           &:first-child {
-            margin-left:32%;
+            margin-left: -25%;
           }
           &:last-child {
-            margin-left: 80%
+            margin-left: 40%
           }
         }
       }
@@ -212,40 +212,6 @@
         }
 
       }
-    }
-    .foot-menu {
-      width: 100%;
-      height: 46px;
-      background: white;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      display: flex;
-    .button{
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      flex-wrap: nowrap;
-      text-align: center;
-      img {
-        margin: 4px auto 0 auto;
-        width: 21px;
-        height: 21px;
-      }
-      font-size: 12px;
-      color: $font-menu;
-    }
-    .discovery {
-      flex: 2;
-      img {
-        position: absolute;
-        top: -13px;
-        left: 50%;
-        width: 58px;
-        height: 44px;
-        margin-left: -29px;
-      }
-    }
     }
   }
 </style>

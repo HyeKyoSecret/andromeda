@@ -45,7 +45,7 @@
         }
       }
       .right {
-        flex: 3;
+        margin-left: 15px;
         .word {
           display: -webkit-box;
           display: -moz-box;
@@ -56,11 +56,12 @@
           overflow: hidden;
           font-size: 13px;
           margin-left: 5px;
+          margin-right: 10px;
           margin-top: 9px;
         }
         .date {
           float: right;
-          margin-top: 10px;
+          margin-top: 12px;
           display: inline-block;
           margin-right: 20px;
           font-size: 12px;

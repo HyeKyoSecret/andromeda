@@ -24,7 +24,9 @@
         </div>
       </div>
     </div>
-    <router-view></router-view>
+    <transition name="slide-left" mode="out-in">
+      <router-view class="child-view"></router-view>
+    </transition>
     <foot-menu></foot-menu>
   </div>
 </template>
@@ -107,5 +109,20 @@
         }
       }
     }
+  }
+  .child-view {
+    position: absolute;
+    width:100%;
+    transition: all .3s cubic-bezier(.3,.7,.8,1);
+  }
+  .slide-left-enter, .slide-right-leave-active {
+    opacity: 0;
+    -webkit-transform: translate(500px, 0);
+    transform: translate(500px, 0);
+  }
+  .slide-left-leave-active, .slide-right-enter {
+    opacity: 0;
+    -webkit-transform: translate(-500px, 0);
+    transform: translate(-500px, 0);
   }
 </style>

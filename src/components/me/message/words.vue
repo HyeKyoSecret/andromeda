@@ -1,5 +1,5 @@
 <template>
-  <div class="word-template">
+  <div class="word-template" @touch='kk'>
     <div class="content">
       <div class="left">
         <img src='../../../img/photo/head.jpg'>
@@ -70,6 +70,11 @@
 </style>
 <script>
   export default {
-    name: 'words'
+    name: 'words',
+    methods: {
+      kk () {
+        alert('cc')
+      }
+    }
   }
 </script>

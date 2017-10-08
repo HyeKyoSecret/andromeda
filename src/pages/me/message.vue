@@ -24,7 +24,7 @@
         </div>
       </div>
     </div>
-    <transition name="slide-left" mode="out-in">
+    <transition name="slide-left">
       <router-view class="child-view"></router-view>
     </transition>
     <foot-menu></foot-menu>
@@ -113,16 +113,16 @@
   .child-view {
     position: absolute;
     width:100%;
-    transition: all .3s cubic-bezier(.3,.7,.8,1);
+    transition: all 0.5s cubic-bezier(.35,.2,.7,1);
   }
   .slide-left-enter, .slide-right-leave-active {
     opacity: 0;
-    -webkit-transform: translate(500px, 0);
-    transform: translate(500px, 0);
+    -webkit-transform: translate(380px, 0);
+    transform: translate(3800px, 0);
   }
   .slide-left-leave-active, .slide-right-enter {
     opacity: 0;
-    -webkit-transform: translate(-500px, 0);
-    transform: translate(-500px, 0);
+    -webkit-transform: translate(-400px, 0);
+    transform: translate(-400px, 0);
   }
 </style>

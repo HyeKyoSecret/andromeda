@@ -7,11 +7,13 @@ import routes from './routes/routes'
 import App from './App.vue'
 import MintUI from 'mint-ui'
 import Axios from 'axios'
+import VueFinger from './js/vueFinger'
 if (process.env.NODE_ENV !== 'production') {
   Axios.defaults.baseURL = 'http://localhost:8080/api'
 }
 Vue.use(MintUI)
 Vue.use(VueRouter)
+Vue.use(VueFinger)
 const router = new VueRouter({
   mode: 'history',
   routes

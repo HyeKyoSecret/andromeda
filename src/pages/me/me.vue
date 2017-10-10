@@ -31,21 +31,21 @@
         <p>登陆仙女座，</p>
         <p>链接你与Ta们的故事</p>
       </router-link>
-      <div class="user-operation">
-        <router-link :to='item.path' tag='div' class="line" v-for='item in operation'>
-          <div class="left">
-            <img :src='item.icon'>
-          </div>
-          <div class="right">
-            <div class="words">
-              {{item.name}}
+        <div class="user-operation">
+          <router-link :to='item.path' tag='div' class="line" v-for='item in operation'>
+            <div class="left">
+              <img :src='item.icon'>
             </div>
-            <div class="icon">
-              <img src="../../img/icon/right.png">
+            <div class="right">
+              <div class="words">
+                {{item.name}}
+              </div>
+              <div class="icon">
+                <img src="../../img/icon/right.png">
+              </div>
             </div>
-          </div>
-        </router-link>
-      </div>
+          </router-link>
+        </div>
       <router-view></router-view>
     </div>
     <foot-menu></foot-menu>

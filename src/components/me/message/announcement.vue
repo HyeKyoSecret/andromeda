@@ -1,5 +1,5 @@
 <template>
-  <div class="announcement-template">
+  <div class="announcement-template" v-swipe="{methods: swipe}">
     <div class="content">
       <div class="left">
         <img src="../../../img/photo/head.jpg">
@@ -25,6 +25,8 @@
 <style lang='scss' scoped>
   @import "../../../scss/config";
   .announcement-template {
+    width: 100%;
+    height: 100%;
     .content {
       display: flex;
       margin-top: 20px;
@@ -81,6 +83,13 @@
 </style>
 <script>
   export default {
-    name: 'announcement'
+    name: 'announcement',
+    methods: {
+      swipe (e) {
+        if (e.direction === 'Right') {
+          this.$router.push({name: 'message_promote'})
+        }
+      }
+    }
   }
 </script>

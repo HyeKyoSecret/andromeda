@@ -1,5 +1,5 @@
 <template>
-  <div class="request-template">
+  <div class="request-template" v-swipe="{methods: swipe}">
     <div class="rq-content">
       <mt-cell-swipe class='rq'
                      title="HyeKyo"
@@ -43,6 +43,7 @@
   .request-template {
     margin-top: 25px;
     width: 100%;
+    height: 100%;
     .rq-content {
       width: 100%;
       display: flex;
@@ -84,6 +85,18 @@
 </style>
 <script>
   export default {
-    name: 'request'
+    name: 'request',
+    methods: {
+      swipe (e) {
+        if (e.target.className !== 'request-template child-view') {
+          return null
+        }
+        if (e.direction === 'Left') {
+          this.$router.push({name: 'message_promote'})
+        } else if (e.direction === 'Right') {
+          this.$router.push({name: 'message_words'})
+        }
+      }
+    }
   }
 </script>

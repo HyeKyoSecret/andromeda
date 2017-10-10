@@ -21,18 +21,22 @@ export default [
         children: [
           {
             path: 'words',
+            name: 'message_words',
             component: resolve => require(['../components/me/message/words.vue'], resolve)
           },
           {
             path: 'promote',
+            name: 'message_promote',
             component: resolve => require(['../components/me/message/promote.vue'], resolve)
           },
           {
             path: 'request',
+            name: 'message_request',
             component: resolve => require(['../components/me/message/request.vue'], resolve)
           },
           {
             path: 'announcement',
+            name: 'message_announcement',
             component: resolve => require(['../components/me/message/announcement.vue'], resolve)
           }
         ]

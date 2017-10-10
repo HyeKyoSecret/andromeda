@@ -24,7 +24,7 @@
         </div>
       </div>
     </div>
-    <transition name="slide-left">
+    <transition :name="transitionName">
       <router-view class="child-view"></router-view>
     </transition>
     <foot-menu></foot-menu>
@@ -33,8 +33,31 @@
 <script>
   import FootMenu from '../../components/foot-menu.vue'
   export default {
+    data () {
+      return {
+        router: ['message_words', 'message_request', 'message_promote', 'message_announcement'],
+        transitionName: 'slide-left'
+      }
+    },
     components: {
       FootMenu
+    },
+    watch: {
+      '$route': function (to, from) {
+        let toPage = to.name
+        let fromPage = from.name
+        let toPageIndex = ''
+        let fromPageIndex = ''
+        for (let i = 0; i < 4; i++) {
+          if (toPage === this.router[i]) {
+            toPageIndex = i
+          }
+          if (fromPage === this.router[i]) {
+            fromPageIndex = i
+          }
+        }
+        this.transitionName = toPageIndex > fromPageIndex ? 'slide-left' : 'slide-right'
+      }
     }
   }
 </script>
@@ -113,12 +136,12 @@
   .child-view {
     position: absolute;
     width:100%;
-    transition: all 0.5s cubic-bezier(.35,.2,.7,1);
+    transition: all .35s cubic-bezier(.35,.2,.7,1);
   }
   .slide-left-enter, .slide-right-leave-active {
     opacity: 0;
     -webkit-transform: translate(380px, 0);
-    transform: translate(3800px, 0);
+    transform: translate(380px, 0);
   }
   .slide-left-leave-active, .slide-right-enter {
     opacity: 0;

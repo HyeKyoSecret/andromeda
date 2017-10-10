@@ -1,7 +1,7 @@
 <template>
   <div class="finger-demo">
     <img class="finger-demo-img" src="../img/photo/head.jpg" :style="imgStyle"
-         v-swipe="{methods: swiper}">
+         v-swipe="{methods: swipe}">
     <div>{{ msg }}</div>
     <div>{{details}}</div>
   </div>
@@ -16,8 +16,7 @@
         angle: 0,
         initScale: 1,
         msg: '',
-        details: '',
-        arg: {index: 10, item: 'pinch'}
+        details: ''
       }
     },
     computed: {
@@ -69,7 +68,6 @@
       swipe (e) {
         var self = this
         self.msg = 'swipe'
-        self.details = ('tap index:')
       },
       multipointStart: function (e, args) {
         var self = this

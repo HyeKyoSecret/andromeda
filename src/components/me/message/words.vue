@@ -1,5 +1,5 @@
 <template>
-  <div class="word-template" @touch='kk'>
+  <div class="word-template" v-swipe="{methods: swipe}">
     <div class="content">
       <div class="left">
         <img src='../../../img/photo/head.jpg'>
@@ -17,6 +17,7 @@
 <style lang='scss' scoped>
   @import "../../../scss/config";
   .word-template {
+    height: 100%;
     width: 100%;
     margin-top: 20px;
     .content {
@@ -72,8 +73,10 @@
   export default {
     name: 'words',
     methods: {
-      kk () {
-        alert('cc')
+      swipe (e) {
+        if (e.direction === 'Left') {
+          this.$router.push({name: 'message_request'})
+        }
       }
     }
   }

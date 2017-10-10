@@ -1,6 +1,3 @@
-/**
- * Created by swallow on 2017/10/8.
- */
 function getLen (v) {
   if (isNaN(v.x) || isNaN(v.y)) {
     return 0
@@ -278,7 +275,12 @@ vueFinger.install = function (Vue, options) {
       var args = binding.value.arg || {}
       args.el = el
       self.config.swipe = function (e) {
-        binding.value.methods(binding.value, e)
+        // if (binding.modifiers.self) {
+        //   if (e.target !== e.currentTarget) {
+        //     return null
+        //   }
+        // }
+        binding.value.methods.call(binding.value.methods, e, args)
       }
       el.addEventListener('touchstart', self.start, false)
       el.addEventListener('touchmove', self.move, false)

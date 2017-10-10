@@ -1,5 +1,5 @@
 <template>
-  <div class="promote-template">
+  <div class="promote-template" v-swipe="{methods: swipe}">
     <div class="content">
       <div class="user">SongHyeKyo</div>
       <div class="content-zan">赞了您在<a>萨尔达传说</a>中的创作</div>
@@ -13,6 +13,7 @@
   .promote-template {
     margin-top: 20px;
     width: 100%;
+    height: 100%;
     .content {
       width: 100%;
       background: white;
@@ -53,6 +54,15 @@
 </style>
 <script>
   export default {
-    name: 'promote'
+    name: 'promote',
+    methods: {
+      swipe (e) {
+        if (e.direction === 'Left') {
+          this.$router.push({name: 'message_announcement'})
+        } else if (e.direction === 'Right') {
+          this.$router.push({name: 'message_request'})
+        }
+      }
+    }
   }
 </script>

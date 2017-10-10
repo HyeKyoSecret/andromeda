@@ -9,33 +9,7 @@ $main-red: #FC464E;
 $icon-red: #E96D70;
 $icon-blue: #2352AB;
 $icon-yellow: #F4BD73;
-html, body{
-  margin: 0;
-  padding: 0;
-  height: 100%;
-}
-a {
-  text-decoration: none;
-  color: #000;
-}
-#app {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 2;
-  max-width: 640px;
-  margin: auto;
-  font-size: 13px;
-  background: #fff;
-  -webkit-tap-highlight-color: transparent;
-}
-@media (min-width: 768px) {
-  #app {
-    max-width: 700px;
-    .foot-menu {
-      max-width: 700px;
-    }
-  }
-}
+$dark-green: rgb(24, 132, 24);
+$dark-blue: rgb(22, 25, 104);
+$dark-red: rgb(180, 7, 28);
+$dark-yellow: rgb(162, 105, 22);

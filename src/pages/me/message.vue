@@ -104,6 +104,22 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        .words.router-link-active {
+          border: 2px solid $dark-green;
+          line-height: 22px;
+        }
+        .request.router-link-active {
+          border: 2px solid $dark-red;
+          line-height: 22px;
+        }
+        .promote.router-link-active {
+          border: 2px solid $dark-blue;
+          line-height: 22px;
+        }
+        .announcement.router-link-active {
+          border: 2px solid $dark-yellow;
+          line-height: 22px;
+        }
         div {
           flex: 1;
           height: 26px;
@@ -116,6 +132,8 @@
             height: 26px;
             background: red;
             color: white;
+            border-radius: 5px;
+            box-sizing: border-box;
           }
           .words {
             background: $main-color;
@@ -136,7 +154,7 @@
   .child-view {
     position: absolute;
     width:100%;
-    transition: all .35s cubic-bezier(.35,.2,.7,1);
+    transition: all .3s cubic-bezier(.35,.2,.7,1);
   }
   .slide-left-enter, .slide-right-leave-active {
     opacity: 0;

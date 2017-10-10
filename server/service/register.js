@@ -106,4 +106,38 @@ router.get('/register/getCaptcha', (req, res) => {
   res.set('Content-Type', 'image/svg+xml')
   res.status(200).send(captcha.data)
 })
+router.get('/login/getCaptcha', (req, res) => {
+  let captcha = svgCaptcha.create({ size: 4, noise: 3, ignoreChars: '0o1il' })
+  req.session.loginCaptchaText = captcha.text.toLowerCase()
+  res.set('Content-Type', 'image/svg+xml')
+  res.status(200).send(captcha.data)
+})
+router.post('/login', (req, res) => {
+  'use strict'
+  if (req.body.captcha.toLowerCase() === req.session.loginCaptchaText) {
+    let username = req.body.username
+    let password = req.body.password
+    User.findOne({username: username}, (err, user) => {
+      if (err) {
+        res.send(false)
+      } else {
+        if (user) {
+          if (user.password === md5(password)) {
+            req.session.user = user.username
+            res.cookie('AndLogin', {account: md5(user.username)}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 10), httpOnly: true })
+            res.send('登录成功')
+          } else {
+            res.send('用户名密码不正确')
+          }
+        } else {
+          res.send('用户名不存在')
+        }
+      }
+    })
+  } else {
+    // 验证码错误
+    res.send('验证码错误')
+  }
+})
+
 module.exports = router

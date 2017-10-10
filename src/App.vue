@@ -6,12 +6,47 @@
   </div>
 </template>
 <script>
-export default {
-  name: 'app'
-}
+  import FastClick from 'fastclick'
+  export default {
+    name: 'app',
+    created: function () {
+      document.addEventListener('DOMContentLoaded', function () {
+        FastClick.attach(document.body)
+      }, false)
+    }
+  }
 </script>
 <style lang="scss">
-  @import "./scss/config";
+  html, body{
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+  a {
+    text-decoration: none;
+    color: #000;
+  }
+  #app {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    max-width: 640px;
+    margin: auto;
+    font-size: 13px;
+    background: #fff;
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (min-width: 768px) {
+    #app {
+      max-width: 700px;
+      .foot-menu {
+        max-width: 700px;
+      }
+    }
+  }
   .fade-enter-active, .fade-leave-active {
     transition: opacity .3s
   }

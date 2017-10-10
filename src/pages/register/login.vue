@@ -14,23 +14,22 @@
     </div>
     <div class="login-input">
       <div>
-        <input type="text" placeholder="用户名">
-        <span class="error-info">这里是错误信息</span>
+        <input type="text" placeholder="用户名" v-model.trim="username" @blur="userCheck">
+        <span class="error-info">{{usernameError}}</span>
       </div>
       <div>
-        <input type="text" placeholder="密码">
-        <span class="error-info"></span>
+        <input type="password" placeholder="密码" v-model.trim="password" @blur="passwordCheck">
+        <span class="error-info">{{passwordError}}</span>
       </div>
       <div>
-        <input type="text" placeholder="验证码">
-        <span class="error-info"></span>
-        <span class="vc"></span>
+        <input type="text" placeholder="验证码" v-model.trim="captcha" @blur="passwordCheck">
+        <span class="vc" v-html='captchaPic' @click="getCaptcha"></span>
       </div>
     </div>
     <div class="goRegister">
       您还没有账号？前往<router-link to="/register">注册</router-link>
     </div>
-    <div class="login-btn">
+    <div class="login-btn" @click="login">
       登录
     </div>
     <foot-menu></foot-menu>
@@ -38,14 +37,125 @@
 </template>
 <script>
   import FootMenu from '../../components/foot-menu.vue'
+  import Axios from 'axios'
+  import { Toast } from 'mint-ui'
   export default {
+    data () {
+      return {
+        username: '',
+        usernameError: '',
+        password: '',
+        passwordError: '',
+        captcha: '',
+        captchaPic: null
+      }
+    },
     components: {
       FootMenu
+    },
+    created: function () {
+      this.getCaptcha()
+    },
+    methods: {
+      getCaptcha () {
+        Axios.get('/login/getCaptcha')
+          .then((response) => {
+            this.captchaPic = response.data
+          })
+          .catch((error) => {
+            console.log(error)
+            this.captchaPic = '<span style="line-height: 48px">验证码获取错误</span>'
+          })
+      },
+      userCheck () {
+        if (this.username.length) {
+          let userReg = /^[0-9a-zA-Z_]{6,16}$/
+          if (!userReg.test(this.username)) {
+            this.usernameError = '用户名格式错误'
+          } else {
+            this.usernameError = ''
+          }
+        } else {
+          this.usernameError = '用户名不能为空'
+        }
+      },
+      passwordCheck () {
+        if (this.password.length) {
+          let pwReg = /^[A-Za-z0-9]{6,16}$/
+          if (!pwReg.test(this.password)) {
+            this.passwordError = '密码格式错误'
+          } else {
+            this.passwordError = ''
+          }
+        } else {
+          this.passwordError = '密码不能为空'
+        }
+      },
+      login () {
+        let userReg = /^[0-9a-zA-Z_]{6,16}$/
+        let passwordReg = /^[A-Za-z0-9]{6,16}$/
+        if (this.username && this.password && userReg.test(this.username) && passwordReg.test(this.password) && this.captcha) {
+          Axios.post('/login', {
+            username: this.username,
+            password: this.password,
+            captcha: this.captcha
+          }).then((response) => {
+            if (response.data) {
+              if (response.data === '验证码错误') {
+                Toast({
+                  message: response.data,
+                  position: 'bottom',
+                  duration: 1200
+                })
+              } else if (response.data === '用户名密码不正确') {
+                Toast({
+                  message: '用户名密码不正确',
+                  position: 'bottom',
+                  duration: 1200
+                })
+                this.getCaptcha()
+              } else if (response.data === '用户名不存在') {
+                Toast({
+                  message: '用户名不存在',
+                  position: 'bottom',
+                  duration: 1200
+                })
+                this.getCaptcha()
+              } else if (response.data === '登录成功') {
+                Toast({
+                  message: '登录成功',
+                  position: 'bottom',
+                  duration: 1200
+                })
+              }
+            } else {
+              Toast({
+                message: '登录失败',
+                position: 'bottom',
+                duration: 1200
+              })
+            }
+          }).catch(() => {
+            Toast({
+              message: '登录失败',
+              position: 'bottom',
+              duration: 1200
+            })
+          })
+        } else {
+          Toast({
+            message: '输入信息有误',
+            position: 'bottom',
+            duration: 1200
+          })
+        }
+      }
     }
   }
 </script>
 <style lang='scss' scoped>
   @import "../../scss/config";
+  @import "../../scss/style.css";
   .login {
     height: 100%;
     width: 100%;
@@ -92,6 +202,7 @@
           outline: none;
           padding-left: 5px;
           flex: 2;
+          height: 42px;
           font-size: 14px;
           overflow: hidden;
         }
@@ -103,9 +214,8 @@
           .error-icon {
             flex: 1;
           }
-          .vc {  // 临时占位 验证码
+          .vc {  //  验证码
             flex: 1;
-            background: yellow;
             width: 100%;
             height: 100%;
           }

@@ -9,30 +9,30 @@
       </span>
     </div>
     <div class="me-content">
-      <!--<div class="user-main">-->
-        <!--<div class="head-img">-->
-          <!--<img src="../../img/photo/head.jpg">-->
-        <!--</div>-->
-        <!--<div class="words">-->
-          <!--<div class="name">沈皓清</div>-->
-          <!--<div class="sign">-->
-            <!--在乌云和尘埃之后是真理之光，他最终会投射出来并含笑驱散它们。-->
-          <!--</div>-->
-          <!--<div class="info">-->
-            <!--<img src="../../img/icon/zan.png">-->
-            <!--<div>4399</div>-->
-          <!--</div>-->
-        <!--</div>-->
-        <!--<div class="icon">-->
-          <!--<img src="../../img/icon/right.png">-->
-        <!--</div>-->
-      <!--</div>-->
-      <router-link to='/login' tag="div" class="fake-user-main">
+      <div class="user-main" v-if="isLogin">
+        <div class="head-img">
+          <img src="../../img/photo/head.jpg">
+        </div>
+        <div class="words">
+          <div class="name">{{nickName}}</div>
+          <div class="sign">
+            在乌云和尘埃之后是真理之光，他最终会投射出来并含笑驱散它们。
+          </div>
+          <div class="info">
+            <img src="../../img/icon/zan.png">
+            <div>4399</div>
+          </div>
+        </div>
+        <div class="icon">
+          <img src="../../img/icon/right.png">
+        </div>
+      </div>
+      <router-link to='/login' tag="div" class="fake-user-main" v-else>
         <p>登陆仙女座，</p>
         <p>链接你与Ta们的故事</p>
       </router-link>
         <div class="user-operation">
-          <router-link :to='item.path' tag='div' class="line" v-for='item in operation'>
+          <router-link :to='item.path' tag='div' class="line" v-for='item in operation' :key="item.name">
             <div class="left">
               <img :src='item.icon'>
             </div>
@@ -104,9 +104,16 @@
             margin-top: 8px;
           }
           .sign {
-            margin-top: 11px;
+            margin-top: 6px;
             font-size: 13px;
             color: $w-gray;
+            display: -webkit-box;
+            display: -moz-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            -moz-box-orient: vertical;
+            -moz-line-clamp: 2;
+            overflow: hidden;
           }
           .info {
             margin-top: 7px;
@@ -217,6 +224,7 @@
 </style>
 <script>
   import FootMenu from '../../components/foot-menu.vue'
+  import Axios from 'axios'
   export default {
     data () {
       return {
@@ -229,29 +237,47 @@
           {
             name: '我的创作',
             icon: require('../../img/icon/my_creation.png'),
-            path: ''
+            path: '/me/message/words'
           },
           {
             name: '我的订阅',
             icon: require('../../img/icon/my_subscription.png'),
-            path: ''
+            path: '/me/message/words'
           },
           {
             name: '我的关注',
             icon: require('../../img/icon/my_focus.png'),
-            path: ''
+            path: '/me/message/words'
           },
           {
             name: '我的好友',
             icon: require('../../img/icon/my_friend.png'),
-            path: ''
+            path: '/me/message/words'
           },
           {
             name: '我的轨迹',
             icon: require('../../img/icon/my_trail.png'),
-            path: ''
+            path: '/me/message/words'
           }
-        ]
+        ],
+        isLogin: false,
+        nickName: ''
+      }
+    },
+    created: function () {
+      this.checkLogin()
+    },
+    methods: {
+      checkLogin () {
+        Axios.get('/checkLogin')
+          .then((response) => {
+            if (response.data.login) {
+              this.isLogin = true
+              this.nickName = response.data.nickName
+            } else {
+              this.isLogin = false
+            }
+          })
       }
     },
     components: {

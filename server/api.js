@@ -12,7 +12,7 @@ router.use(session({
   name: 'swallow',   // 这里的name值得是cookie的name，默认cookie的name是：connect.sid
   cookie: {
     httpOnly: true,
-    maxAge: 3600 * 1000 * 24 * 10 // 设置maxAge是10天，即10天后session和相应的cookie失效过期
+    maxAge: 3600 * 1000 * 24 * 14 // 设置maxAge是14天，即14天后session和相应的cookie失效过期
   },
   resave: true,
   saveUninitialized: true

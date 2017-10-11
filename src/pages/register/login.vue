@@ -105,42 +105,46 @@
                 Toast({
                   message: response.data,
                   position: 'bottom',
-                  duration: 1200
+                  duration: 1000
                 })
               } else if (response.data === '用户名密码不正确') {
                 Toast({
-                  message: '用户名密码不正确',
+                  message: response.data,
                   position: 'bottom',
-                  duration: 1200
+                  duration: 1000
                 })
                 this.getCaptcha()
               } else if (response.data === '用户名不存在') {
                 Toast({
-                  message: '用户名不存在',
+                  message: response.data,
                   position: 'bottom',
-                  duration: 1200
+                  duration: 1000
                 })
                 this.getCaptcha()
               } else if (response.data === '登录成功') {
                 Toast({
-                  message: '登录成功',
-                  position: 'bottom',
-                  duration: 1200
+                  message: response.data,
+                  position: 'middle',
+                  duration: 1000
                 })
+                this.$router.push({name: 'me', params: { username: this.username }})
               }
             } else {
               Toast({
                 message: '登录失败',
                 position: 'bottom',
-                duration: 1200
+                duration: 1000
               })
             }
-          }).catch(() => {
-            Toast({
-              message: '登录失败',
-              position: 'bottom',
-              duration: 1200
-            })
+          }).catch((error) => {
+            if (error) {
+              console.log(error)
+              Toast({
+                message: '登录失败',
+                position: 'bottom',
+                duration: 1000
+              })
+            }
           })
         } else {
           Toast({

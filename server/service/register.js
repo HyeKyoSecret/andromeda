@@ -49,7 +49,7 @@ router.post('/register', (req, res) => {
                       res.send('注册失败')
                     } else {
                       req.session.user = user.username
-                      res.cookie('AndLogin', {account: md5(user.username)}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 10), httpOnly: true })
+                      res.cookie('And', {user: user.username}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 14), httpOnly: true })
                       res.send('注册成功')
                     }
                   })
@@ -124,7 +124,7 @@ router.post('/login', (req, res) => {
         if (user) {
           if (user.password === md5(password)) {
             req.session.user = user.username
-            res.cookie('AndLogin', {account: md5(user.username)}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 10), httpOnly: true })
+            res.cookie('And', {user: user.username}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 14), httpOnly: true })
             res.send('登录成功')
           } else {
             res.send('用户名密码不正确')
@@ -139,5 +139,70 @@ router.post('/login', (req, res) => {
     res.send('验证码错误')
   }
 })
-
+router.get('/checkLogin', (req, res) => {
+  'use strict'
+  console.log('session中获取到账户名' + req.session.user)
+  if (req.session.user) {
+    User.findOne({username: req.session.user})
+      .exec((err, user) => {
+        if (err) {
+          res.send({
+            login: false,
+            type: 'dbError',
+            message: '系统忙，请稍后再试'
+          })
+        } else {
+          if (user) {
+            res.send({
+              login: true,
+              user: req.session.user,
+              nickName: user.nickname
+            })
+          } else {
+            res.send({
+              login: false,
+              type: 'sessionError'
+            })
+          }
+        }
+      })
+  } else if (req.cookies.And) {
+    console.log('cookies中获取的账户名' + req.cookies.And.user)
+    User.findOne({username: req.cookies.And.user}, (err, result) => {
+      if (err) {
+        res.send({
+          login: false,
+          type: 'dbError',
+          message: '系统忙，请稍后再试'
+        })
+      } else {
+        if (result) {
+          req.session.user = req.cookies.And.user
+          res.send({
+            login: true,
+            user: req.session.user,
+            nickName: result.nickname
+          })
+        } else {
+          res.send({
+            login: false,
+            type: 'cookiesError'
+          })
+        }
+      }
+    })
+  } else {
+    res.send({
+      login: false,
+      type: 'notLogin'
+    })
+  }
+})
+router.get('/login/quitLogin', (req, res) => {
+  req.session.destroy(function (err) {
+    if (err) console.log(err)
+    res.cookie('And', {account: null}, {maxAge: 0}) // 删除cookie
+    res.send({login: false})
+  })
+})
 module.exports = router

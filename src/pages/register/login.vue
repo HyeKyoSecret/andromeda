@@ -100,48 +100,31 @@
             password: this.password,
             captcha: this.captcha
           }).then((response) => {
+            console.log(response)
             if (response.data) {
-              if (response.data === '验证码错误') {
+              try {
+                console.log(response.data.permit + 'permit')
+                if (!response.data.permit) {
+                  throw new Error(response.data.message)
+                } else {
+                  Toast({
+                    message: response.data.message,
+                    position: 'middle',
+                    duration: 1000
+                  })
+                  this.$router.push({name: 'me', params: { username: this.username }})
+                }
+              } catch (e) {
                 Toast({
-                  message: response.data,
-                  position: 'bottom',
-                  duration: 1000
-                })
-              } else if (response.data === '用户名密码不正确') {
-                Toast({
-                  message: response.data,
-                  position: 'bottom',
-                  duration: 1000
-                })
-                this.getCaptcha()
-              } else if (response.data === '用户名不存在') {
-                Toast({
-                  message: response.data,
-                  position: 'bottom',
-                  duration: 1000
-                })
-                this.getCaptcha()
-              } else if (response.data === '登录成功') {
-                Toast({
-                  message: response.data,
+                  message: e.message,
                   position: 'middle',
                   duration: 1000
                 })
-                this.$router.push({name: 'me', params: { username: this.username }})
               }
             } else {
               Toast({
                 message: '登录失败',
-                position: 'bottom',
-                duration: 1000
-              })
-            }
-          }).catch((error) => {
-            if (error) {
-              console.log(error)
-              Toast({
-                message: '登录失败',
-                position: 'bottom',
+                position: 'middle',
                 duration: 1000
               })
             }
@@ -149,8 +132,8 @@
         } else {
           Toast({
             message: '输入信息有误',
-            position: 'bottom',
-            duration: 1200
+            position: 'middle',
+            duration: 1000
           })
         }
       }

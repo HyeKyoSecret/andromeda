@@ -119,24 +119,24 @@ router.post('/login', (req, res) => {
     let password = req.body.password
     User.findOne({username: username}, (err, user) => {
       if (err) {
-        res.send(false)
+        res.send({permit: false, message: '服务器忙，请稍后再试'})
       } else {
         if (user) {
           if (user.password === md5(password)) {
             req.session.user = user.username
             res.cookie('And', {user: user.username}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 14), httpOnly: true })
-            res.send('登录成功')
+            res.send({permit: true, message: '登录成功'})
           } else {
-            res.send('用户名密码不正确')
+            res.send({permit: false, message: '用户名密码不正确'})
           }
         } else {
-          res.send('用户名不存在')
+          res.send({permit: false, message: '用户名不存在'})
         }
       }
     })
   } else {
     // 验证码错误
-    res.send('验证码错误')
+    res.send({permit: false, message: '验证码错误'})
   }
 })
 router.get('/checkLogin', (req, res) => {

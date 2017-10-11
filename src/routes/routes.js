@@ -19,6 +19,7 @@ export default [
       {
         path: 'message',
         component: resolve => require(['../pages/me/message.vue'], resolve),
+        meta: { requiresAuth: true },
         children: [
           {
             path: 'words',

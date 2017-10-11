@@ -22,7 +22,7 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     // this route requires auth, check if logged in
     // if not, redirect to login page.
-    Axios.get('/checkLogin')
+    Axios.get('/checkLogin')    // 构建登录拦截
       .then((response) => {
         if (!response.data.login) {
           next({
@@ -39,12 +39,12 @@ router.beforeEach((to, from, next) => {
   } else {       // 为不需要登录Auth的页面写入session
     // Axios.get('/checkLogin')
     //   .then((response) => {
-    //     next() // 确保一定要调用 next()
+    //      next()
     //   })
     //   .catch((err) => {
     //     console.log(err)
     //   })
-    next()
+    next() // 确保一定要调用 next()
   }
 })
 /* eslint-disable */

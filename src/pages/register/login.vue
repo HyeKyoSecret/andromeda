@@ -105,6 +105,7 @@
               try {
                 console.log(response.data.permit + 'permit')
                 if (!response.data.permit) {
+                  this.getCaptcha()
                   throw new Error(response.data.message)
                 } else {
                   Toast({
@@ -115,6 +116,7 @@
                   this.$router.push({name: 'me', params: { username: this.username }})
                 }
               } catch (e) {
+                this.getCaptcha()
                 Toast({
                   message: e.message,
                   position: 'middle',
@@ -122,6 +124,7 @@
                 })
               }
             } else {
+              this.getCaptcha()
               Toast({
                 message: '登录失败',
                 position: 'middle',
@@ -130,6 +133,7 @@
             }
           })
         } else {
+          this.getCaptcha()
           Toast({
             message: '输入信息有误',
             position: 'middle',

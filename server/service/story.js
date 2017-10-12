@@ -45,45 +45,71 @@ router.post('/story/buildStory', (req, res) => {
             console.log(err)
           } else {
             if (root) {    // 前驱结点是根节点
-              if (root.lc) {
+              console.log('前驱结点是根节点')
+              if (root.lc) {   // 根节点非空
+                console.log('根节点lc指向' + 'aaa' + root.lc)
+                console.log('开始查找根节点的lc')
                 Story.find({_id: root.lc})
                   .exec((err, story) => {
                     if (err) {
                       console.log(err)
                     } else {
                       if (story) {
+                        console.log('找到根节点的lc')
                         let p = story.rb
-                        let writeFun = function () {
-                          Story.find({_id: p}, (error, nStory) => {
-                            if (error) {
-                              console.log(error)
-                            } else {
-                              p = nStory.rb
-                              console.log(p.toString())
-                              /* eslint-disable */
-                              while (p) {
-                                writeFun()
+                        console.log('p结点赋值' + p)
+
+                        let changeP = function() {
+                          return new Promise(function (resolve, reject) {
+                            Story.find({_id: p}, (error, nStory) => {
+                              if (error) {
+                                console.log(error)
+                              } else {
+                                p = nStory.rb
+                                if (!p) {
+                                  console.log('p已置空')
+                                  p = doc._id
+                                  console.log('p的新值' + doc._id)
+                                  nStory.save((err3) => {
+                                    if (err3) {
+                                      console.log(err3)
+                                    }else{
+                                      console.log('写入成功')
+                                      res.send('okhahha')
+                                    }
+                                  })
+                                }
+                                resolve(p)
+                                reject('error+++++!!')
                               }
-                              /* eslint-enable */
-                            }
+                            })
                           })
                         }
-                        if (!p) {
-                          writeFun()
-                          p = doc._id
-                          story.save((err) => {
-                            console.log(err)
-                          })
-                        } else {
-                          p = doc._id
-                          story.save((err) => {
-                            console.log(err)
-                          })
+
+                        let search = async function() {
+                          // while (p) {
+                          //   console.log('fffff' + await changeP())
+                          // }
+                          // if (!p) {
+                          //   p = doc._id
+                          //   story.save((err4) => {
+                          //     if (err4) {
+                          //       console.log(err4)
+                          //     }
+                          //   })
+                          // }
+                          console.log('search'+ p)
                         }
+
+                        search()
+
+                      } else {
+                        console.log('根节点的lc故事出错')
                       }
                     }
                   })
               } else {
+                console.log('根节点的lc为空')
                 root.lc = doc._id
                 root.save((err) => {
                   console.log(err)

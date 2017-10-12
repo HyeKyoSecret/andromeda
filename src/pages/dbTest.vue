@@ -1,5 +1,13 @@
 <template>
   <div class="dbTest">
+    <div class="notice">
+      <span class="icon">
+        <img src="../img/icon/back.png">
+      </span>
+      <span class="title">
+        我的消息
+      </span>
+    </div>
     <div>已存在的根故事:
       <span v-for="item in rootStoryName">
        {{item}}
@@ -24,6 +32,10 @@
       <label>结点名称：<input type="text" v-model="nodeName"></label>
       <button @click="buildStory">创建故事</button>
     </div>
+    <!--<div class="qq">-->
+      <!--<div class="one">1</div>-->
+      <!--<div class="two">2</div>-->
+    <!--</div>-->
   </div>
 </template>
 <script>
@@ -74,10 +86,30 @@
   }
 </script>
 <style lang='scss' scoped>
+  @import "../scss/config";
   .dbTest {
-    margin-left: 40px;
-    margin-top: 30px;
+    /*margin-left: 40px;*/
+    /*margin-top: 30px;*/
     font-size: 14px;
+    .notice {
+      background: $main-color;
+      height: 42px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      span{
+        text-align: center;
+        font-size: 16px;
+      }
+      img {
+        position: absolute;
+        top: 10px;
+        left: 11px;
+        width: 12px;
+        height: 20px;
+      }
+    }
     .rootStory {
       margin-top: 15px;
       border: 2px solid green;
@@ -90,4 +122,29 @@
       margin-top: 15px;
     }
   }
+/*  .qq {
+    width: 100%;
+    height: 100px;
+    background: yellow;
+    !*display: flex;*!
+    !*justify-content: center;*!
+    div {
+      height: 70px;
+      background: green;
+      !*display: inline-block;*!
+    }
+    .one {
+      width: 50px;
+      position: relative;
+      left: 50%;
+      margin-left: -25px;
+    }
+    .two {
+      width: 70px;
+      background: gray;
+      position: absolute;
+      right: 50px;
+      margin-top: -70px;
+    }
+  }*/
 </style>

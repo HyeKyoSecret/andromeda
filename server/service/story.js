@@ -46,36 +46,36 @@ router.post('/story/buildStory', (req, res) => {
           } else {
             if (root) {    // 前驱结点是根节点
               console.log('前驱结点是根节点')
-              if (root.lc) {   // 根节点非空
-                console.log('根节点lc指向' + 'aaa' + root.lc)
-                console.log('开始查找根节点的lc')
-                Story.find({_id: root.lc})
+              if (root.lc) {   // 根节点lc非空
+                console.log('根节点的 lc 非空')
+                console.log('根节点 lc 指向' + root.lc)
+                console.log('开始查找根节点的lc指向的故事')
+                Story.findOne({_id: root.lc})
                   .exec((err, story) => {
                     if (err) {
                       console.log(err)
                     } else {
                       if (story) {
-                        console.log('找到根节点的lc')
+                        console.log('找到根节点的lc所指向的故事')
                         let p = story.rb
-                        console.log('p结点赋值' + p)
+                        console.log('p结点赋值，story.rb' + p)
 
-                        let changeP = function() {
+                        let changeP = function () {
                           return new Promise(function (resolve, reject) {
-                            Story.find({_id: p}, (error, nStory) => {
+                            Story.findOne({_id: p}, (error, nStory) => {
                               if (error) {
                                 console.log(error)
                               } else {
                                 p = nStory.rb
                                 if (!p) {
                                   console.log('p已置空')
-                                  p = doc._id
+                                  nStory.rb = doc._id
                                   console.log('p的新值' + doc._id)
                                   nStory.save((err3) => {
                                     if (err3) {
                                       console.log(err3)
-                                    }else{
+                                    } else {
                                       console.log('写入成功')
-                                      res.send('okhahha')
                                     }
                                   })
                                 }
@@ -86,23 +86,29 @@ router.post('/story/buildStory', (req, res) => {
                           })
                         }
 
-                        let search = async function() {
-                          // while (p) {
-                          //   console.log('fffff' + await changeP())
-                          // }
-                          // if (!p) {
-                          //   p = doc._id
-                          //   story.save((err4) => {
-                          //     if (err4) {
-                          //       console.log(err4)
-                          //     }
-                          //   })
-                          // }
-                          console.log('search'+ p)
+                        let search = async function () {
+                          while (p) {
+                            p = await changeP()
+                            console.log('循环中的p' + p)
+                          }
+                          if (!p) {
+                            console.log('检测到p为空，即表明该节点的右指针为空')
+                            story.rb = doc._id
+                            console.log('story.rb' + story.rb)
+                            story.content = '我要的更新'
+                            story.save((err4) => {
+                              if (err4) {
+                                console.log(err4 + '保存失败')
+                              }
+                            })
+                            console.log(story + '12345689')
+                          }
                         }
 
-                        search()
-
+                        search().catch((err) => {
+                          'use strict'
+                          console.log('执行出现了错误' + err)
+                        })
                       } else {
                         console.log('根节点的lc故事出错')
                       }

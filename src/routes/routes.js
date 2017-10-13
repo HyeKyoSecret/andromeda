@@ -66,6 +66,22 @@ export default [
     component: resolve => require(['../pages/test.vue'], resolve)
   },
   {
+    path: '/build_story',         // 创建新故事
+    component: resolve => require(['../pages/stories/buildStory.vue'], resolve)
+  },
+  {
+    path: '/build_story2',         // 创建新故事第二步
+    component: resolve => require(['../pages/stories/buildStory2.vue'], resolve)
+  },
+  {
+    path: '/build_story3',         // 创建新故事第三步
+    component: resolve => require(['../pages/stories/buildStory3.vue'], resolve)
+  },
+  {
+    path: '/readStory',         // 阅读
+    component: resolve => require(['../pages/stories/readStory.vue'], resolve)
+  },
+  {
     path: '*',
     component: resolve => require(['../pages/error.vue'], resolve)
   }

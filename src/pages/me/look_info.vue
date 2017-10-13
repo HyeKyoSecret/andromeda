@@ -54,19 +54,6 @@
       <div class="delete-friend">
         删除好友
       </div>
-      <div class="foot-menu">
-        <div class="button">
-          <img src="../../img/icon/foot_begin.png">
-          <div>开始</div>
-        </div>
-        <div class="discovery">
-          <img src="../../img/icon/foot_discovery.png">
-        </div>
-        <div class="button">
-          <img src="../../img/icon/foot_me.png">
-          <div>我</div>
-        </div>
-      </div>
       <foot-menu></foot-menu>
     </div>
   </div>

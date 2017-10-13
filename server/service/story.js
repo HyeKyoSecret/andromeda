@@ -43,6 +43,7 @@ router.post('/story/buildStory', (req, res) => {
         .exec((errRoot, root) => {
           if (errRoot) {
             console.log(errRoot)
+            res.send('error')
           } else {
             if (root) {    // 前驱结点是根节点
               console.log('前驱结点是根节点')
@@ -54,6 +55,7 @@ router.post('/story/buildStory', (req, res) => {
                   .exec((err, story) => {
                     if (err) {
                       console.log(err)
+                      res.send('error')
                     } else {
                       if (story) {
                         console.log('找到根节点的lc所指向的故事')
@@ -76,6 +78,7 @@ router.post('/story/buildStory', (req, res) => {
                                       console.log(err3)
                                     } else {
                                       console.log('写入成功')
+                                      res.send('ok')
                                     }
                                   })
                                 }
@@ -95,22 +98,24 @@ router.post('/story/buildStory', (req, res) => {
                             console.log('检测到p为空，即表明该节点的右指针为空')
                             story.rb = doc._id
                             console.log('story.rb' + story.rb)
-                            story.content = '我要的更新'
                             story.save((err4) => {
                               if (err4) {
                                 console.log(err4 + '保存失败')
+                                res.send('error')
                               }
                             })
-                            console.log(story + '12345689')
+                            res.send('ok')
                           }
                         }
 
                         search().catch((err) => {
                           'use strict'
                           console.log('执行出现了错误' + err)
+                          res.send('error')
                         })
                       } else {
                         console.log('根节点的lc故事出错')
+                        res.send('error')
                       }
                     }
                   })
@@ -119,6 +124,7 @@ router.post('/story/buildStory', (req, res) => {
                 root.lc = doc._id
                 root.save((err) => {
                   console.log(err)
+                  res.send('ok')
                 })
               }
             } else {      // 前趋结点不是根节点
@@ -128,6 +134,7 @@ router.post('/story/buildStory', (req, res) => {
                   'use strict'
                   if (err) {
                     console.log(err)
+                    res.send('error')
                   } else {
                     if (odstory) {    // 前驱结点是普通故事结点
                       console.log('前驱结点是普通故事结点')
@@ -139,6 +146,7 @@ router.post('/story/buildStory', (req, res) => {
                           .exec((err, story) => {
                             if (err) {
                               console.log(err)
+                              res.send('error')
                             } else {
                               if (story) {
                                 console.log('找到故事结点的lc所指向的故事')
@@ -179,22 +187,25 @@ router.post('/story/buildStory', (req, res) => {
                                     console.log('检测到p为空，即表明该节点的右指针为空')
                                     story.rb = doc._id
                                     console.log('story.rb' + story.rb)
-                                    story.content = '我要的更新'
                                     story.save((err4) => {
                                       if (err4) {
                                         console.log(err4 + '保存失败')
+                                        res.send('error')
                                       }
                                     })
                                     console.log(story + '12345689')
+                                    res.send('ok')
                                   }
                                 }
 
                                 search().catch((err) => {
                                   'use strict'
                                   console.log('执行出现了错误' + err)
+                                  res.send('error')
                                 })
                               } else {
                                 console.log('普通故事结点的lc故事出错')
+                                res.send('error')
                               }
                             }
                           })
@@ -202,7 +213,12 @@ router.post('/story/buildStory', (req, res) => {
                         console.log('普通故事结点的lc为空')
                         odstory.lc = doc._id
                         odstory.save((err) => {
-                          console.log(err)
+                          if (err) {
+                            console.log(err)
+                            res.send('error')
+                          } else {
+                            res.send('ok')
+                          }
                         })
                       }
                     }

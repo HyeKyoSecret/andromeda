@@ -40,9 +40,9 @@
       flex: 2;
       div{
         width: 86px;
-        height: 86px;
+        height: 43px;
         background: white;
-        border-radius: 1000px;
+        border-radius: 1000px 1000px 0 0;
         position: absolute;
         top: -24px;
         left: 50%;

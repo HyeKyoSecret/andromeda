@@ -99,7 +99,5 @@
       width: 80%;
       margin: 30px auto 0 auto;
     }
-
-
   }
   </style>

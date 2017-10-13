@@ -21,12 +21,43 @@
     <div class="related-info">
       <div class="anchor"><img src="../../img/icon/anchor.png" /></div>
       <div class="author-info">
-        <div>
+        <div class="like">
           <span class="author-name">作者:林克</span>
           <span class="like"><img src="../../img/icon/redheart.png" /></span>
         </div>
         <div class="time">2017.10.14 19:37</div>
       </div>
+    </div>
+    <div class="read-foot-menu">
+      <div class="button">
+        <img src="../../img/icon/yellowthumb.png" />
+        <div>赞</div>
+        <!--<div>10</div>-->
+      </div>
+      <div class="button">
+        <img src="../../img/icon/yellowstar.png" />
+        <div>订阅</div>
+      </div>
+      <div class="write-continue">
+        <div><img src="../../img/icon/writecontinue.png" /></div>
+      </div>
+      <div class="button">
+        <img src="../../img/icon/yellowcomment.png" />
+        <div>评论</div>
+      </div>
+      <div class="button">
+        <img src="../../img/icon/yellowjump.png" />
+        <div>智能跳转</div>
+      </div>
+    </div>
+    <div class="jump-menu">
+      <div class="button">刚才阅读</div>
+      <div class="button">最浅未读</div>
+      <div class="button">最深以读</div>
+      <div class="button">开头</div>
+      <div class="button">锚定节点</div>
+      <div class="button">热门节点</div>
+      <div class="button">书签</div>
     </div>
   </div>
 </template>
@@ -67,9 +98,109 @@
       margin: 50px 10px 0 10px;
       font-size: 16px;
       height: 380px;
+      color: $font-dark;
     }
     .related-info {
       display: flex;
+      margin-top: 5px;
+      justify-content: space-between;
+      .anchor {
+        flex: 2;
+        margin-left: 5%;
+        img {
+          height: 50px;
+          width: 50px;
+        }
+      }
+      .author-info {
+        flex: 1;
+        margin-right: 10px;
+        .like {
+          display: flex;
+          align-items: center;
+          span {
+            img {
+              height: 25px;
+              width: 25px;
+              margin-left: 5px;
+            }
+            color: $font-gray;
+            font-size: 16px;
+            text-align: right;
+          }
+
+        }
+        .time {
+          font-size: 12px;
+          color: $font-gray;
+          margin-top: 5px;
+        }
+
+      }
+    }
+    .read-foot-menu {
+      width: 100%;
+      height: 48px;
+      background: white;
+      position: absolute;
+      bottom: 0;
+      display: flex;
+      color: $menu-color;
+      .button {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        text-align: center;
+        img {
+          margin: 4px auto 0 auto;
+          width: 23px;
+          height: 23px;
+        }
+        font-size: 12px;
+      }
+      .write-continue {
+        flex: 2;
+        div {
+          width: 86px;
+          height: 43px;
+          background: white;
+          border-radius: 1000px 1000px 0 0 ;
+          position: absolute;
+          top: -24px;
+          left: 50%;
+          margin-left: -43px;
+        }
+        img {
+          position: absolute;
+          left: 50%;
+          top: 8px;
+          width: 65px;
+          height: 57px;
+          margin-left: -40px;
+        }
+      }
+    }
+    .jump-menu {
+      position: absolute;
+      top: 120px;
+      left: 50%;
+      width: 240px;
+      background-color: white;
+      margin-left: -120px;
+      border-radius: 6px;
+      color: $font-dark;
+      .button {
+        text-align: center;
+        font-size: 18px;
+        height: 45px;
+        line-height: 45px;
+        border-bottom: 1px solid $border-gray;
+        &:last-child {
+          border:  none;
+        }
+      }
+
     }
   }
   </style>

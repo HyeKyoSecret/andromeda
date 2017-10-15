@@ -188,14 +188,16 @@
       width: 240px;
       background-color: white;
       margin-left: -120px;
-      border-radius: 6px;
+      border-radius: 8px;
       color: $font-dark;
+      border: 1px solid $border-gray;
       .button {
         text-align: center;
         font-size: 18px;
         height: 45px;
         line-height: 45px;
-        border-bottom: 1px solid $border-gray;
+
+        border-bottom: 1px solid $line-gray;
         &:last-child {
           border:  none;
         }

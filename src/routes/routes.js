@@ -82,6 +82,10 @@ export default [
     component: resolve => require(['../pages/stories/readStory.vue'], resolve)
   },
   {
+    path: '/buildStoryRecommend',         // 阅读
+    component: resolve => require(['../pages/stories/buildStoryRecommend.vue'], resolve)
+  },
+  {
     path: '*',
     component: resolve => require(['../pages/error.vue'], resolve)
   }

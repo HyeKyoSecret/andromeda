@@ -86,6 +86,10 @@ export default [
     component: resolve => require(['../pages/stories/buildStoryRecommend.vue'], resolve)
   },
   {
+    path: '/discover',
+    component: resolve => require(['../pages/discover/discover.vue'], resolve)
+  },
+  {
     path: '*',
     component: resolve => require(['../pages/error.vue'], resolve)
   }

@@ -106,7 +106,9 @@
       justify-content: space-between;
       .anchor {
         flex: 2;
+        flex-grow: 0;
         margin-left: 5%;
+        width: 100px;
         img {
           height: 50px;
           width: 50px;
@@ -114,11 +116,10 @@
       }
       .author-info {
         flex: 1;
-        margin-right: 10px;
+        text-align: right;
+        margin-right: 15px;
         .like {
-          display: flex;
-          align-items: center;
-          span {
+          span{
             img {
               height: 25px;
               width: 25px;
@@ -134,6 +135,7 @@
           font-size: 12px;
           color: $font-gray;
           margin-top: 5px;
+          margin-right: 15px;
         }
 
       }

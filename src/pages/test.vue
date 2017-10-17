@@ -1,6 +1,8 @@
 <template>
   <div class="finger-demo">
     <p @click="test">helloworld</p>
+    <div class="flex-test">
+    </div>
   </div>
 </template>
 <script>
@@ -39,7 +41,5 @@
     }
   }
 </script>
-<style>
-  .finger-demo{width:100%;text-align:center;}
-  .finger-demo-img{width:80%;}
+<style lang="scss" scoped>
 </style>

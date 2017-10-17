@@ -53,7 +53,7 @@
         left: 50%;
         top: 12px;
         width: 55px;
-        height: 41px;
+        height: 45px;
         margin-left: -30px; // 图标多补1px
       }
     }

@@ -162,12 +162,10 @@
               height: 15px;
               width: 15px;
               margin-left: 5px;
+              vertical-align: text-bottom;
             }
             .number {
-              position: relative;
-              top: -5px;
               margin-left: 3px;
-              vertical-align: middle;
               color: $font-dark;
               font-size: 12px;
             }
@@ -204,6 +202,7 @@
           color: $font-gray;
           font-size: 12px;
           flex:1;
+          margin-top: 5px;
         }
         .author-info {
           text-align: right;

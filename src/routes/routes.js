@@ -90,6 +90,10 @@ export default [
     component: resolve => require(['../pages/discover/discover.vue'], resolve)
   },
   {
+    path: '/subscribe',
+    component: resolve => require(['../pages/book/subscribe.vue'], resolve)
+  },
+  {
     path: '*',
     component: resolve => require(['../pages/error.vue'], resolve)
   }

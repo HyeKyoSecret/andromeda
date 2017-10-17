@@ -5,19 +5,35 @@ const express = require('express')
 const Root = require('../db/StoryRoot')
 const Story = require('../db/Story')
 const router = express.Router()
+// router.post('/story/buildRoot', (req, res) => {
+//   let rootName = req.body.rootName
+//   let rootStory = {
+//     name: rootName
+//   }
+//   let newRoot = new Root(rootStory)
+//   newRoot.save((err) => {
+//     if (err) {
+//       console.log(err)
+//     } else {
+//       res.send('ok')
+//     }
+//   })
+// })
 router.post('/story/buildRoot', (req, res) => {
   let rootName = req.body.rootName
-  let rootStory = {
-    name: rootName
-  }
-  let newRoot = new Root(rootStory)
-  newRoot.save((err) => {
-    if (err) {
-      console.log(err)
-    } else {
-      res.send('ok')
-    }
-  })
+  console.log(rootName)
+  res.send('ok')
+  // let rootStory = {
+  //   name: rootName
+  // }
+  // let newRoot = new Root(rootStory)
+  // newRoot.save((err) => {
+  //   if (err) {
+  //     console.log(err)
+  //   } else {
+  //     res.send('ok')
+  //   }
+  // })
 })
 router.get('/story/getRootStory', (req, res) => {
   Root.find({}, (err, doc) => {
@@ -230,5 +246,20 @@ router.post('/story/buildStory', (req, res) => {
     }
   })
 })
-
+router.get('/checkRootName', (req, res) => {
+  'use strict'
+  let name = req.query.name
+  Root.findOne({name: name}, (err, root) => {
+    if (err) {
+      console.log(err)
+      res.send(err.message)
+    } else {
+      if (root) {
+        res.send('exist')
+      } else {
+        res.send('ok')
+      }
+    }
+  })
+})
 module.exports = router

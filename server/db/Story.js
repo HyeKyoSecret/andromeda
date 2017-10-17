@@ -16,6 +16,11 @@ const StroySchema = new Schema({
     type: Schema.Types.ObjectId,
     default: null,
     ref: 'Story'
+  },
+  author: Schema.Types.ObjectId,
+  writeOpen: {
+    type: Boolean,
+    default: false
   }
 })
 const Story = mongoose.model('Story', StroySchema)

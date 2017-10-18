@@ -98,6 +98,10 @@ export default [
     component: resolve => require(['../pages/start/start.vue'], resolve)
   },
   {
+    path: '/myCreation',
+    component: resolve => require(['../pages/stories/myCreation.vue'], resolve)
+  },
+  {
     path: '*',
     component: resolve => require(['../pages/error.vue'], resolve)
   }

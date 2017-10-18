@@ -35,7 +35,7 @@
         </div>
         <div class="right-part">
           <div class="story-name">塞尔达传说</div>
-          <div class="story-content">是非成败转头空，青山依旧在，惯看秋月春风。一壶浊酒喜相逢，古今多少事，滚滚败转头空相逢，古今多少事，滚滚败转头空……</div>
+          <div class="story-content">是非成败转头空，青山依旧在，惯看秋月春风。一壶浊酒喜相逢，古今多少事，滚滚败转头空相逢，一壶浊酒喜相逢，古今多少事，滚滚败转头空相逢古今多少事，滚滚败转头空……</div>
         </div>
       </div>
       <div class="assist-info">

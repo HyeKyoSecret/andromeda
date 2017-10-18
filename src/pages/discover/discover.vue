@@ -48,8 +48,17 @@
         </div>
       </div>
     </div>
+    <foot-menu></foot-menu>
   </div>
 </template>
+<script>
+  import FootMenu from '../../components/foot-menu.vue'
+  export default {
+    components: {
+      FootMenu
+    }
+  }
+</script>
 <style lang='scss' scoped>
   @import "../../scss/style.css";
   @import "../../scss/config";
@@ -71,12 +80,17 @@
         text-align: center;
         font-size: 16px;
       }
-      img {
+      .icon {
         position: absolute;
-        top: 10px;
-        left: 11px;
-        width: 12px;
-        height: 20px;
+        left: 8px;
+        display: inline-block;
+        height: 42px;
+        width: 30px;
+        line-height: 50px;
+        img {
+          width: 12px;
+          height: 20px;
+      }
       }
     }
     .button-bar {

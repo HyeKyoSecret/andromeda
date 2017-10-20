@@ -6,6 +6,11 @@ const Schema = mongoose.Schema
 const StroyRootSchema = new Schema({
   date: { type: Date, default: Date.now },
   name: String,
+  content: String,
+  author: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  },
   lc: {
     type: Schema.Types.ObjectId,
     default: null,

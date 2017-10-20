@@ -4,6 +4,7 @@
 const express = require('express')
 const Root = require('../db/StoryRoot')
 const Story = require('../db/Story')
+const User = require('../db/User')
 const router = express.Router()
 // router.post('/story/buildRoot', (req, res) => {
 //   let rootName = req.body.rootName
@@ -21,8 +22,46 @@ const router = express.Router()
 // })
 router.post('/story/buildRoot', (req, res) => {
   let rootName = req.body.rootName
-  console.log(rootName)
-  res.send('ok')
+  let rootContent = req.body.rootContent
+  let writePermit = req.body.writePermit
+  let author = req.session.user || req.cookies.And.user
+  if (author) {
+    let rootStory = {
+      name: rootName.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),
+      content: rootContent.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),
+      writeOpen: writePermit
+    }
+    User.findOne({username: author}, (err, user) => {
+      'use strict'
+      if (err) {
+        res.send({permit: false, message: '服务器忙，请稍后再试'})
+      } else {
+        rootStory.author = user._id
+        let newRoot = new Root(rootStory)
+        newRoot.save((err, root) => {
+          if (err) {
+            console.log(err)
+            res.send({permit: false, message: '服务器忙，请稍后再试'})
+          } else {
+            console.log('root' + user.myCreation.root)
+            console.log('root_id' + root._id)
+            user.myCreation.root.push(root._id)
+            user.save((error) => {
+              if (error) {
+                console.log(error)
+                res.send({permit: false, message: '服务器忙，请稍后再试'})
+              } else {
+                res.send({permit: true, message: '发布成功'})
+              }
+            })
+          }
+        })
+      }
+    })
+  } else {
+    res.send({permit: false, message: '没有权限操作'})
+  }
+  // let
   // let rootStory = {
   //   name: rootName
   // }

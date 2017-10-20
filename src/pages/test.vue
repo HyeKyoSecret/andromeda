@@ -1,6 +1,6 @@
 <template>
   <div class="finger-demo">
-    <p @click="test">helloworld</p>
+    <p @click="og">helloworld</p>
     <button @click="go(1)">show</button>
     <div class="test" v-show="showMe1">
       0423904739493472937423894792347392743
@@ -38,6 +38,14 @@
       }
     },
     methods: {
+      og () {
+        let hello = {
+          a: 1,
+          b: 2
+        }
+        hello.c = 3
+        console.log(hello)
+      },
       test () {
         let p = 0
         let sleep = function (time) {

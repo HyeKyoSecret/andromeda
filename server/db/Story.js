@@ -3,7 +3,7 @@
  */
 const mongoose = require('./mongoose')
 const Schema = mongoose.Schema
-const StroySchema = new Schema({
+const StorySchema = new Schema({
   date: { type: Date, default: Date.now },
   name: String,
   content: String,
@@ -17,11 +17,14 @@ const StroySchema = new Schema({
     default: null,
     ref: 'Story'
   },
-  author: Schema.Types.ObjectId,
+  author: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  },
   writeOpen: {
     type: Boolean,
     default: false
   }
 })
-const Story = mongoose.model('Story', StroySchema)
+const Story = mongoose.model('Story', StorySchema)
 module.exports = Story

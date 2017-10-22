@@ -106,6 +106,14 @@ export default [
     component: resolve => require(['../pages/stories/myCreationNode.vue'], resolve)
   },
   {
+    path: '/search',
+    component: resolve => require(['../pages/search/search.vue'], resolve)
+  },
+  {
+    path: '/marker',
+    component: resolve => require(['../pages/stories/marker.vue'], resolve)
+  },
+  {
     path: '*',
     component: resolve => require(['../pages/error.vue'], resolve)
   }

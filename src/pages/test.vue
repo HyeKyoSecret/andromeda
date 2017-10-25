@@ -1,23 +1,14 @@
 <template>
   <div class="finger-demo">
     <p @click="og">helloworld</p>
-    <button @click="go(1)">show</button>
-    <div class="test" v-show="showMe1">
-      0423904739493472937423894792347392743
-    </div>
-    <div class="img">
-      <img src="../img/photo/head.jpg" alt="">
-    </div>
-    <div>
-      abv{{qwert}}
-      <input type="text" v-model="qwert" style="border: 1px solid red">
-    </div>
-    <div>
-      改变后 {{afterChange}}
-    </div>
+    <!--<div id="debounce-search-demo">-->
+      <!--<input v-model="searchQuery" placeholder="Type something">-->
+      <!--<strong>{{ searchIndicator }}</strong>-->
+    <!--</div>-->
   </div>
 </template>
 <script>
+  import debounce from '../js/throttle.js'
   export default {
     data () {
       return {
@@ -29,22 +20,18 @@
         message: '真的有错误',
         details: '',
         showMe1: false,
-        qwert: ''
-      }
-    },
-    computed: {
-      afterChange: function () {
-        return this.qwert.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt')
+        qwert: '',
+        searchQuery: '',
+        searchQueryIsDirty: false,
+        isCalculating: false
       }
     },
     methods: {
-      og () {
-        let hello = {
-          a: 1,
-          b: 2
-        }
-        hello.c = 3
-        console.log(hello)
+      og: function () {
+        debounce('hehe')()
+      },
+      ogHundle () {
+        console.log('uuuuu')
       },
       test () {
         let p = 0

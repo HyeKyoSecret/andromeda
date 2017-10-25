@@ -6,14 +6,17 @@
   </div>
 </template>
 <script>
-  import FastClick from 'fastclick'
+  // import FastClick from 'fastclick'
   export default {
-    name: 'app',
-    created: function () {
+    name: 'app'
+    /*
+    ,
+     created: function () {
       document.addEventListener('DOMContentLoaded', function () {
         FastClick.attach(document.body)
       }, false)
     }
+    */
   }
 </script>
 <style lang="scss">

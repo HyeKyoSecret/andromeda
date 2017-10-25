@@ -301,7 +301,6 @@
 <script>
   import Axios from 'axios'
   import { Toast } from 'mint-ui'
-  import debounce from '../../js/throttle.js'
   export default {
     data () {
       return {
@@ -348,8 +347,8 @@
           this.rootNameError = '故事名不能为空'
           return 0
         }
-        if (this.rootName.length > 10) {
-          this.rootNameError = '用户名最多为十个字符'
+        if (this.rootName.length > 12) {
+          this.rootNameError = '用户名最多为12个字符'
           return 0
         }
         Axios.get('/checkRootName', {
@@ -371,49 +370,34 @@
         })
       },
       buildRoot () {
-        debounce(this.buildUp, 200, false)
-      },
-      buildUp () {
-//        if (this.rootContent) {
-//          if (this.rootContent.length > 180) {
-//            Toast({
-//              message: `您已超过最大字数${this.rootContent.length - 180}字`,
-//              position: 'middle',
-//              duration: 1000
-//            })
-//          } else {
-//            Axios.post('/story/buildRoot', {
-//              rootName: this.rootName,
-//              rootContent: this.rootContent,
-//              writePermit: this.writePermit
-//            }).then((response) => {
-//              Toast({
-//                message: response.data.message,
-//                position: 'middle',
-//                duration: 1000
-//              })
-//              // 发布成功的处理
-//            })
-//          }
-//        } else {
-//          Toast({
-//            message: '内容不能为空',
-//            position: 'middle',
-//            duration: 1000
-//          })
-//        }
-        Axios.post('/story/buildRoot', {
-          rootName: this.rootName,
-          rootContent: this.rootContent,
-          writePermit: this.writePermit
-        }).then((response) => {
+        if (this.rootContent) {
+          if (this.rootContent.length > 180) {
+            Toast({
+              message: `您已超过最大字数${this.rootContent.length - 180}字`,
+              position: 'middle',
+              duration: 1000
+            })
+          } else {
+            Axios.post('/story/buildRoot', {
+              rootName: this.rootName,
+              rootContent: this.rootContent,
+              writePermit: this.writePermit
+            }).then((response) => {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+              // 发布成功的处理
+            })
+          }
+        } else {
           Toast({
-            message: response.data.message,
+            message: '内容不能为空',
             position: 'middle',
             duration: 1000
           })
-          // 发布成功的处理
-        })
+        }
       }
     }
   }

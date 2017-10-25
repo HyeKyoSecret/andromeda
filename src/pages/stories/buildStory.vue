@@ -5,12 +5,16 @@
       <span class="icon">
         <img src="../../img/icon/back.png">
       </span>
-      <span class="title">
+      <span class="title" @click="test1">
         输入故事名字
       </span>
-      <span class="next-step" @click="storyRoute(2)">
+      <span class="fake-next-step" v-if='!rootNameCheck'>
         下一步
       </span>
+      <span class="next-step" @click="storyRoute(2)" v-else>
+        下一步
+      </span>
+      <span>{{rootNameCheck}}</span>
       </div>
       <div class="input-name">
         <div class="input" ><input type="text" placeholder="请输入故事名字" v-model="rootName"></div>
@@ -95,6 +99,16 @@
           font-size: 16px;
         }
         .next-step {
+          position: absolute;
+          right: 11px;
+          font-size: 14px;
+          display: inline-block;
+          height: 42px;
+          width: 50px;
+          line-height: 42px;
+        }
+        .fake-next-step {
+          color: $font-color;
           position: absolute;
           right: 11px;
           font-size: 14px;
@@ -300,6 +314,7 @@
 </style>
 <script>
   import Axios from 'axios'
+  import Debounce from '../../js/throttle.js'
   import { Toast } from 'mint-ui'
   export default {
     data () {
@@ -309,6 +324,7 @@
         thirdStep: false,
         rootName: '',
         rootNameError: '',
+        rootNameCheck: false,
         rootContent: '',
         writePermit: true
       }
@@ -322,9 +338,26 @@
             duration: 1000
           })
         }
+      },
+      rootName: function () {
+        if (!this.rootName) {
+          this.rootNameError = '故事名不能为空'
+          this.rootNameCheck = false
+        } else {
+          if (this.rootName.length > 12) {
+            this.rootNameError = '故事名最多为12个字符'
+            this.rootNameCheck = false
+          } else {
+            this.rootNameError = ''
+            this.rootRepeatCheck()
+          }
+        }
       }
     },
     methods: {
+      test1 () {
+        console.log(this)
+      },
       storyRoute (param) {
         switch (param) {
           case 1:
@@ -342,15 +375,7 @@
             break
         }
       },
-      rootNameCheck () {
-        if (!this.rootName) {
-          this.rootNameError = '故事名不能为空'
-          return 0
-        }
-        if (this.rootName.length > 12) {
-          this.rootNameError = '用户名最多为12个字符'
-          return 0
-        }
+      rootRepeatCheck: Debounce(function () {
         Axios.get('/checkRootName', {
           params: {
             name: this.rootName
@@ -358,17 +383,17 @@
         }).then((response) => {
           if (response.data === 'exist') {
             this.rootNameError = '故事名已经存在'
-            return 0
+            this.rootNameCheck = false
           } else if (response.data === 'ok') {
-            this.firstStep = false
-            this.secondStep = true
-            this.thirdStep = false
+            this.rootNameError = ''
+            this.rootNameCheck = true
           }
         }).catch((err) => {
           console.log(err)
           this.rootNameError = '发生错误，请稍后再试'
+          this.rootNameCheck = false
         })
-      },
+      }, 500),
       buildRoot () {
         if (this.rootContent) {
           if (this.rootContent.length > 180) {

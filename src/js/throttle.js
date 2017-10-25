@@ -3,8 +3,8 @@
  */
 var debounce = function (action, delay) {
   var timer = null
-  var args = arguments
   return function () {
+    var args = arguments
     var self = this
     clearTimeout(timer)
     timer = setTimeout(function () {

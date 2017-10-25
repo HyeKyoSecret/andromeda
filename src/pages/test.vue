@@ -27,12 +27,10 @@
       }
     },
     methods: {
-      og: function () {
-        debounce('hehe')()
-      },
-      ogHundle () {
-        console.log('uuuuu')
-      },
+      og: debounce(function () {
+        console.log(this.message)
+        console.log('123')
+      }, 500),
       test () {
         let p = 0
         let sleep = function (time) {

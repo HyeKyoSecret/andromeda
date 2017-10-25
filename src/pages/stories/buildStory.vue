@@ -5,7 +5,7 @@
       <span class="icon">
         <img src="../../img/icon/back.png">
       </span>
-      <span class="title" @click="test1">
+      <span class="title">
         输入故事名字
       </span>
       <span class="fake-next-step" v-if='!rootNameCheck'>
@@ -14,7 +14,6 @@
       <span class="next-step" @click="storyRoute(2)" v-else>
         下一步
       </span>
-      <span>{{rootNameCheck}}</span>
       </div>
       <div class="input-name">
         <div class="input" ><input type="text" placeholder="请输入故事名字" v-model="rootName"></div>
@@ -55,7 +54,8 @@
       <span class="title">
         {{rootName}}
       </span>
-      <span class="commit" @click="buildRoot">发布</span>
+      <span class="fake-commit" v-if='!buildCheck'>发布</span>
+      <span class="commit" @click="buildRoot" v-else="">发布</span>
       </div>
       <div class="context">
         <textarea  name="context" placeholder="在这里书写您的故事" v-model="rootContent"></textarea>
@@ -261,6 +261,16 @@
           height: 42px;
           line-height: 42px;
         }
+        .fake-commit {
+          color: $font-color;
+          position: absolute;
+          right: 11px;
+          text-align: center;
+          font-size: 14px;
+          width: 45px;
+          height: 42px;
+          line-height: 42px;
+        }
         img {
           width: 12px;
           height: 20px;
@@ -326,17 +336,30 @@
         rootNameError: '',
         rootNameCheck: false,
         rootContent: '',
-        writePermit: true
+        writePermit: true,
+        buildCheck: false
       }
     },
     watch: {
       rootContent: function () {
-        if (this.rootContent.length > 180) {
+        if (!this.rootContent) {
+          this.buildCheckt = false
           Toast({
-            message: `您已超过最大字数${this.rootContent.length - 180}字`,
+            message: `内容不能为空`,
             position: 'middle',
             duration: 1000
           })
+        } else {
+          if (this.rootContent.length > 180) {
+            this.buildCheck = false
+            Toast({
+              message: `您已超过最大字数${this.rootContent.length - 180}字`,
+              position: 'middle',
+              duration: 1000
+            })
+          } else {
+            this.buildCheck = true
+          }
         }
       },
       rootName: function () {
@@ -355,9 +378,6 @@
       }
     },
     methods: {
-      test1 () {
-        console.log(this)
-      },
       storyRoute (param) {
         switch (param) {
           case 1:
@@ -366,7 +386,9 @@
             this.thirdStep = false
             break
           case 2:
-            this.rootNameCheck()
+            this.firstStep = false
+            this.secondStep = true
+            this.thirdStep = false
             break
           case 3:
             this.firstStep = false
@@ -395,34 +417,27 @@
         })
       }, 500),
       buildRoot () {
-        if (this.rootContent) {
-          if (this.rootContent.length > 180) {
-            Toast({
-              message: `您已超过最大字数${this.rootContent.length - 180}字`,
-              position: 'middle',
-              duration: 1000
-            })
-          } else {
-            Axios.post('/story/buildRoot', {
-              rootName: this.rootName,
-              rootContent: this.rootContent,
-              writePermit: this.writePermit
-            }).then((response) => {
-              Toast({
-                message: response.data.message,
-                position: 'middle',
-                duration: 1000
-              })
-              // 发布成功的处理
-            })
-          }
-        } else {
+        this.buildCheck = false
+        Axios.post('/story/buildRoot', {
+          rootName: this.rootName,
+          rootContent: this.rootContent,
+          writePermit: this.writePermit
+        }).then((response) => {
           Toast({
-            message: '内容不能为空',
+            message: response.data.message,
             position: 'middle',
             duration: 1000
           })
-        }
+          // 发布成功的处理
+        })
+        setTimeout(function () {      // 超时处理
+          this.buildCheck = true
+          Toast({
+            message: '发生错误，请稍后再试',
+            position: 'middle',
+            duration: 1000
+          })
+        }.bind(this), 3000)
       }
     }
   }

@@ -66,8 +66,9 @@ export default [
     component: resolve => require(['../pages/test.vue'], resolve)
   },
   {
-    path: '/build_story',         // 创建新故事
-    component: resolve => require(['../pages/stories/buildStory.vue'], resolve)
+    path: '/buildStory',         // 创建新故事
+    component: resolve => require(['../pages/stories/buildStory.vue'], resolve),
+    meta: { requiresAuth: true }
   },
   {
     path: '/build_story2',         // 创建新故事第二步
@@ -92,6 +93,18 @@ export default [
   {
     path: '/subscribe',
     component: resolve => require(['../pages/book/subscribe.vue'], resolve)
+  },
+  {
+    path: '/start',
+    component: resolve => require(['../pages/start/start.vue'], resolve)
+  },
+  {
+    path: '/myCreation',
+    component: resolve => require(['../pages/stories/myCreation.vue'], resolve)
+  },
+  {
+    path: '/myCreationNode',
+    component: resolve => require(['../pages/stories/myCreationNode.vue'], resolve)
   },
   {
     path: '*',

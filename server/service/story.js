@@ -4,18 +4,124 @@
 const express = require('express')
 const Root = require('../db/StoryRoot')
 const Story = require('../db/Story')
+const User = require('../db/User')
 const router = express.Router()
+// router.post('/story/buildRoot', (req, res) => {
+//   let rootName = req.body.rootName
+//   let rootStory = {
+//     name: rootName
+//   }
+//   let newRoot = new Root(rootStory)
+//   newRoot.save((err) => {
+//     if (err) {
+//       console.log(err)
+//     } else {
+//       res.send('ok')
+//     }
+//   })
+// })
 router.post('/story/buildRoot', (req, res) => {
   let rootName = req.body.rootName
-  let rootStory = {
-    name: rootName
+  let rootContent = req.body.rootContent
+  let writePermit = req.body.writePermit
+  let author = req.session.user || req.cookies.And.user
+  if (author) {
+    let rootStory = {
+      name: rootName.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),     // 过滤大于小于美元符号
+      content: rootContent.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),
+      writePermit: writePermit
+    }
+    User.findOne({username: author}, (err, user) => {
+      'use strict'
+      if (err) {
+        res.send({permit: false, message: '服务器忙，请稍后再试'})
+      } else {
+        rootStory.author = user._id
+        Root.findOne({name: rootStory.name})
+          .exec((err2, oldRoot) => {
+            if (err2) {
+              console.log(err2)
+            } else {
+              if (oldRoot) {
+                res.send({permit: false, message: '故事名重复'})
+              } else {
+                let newRoot = new Root(rootStory)
+                newRoot.save((err3, root) => {
+                  if (err3) {
+                    console.log(err3)
+                    res.send({permit: false, message: '服务器忙，请稍后再试'})
+                  } else {
+                    user.myCreation.root.push(root._id)
+                    user.save((error) => {
+                      if (error) {
+                        console.log(error)
+                        res.send({permit: false, message: '服务器忙，请稍后再试'})
+                      } else {
+                        user.myCreationDraft.root.name = ''
+                        user.myCreationDraft.root.content = ''
+                        user.myCreationDraft.root.writePermit = true
+                        user.save(saveError => {
+                          if (saveError) {
+                            res.send({permit: false, message: '服务器忙，请稍后再试'})
+                          } else {
+                            res.send({permit: true, message: '发布成功'})
+                          }
+                        })
+                      }
+                    })
+                  }
+                })
+              }
+            }
+          })
+      }
+    })
+  } else {
+    res.send({permit: false, message: '没有权限操作'})
   }
-  let newRoot = new Root(rootStory)
-  newRoot.save((err) => {
+})
+router.post('/story/saveDraft', (req, res) => {
+  'use strict'
+  let rootName = req.body.rootName
+  let rootContent = req.body.rootContent
+  let writePermit = req.body.writePermit
+  let author = req.session.user || req.cookies.And.user
+  if (author) {
+    User.findOne({username: author}, (err, user) => {
+      if (err) {
+        res.send({permit: false, message: '发生错误，请稍后再试'})
+      } else {
+        user.myCreationDraft.root.name = rootName
+        user.myCreationDraft.root.content = rootContent
+        user.myCreationDraft.root.writePermit = writePermit
+        user.save(error => {
+          if (error) {
+            res.send({permit: false, message: '发生错误，请稍后再试'})
+          } else {
+            res.send({permit: true})
+          }
+        })
+      }
+    })
+  } else {
+    res.send({permit: false, message: '没有权限操作'})
+  }
+})
+router.get('/story/getDraft', (req, res) => {
+  'use strict'
+  let author = req.session.user || req.cookies.And.user
+  User.findOne({username: author}, (err, user) => {
     if (err) {
-      console.log(err)
+      res.send({draft: false})
     } else {
-      res.send('ok')
+      if (user.myCreationDraft.root.name || user.myCreationDraft.root.content) {
+        res.send({
+          draft: true,
+          name: user.myCreationDraft.root.name,
+          content: user.myCreationDraft.root.content,
+          writePermit: user.myCreationDraft.root.writePermit
+        })
+      }
     }
   })
 })
@@ -230,5 +336,20 @@ router.post('/story/buildStory', (req, res) => {
     }
   })
 })
-
+router.get('/checkRootName', (req, res) => {
+  'use strict'
+  let name = req.query.name
+  Root.findOne({name: name}, (err, root) => {
+    if (err) {
+      console.log(err)
+      res.send(err.message)
+    } else {
+      if (root) {
+        res.send('exist')
+      } else {
+        res.send('ok')
+      }
+    }
+  })
+})
 module.exports = router

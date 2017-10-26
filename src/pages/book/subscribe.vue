@@ -72,7 +72,6 @@
   </div>
 </template>
 <style lang='scss' scoped>
-  @import "../../scss/style.css";
   @import "../../scss/config";
   .subscribe {
     position: absolute;

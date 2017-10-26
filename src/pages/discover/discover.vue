@@ -35,7 +35,7 @@
         </div>
         <div class="right-part">
           <div class="story-name">塞尔达传说</div>
-          <div class="story-content">是非成败转头空，青山依旧在，惯看秋月春风。一壶浊酒喜相逢，古今多少事，滚滚败转头空相逢，古今多少事，滚滚败转头空……</div>
+          <div class="story-content">是非成败转头空，青山依旧在，惯看秋月春风。一壶浊酒喜相逢，古今多少事，滚滚败转头空相逢，一壶浊酒喜相逢，古今多少事，滚滚败转头空相逢古今多少事，滚滚败转头空……</div>
         </div>
       </div>
       <div class="assist-info">
@@ -154,7 +154,7 @@
       }
     }
     .one-recommendation {
-      height: 140px;
+      height: 145px;
       width: 100%;
       background-color: white;
       margin-top: 25px;
@@ -166,9 +166,10 @@
         align-items:flex-start;
         .cover {
           margin-top: 10px;
+          flex: 1;
             img {
-              height: 80px;
-              width: 60px;
+              height: 88px;
+              width: 66px;
           }
           .book-number {
             height: 18px;
@@ -180,7 +181,7 @@
             }
             .number {
               margin-left: 3px;
-              color: $font-dark;
+              color: $font-gray;
               font-size: 12px;
             }
           }
@@ -188,6 +189,7 @@
         .right-part {
           margin-left: 10px;
           margin-top: 8px;
+          flex: 3;
           .story-name {
             color: $font-dark;
             font-size: 15px;
@@ -212,6 +214,7 @@
         align-items: center;
         margin-left: 10px;
         margin-right: 10px;
+        margin-top: 10px;
         .reason {
           color: $font-gray;
           font-size: 12px;

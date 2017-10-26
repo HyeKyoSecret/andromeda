@@ -11,6 +11,7 @@ const StroyRootSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User'
   },
+  writePermit: Boolean,
   lc: {
     type: Schema.Types.ObjectId,
     default: null,

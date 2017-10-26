@@ -2,7 +2,7 @@
   <div class="new-story">
     <div class="first-step" v-show="firstStep">
       <div class="notice">
-      <span class="icon">
+      <span class="icon" @click="leaveBuild">
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
@@ -304,13 +304,13 @@
           display: flex;
           align-items: center;
           .name {
-            flex: 3;
+            flex: 4;
             margin-left: 15px;
             font-size: 16px;
           }
           .switch {
             flex: 1;
-            margin-left: 15px;
+            margin-left: 18%;
           }
         }
         .tip {
@@ -325,7 +325,7 @@
 <script>
   import Axios from 'axios'
   import Debounce from '../../js/throttle.js'
-  import { Toast } from 'mint-ui'
+  import { MessageBox, Toast } from 'mint-ui'
   export default {
     data () {
       return {
@@ -336,14 +336,14 @@
         rootNameError: '',
         rootNameCheck: false,
         rootContent: '',
-        writePermit: true,
-        buildCheck: false
+        writePermit: true, // 允许续写
+        buildCheck: false  // 允许发布
       }
     },
     watch: {
       rootContent: function () {
         if (!this.rootContent) {
-          this.buildCheckt = false
+          this.buildCheck = false
           Toast({
             message: `内容不能为空`,
             position: 'middle',
@@ -377,7 +377,31 @@
         }
       }
     },
+    created: function () {
+      this.loadDraft()
+    },
     methods: {
+      loadDraft () {
+        Axios.get('/story/getDraft')
+          .then(response => {
+            if (response.data.draft) {
+              console.log(this.writePermit)
+              this.rootName = response.data.name
+              this.rootContent = response.data.content
+              this.writePermit = response.data.writePermit
+            } else {
+              this.rootName = ''
+              this.rootContent = ''
+              this.writePermit = true
+            }
+          }).catch(error => {
+            if (error) {
+              this.rootName = ''
+              this.rootContent = ''
+              this.writePermit = true
+            }
+          })
+      },
       storyRoute (param) {
         switch (param) {
           case 1:
@@ -423,21 +447,55 @@
           rootContent: this.rootContent,
           writePermit: this.writePermit
         }).then((response) => {
-          Toast({
-            message: response.data.message,
-            position: 'middle',
-            duration: 1000
-          })
-          // 发布成功的处理
+          if (response.data.permit === true) {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
+            // 发布成功的处理
+          } else {
+            this.buildCheck = true
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
+          }
         })
         setTimeout(function () {      // 超时处理
           this.buildCheck = true
-          Toast({
-            message: '发生错误，请稍后再试',
-            position: 'middle',
-            duration: 1000
-          })
         }.bind(this), 3000)
+      },
+      leaveBuild () {
+        MessageBox.confirm('是否保存草稿?').then(action => {
+          Axios.post('/story/saveDraft', {
+            rootName: this.rootName,
+            rootContent: this.rootContent,
+            writePermit: this.writePermit
+          }).then(response => {
+            if (response.data.permit) {
+              // 草稿保存成功的路由跳转
+            } else {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            }
+          }).catch(error => {
+            if (error) {
+              Toast({
+                message: '草稿保存失败',
+                position: 'middle',
+                duration: 1000
+              })
+            }
+          })
+        }).catch(error => {
+          console.log(error)
+          // 离开的路由跳转
+        })
       }
     }
   }

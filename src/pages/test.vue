@@ -1,11 +1,14 @@
 <template>
   <div class="finger-demo">
-    <p @click="test">helloworld</p>
-    <div class="flex-test">
-    </div>
+    <p @click="og">helloworld</p>
+    <!--<div id="debounce-search-demo">-->
+      <!--<input v-model="searchQuery" placeholder="Type something">-->
+      <!--<strong>{{ searchIndicator }}</strong>-->
+    <!--</div>-->
   </div>
 </template>
 <script>
+  import debounce from '../js/throttle.js'
   export default {
     data () {
       return {
@@ -15,10 +18,19 @@
         angle: 0,
         initScale: 1,
         message: '真的有错误',
-        details: ''
+        details: '',
+        showMe1: false,
+        qwert: '',
+        searchQuery: '',
+        searchQueryIsDirty: false,
+        isCalculating: false
       }
     },
     methods: {
+      og: debounce(function () {
+        console.log(this.message)
+        console.log('123')
+      }, 500),
       test () {
         let p = 0
         let sleep = function (time) {
@@ -42,4 +54,8 @@
   }
 </script>
 <style lang="scss" scoped>
+  .img{
+    height: 40%;
+    width: 30%;
+  }
 </style>

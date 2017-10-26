@@ -66,8 +66,9 @@ export default [
     component: resolve => require(['../pages/test.vue'], resolve)
   },
   {
-    path: '/build_story',         // 创建新故事
-    component: resolve => require(['../pages/stories/buildStory.vue'], resolve)
+    path: '/buildStory',         // 创建新故事
+    component: resolve => require(['../pages/stories/buildStory.vue'], resolve),
+    meta: { requiresAuth: true }
   },
   {
     path: '/build_story2',         // 创建新故事第二步

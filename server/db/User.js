@@ -16,6 +16,23 @@ const UserSchema = new Schema({
   password: {
     type: String,
     required: true
+  },
+  myCreation: {
+    root: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Root'
+    }],
+    story: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Story'
+    }]
+  },
+  myCreationDraft: {
+    root: {
+      name: String,
+      content: String,
+      writePermit: Boolean
+    }
   }
 })
 const User = mongoose.model('User', UserSchema)

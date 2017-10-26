@@ -5,7 +5,7 @@
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
-        我的消息
+        发现
       </span>
     </div>
     <div class="button-bar">

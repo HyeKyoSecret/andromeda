@@ -100,7 +100,7 @@
       font-size:16px;
     }
     .one-node {
-      height: 140px;
+      height: 145px;
       width: 100%;
       background-color: white;
       margin-top: 25px;
@@ -120,7 +120,7 @@
           .change-cover {
             height: 20px;
             width: 75px;
-            margin: 10px 5px 0 0;
+            margin: 10px 5px 0 -4px;
             background-color: $main-color;
             border-radius: 5px;
             color: white;

@@ -1,0 +1,36 @@
+/**
+ * Created by swallow on 2017/10/27.
+ */
+const express = require('express')
+const User = require('../db/User')
+const router = express.Router()
+router.get('/user/getMyCreation', (req, res) => {
+  'use strict'
+  let user = req.query.user
+  let result = []
+  User.findOne({username: user})
+    .populate('myCreation.root')
+    .exec((err, user) => {
+      if (err) {
+        res.send({permit: false})
+      } else {
+        if (user) {
+          if (user.myCreation.root) {
+            user.myCreation.root.forEach((root) => {
+              result.push({
+                name: root.name,
+                content: root.content
+              })
+            })
+            res.send({permit: true, result: result})
+          } else {
+            // 普通故事节点今后写在这里
+            res.send({permit: true, result: result})
+          }
+        } else {
+          res.status(404)
+        }
+      }
+    })
+})
+module.exports = router

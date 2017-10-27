@@ -134,7 +134,6 @@
             text-align: right;
 
           }
-
         }
         .time {
           font-size: 12px;
@@ -202,6 +201,7 @@
       }
     }
     .jump-menu {
+      display: none;
       position: absolute;
       top: 120px;
       left: 50%;

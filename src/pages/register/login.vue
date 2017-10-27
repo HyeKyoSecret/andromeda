@@ -113,7 +113,7 @@
                     position: 'middle',
                     duration: 1000
                   })
-                  this.$router.push({name: 'me', params: { username: this.username }})
+                  this.$router.push({name: 'me', params: { user: this.username }})
                 }
               } catch (e) {
                 this.getCaptcha()

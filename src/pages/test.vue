@@ -1,10 +1,6 @@
 <template>
   <div class="finger-demo">
-    <p @click="og">helloworld</p>
-    <!--<div id="debounce-search-demo">-->
-      <!--<input v-model="searchQuery" placeholder="Type something">-->
-      <!--<strong>{{ searchIndicator }}</strong>-->
-    <!--</div>-->
+  <div class="green" v-for="item in green">item</div>
   </div>
 </template>
 <script>
@@ -23,8 +19,13 @@
         qwert: '',
         searchQuery: '',
         searchQueryIsDirty: false,
-        isCalculating: false
+        isCalculating: false,
+        green: [1, 2, 3, 4, 5],
+        path: '/me/myCreation'
       }
+    },
+    created: function () {
+      this.splitPath()
     },
     methods: {
       og: debounce(function () {
@@ -49,6 +50,9 @@
           }
         }
         start()
+      },
+      splitPath () {
+        console.log(this.path.split('/'))
       }
     }
   }
@@ -57,5 +61,14 @@
   .img{
     height: 40%;
     width: 30%;
+  }
+  .green {
+    width: 100px;
+    height: 100px;
+    color: #000;
+    background: green;
+    &:last-child {
+      color: red;
+    }
   }
 </style>

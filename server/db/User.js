@@ -20,7 +20,7 @@ const UserSchema = new Schema({
   myCreation: {
     root: [{
       type: Schema.Types.ObjectId,
-      ref: 'Root'
+      ref: 'StoryRoot'
     }],
     story: [{
       type: Schema.Types.ObjectId,

@@ -12,7 +12,7 @@ export default [
     component: resolve => require(['../pages/dbTest.vue'], resolve)
   },
   {
-    path: '/me/:username?',
+    path: '/me/:user',
     name: 'me',
     component: resolve => require(['../pages/me/me.vue'], resolve),
     children: [
@@ -42,6 +42,10 @@ export default [
             component: resolve => require(['../components/me/message/announcement.vue'], resolve)
           }
         ]
+      },
+      {
+        path: 'myCreation',
+        component: resolve => require(['../pages/stories/myCreation.vue'], resolve)
       }
     ]
   },
@@ -71,14 +75,6 @@ export default [
     meta: { requiresAuth: true }
   },
   {
-    path: '/build_story2',         // 创建新故事第二步
-    component: resolve => require(['../pages/stories/buildStory2.vue'], resolve)
-  },
-  {
-    path: '/build_story3',         // 创建新故事第三步
-    component: resolve => require(['../pages/stories/buildStory3.vue'], resolve)
-  },
-  {
     path: '/readStory',         // 阅读
     component: resolve => require(['../pages/stories/readStory.vue'], resolve)
   },
@@ -99,10 +95,6 @@ export default [
     component: resolve => require(['../pages/start/start.vue'], resolve)
   },
   {
-    path: '/myCreation',
-    component: resolve => require(['../pages/stories/myCreation.vue'], resolve)
-  },
-  {
     path: '/myCreationNode',
     component: resolve => require(['../pages/stories/myCreationNode.vue'], resolve)
   },
@@ -113,6 +105,10 @@ export default [
   {
     path: '/marker',
     component: resolve => require(['../pages/stories/marker.vue'], resolve)
+  },
+  {
+    path: '/error',
+    component: resolve => require(['../pages/error.vue'], resolve)
   },
   {
     path: '*',

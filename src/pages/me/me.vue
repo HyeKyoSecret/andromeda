@@ -237,7 +237,7 @@
           {
             name: '我的创作',
             icon: require('../../img/icon/my_creation.png'),
-            path: '/me/message/words'
+            path: `/me/myCreation`
           },
           {
             name: '我的订阅',
@@ -274,6 +274,10 @@
             if (response.data.login) {
               this.isLogin = true
               this.nickName = response.data.nickName
+              for (let i = 0; i < this.operation.length; i++) {
+                let pathArray = this.operation[i].path.split('/')
+                this.operation[i].path = `/${pathArray[1]}/${response.data.user}/${pathArray[2]}`
+              }
             } else {
               this.isLogin = false
             }

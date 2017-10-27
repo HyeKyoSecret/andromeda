@@ -5,53 +5,113 @@
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
-        我的创作
+        {{title}}
       </span>
     </div>
-    <div class="create-new-story">
+    <div class="create-new-story" v-if="isUser">
       撰写新的故事
     </div>
-    <div class="one-story">
-      <div class="story-information">
-        <div class="cover">
-          <div><img src="../../img/photo/LegendofZelda.png" /></div>
-          <div class="story-quantity">
-            <span><img src="../../img/icon/graybook.png" /></span>
-            <span class="number">4399</span>
+    <div>
+      <div class="one-story" v-for="item in story">
+        <div class="story-information">
+          <div class="cover">
+            <div><img src="../../img/photo/LegendofZelda.png" /></div>
+            <div class="story-quantity">
+              <span><img src="../../img/icon/graybook.png" /></span>
+              <span class="number">4399</span>
+            </div>
+            <div class="story-quantity">
+              <span><img src="../../img/icon/gray_flag.png" /></span>
+              <span class="number">14392</span>
+            </div>
           </div>
-          <div class="story-quantity">
-            <span><img src="../../img/icon/gray_flag.png" /></span>
-            <span class="number">14392</span>
-          </div>
-        </div>
-        <div class="right-part">
-          <div class="story-name">
-            <span class="name">塞尔达传说</span>
-            <span class="owner">题主</span>
-          </div>
-          <div class="info-quantity">
-            <span><img src="../../img/icon/gray_pen.png" /></span>
-            <span>3篇</span>
-          </div>
-          <div class="info-quantity">
-            <span><img src="../../img/icon/gray_thumb.png" /></span>
-            <span>122次</span>
-          </div>
-          <div class="last-write-time">
-            最后创作时间：2017年6月12日
+          <div class="right-part">
+            <div class="story-name">
+              <span class="name">{{item.name}}</span>
+              <span class="owner">题主</span>
+            </div>
+            <div class="info-quantity">
+              <span><img src="../../img/icon/gray_pen.png" /></span>
+              <span>3篇</span>
+            </div>
+            <div class="info-quantity">
+              <span><img src="../../img/icon/gray_thumb.png" /></span>
+              <span>122次</span>
+            </div>
+            <div class="last-write-time">
+              最后创作时间：2017年6月12日
+            </div>
           </div>
         </div>
       </div>
     </div>
-
     <foot-menu></foot-menu>
   </div>
 </template>
 <script>
   import FootMenu from '../../components/foot-menu.vue'
+  import Axios from 'axios'
+  import { Toast } from 'mint-ui'
   export default {
     components: {
       FootMenu
+    },
+    data () {
+      return {
+        isUser: false,
+        title: '他的创作',
+        story: []
+      }
+    },
+    created: function () {
+      this.checkLogin()
+      this.fetchData()
+    },
+    methods: {
+      checkLogin () {
+        Axios.get('/checkLogin')
+          .then(response => {
+            if (!response.data.login) {
+              this.isUser = false
+              this.title = '他的创作'
+            } else {
+              if (response.data.login && response.data.user === this.$route.params.user) {
+                this.isUser = true
+                this.title = '我的创作'
+              }
+            }
+          })
+      },
+      fetchData () {
+        Axios.get('/user/getMyCreation', {
+          params: {
+            user: this.$route.params.user
+          }
+        }).then((response) => {
+          if (response.data.permit) {
+            for (let i = 0; i < response.data.result.length; i++) {
+              this.story.push({
+                name: response.data.result[i].name,
+                content: response.data.result[i].content
+              })
+            }
+          } else {
+            Toast({
+              message: '发生错误，请稍后再试',
+              position: 'middle',
+              duration: 1000
+            })
+          }
+        }).catch((error) => {
+          if (error) {
+            Toast({
+              message: '找不到资源，请检查url',
+              position: 'middle',
+              duration: 1000
+            })
+          }
+        })
+      }
     }
   }
 </script>
@@ -62,7 +122,6 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
     width: 100%;
     background: $bg-gray;
     .notice {
@@ -90,7 +149,7 @@
       }
     }
     .create-new-story {
-      margin: 10px 25% 0 25%;
+      margin: 10px 25% 20px 25%;
       background-color: $icon-red;
       height: 30px;
       color: white;
@@ -103,7 +162,10 @@
       height: 140px;
       width: 100%;
       background-color: white;
-      margin-top: 25px;
+      margin-bottom: 8px;
+      &:last-child {
+        margin-bottom: 100px;
+      }
       .story-information {
         margin-left: 10px;
         margin-right: 10px;

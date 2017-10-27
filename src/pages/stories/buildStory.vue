@@ -468,34 +468,36 @@
         }.bind(this), 3000)
       },
       leaveBuild () {
-        MessageBox.confirm('是否保存草稿?').then(action => {
-          Axios.post('/story/saveDraft', {
-            rootName: this.rootName,
-            rootContent: this.rootContent,
-            writePermit: this.writePermit
-          }).then(response => {
-            if (response.data.permit) {
-              // 草稿保存成功的路由跳转
-            } else {
-              Toast({
-                message: response.data.message,
-                position: 'middle',
-                duration: 1000
-              })
-            }
+        if (this.rootName || this.rootContent) {
+          MessageBox.confirm('是否保存草稿?').then(action => {
+            Axios.post('/story/saveDraft', {
+              rootName: this.rootName,
+              rootContent: this.rootContent,
+              writePermit: this.writePermit
+            }).then(response => {
+              if (response.data.permit) {
+                // 草稿保存成功的路由跳转
+              } else {
+                Toast({
+                  message: response.data.message,
+                  position: 'middle',
+                  duration: 1000
+                })
+              }
+            }).catch(error => {
+              if (error) {
+                Toast({
+                  message: '草稿保存失败',
+                  position: 'middle',
+                  duration: 1000
+                })
+              }
+            })
           }).catch(error => {
-            if (error) {
-              Toast({
-                message: '草稿保存失败',
-                position: 'middle',
-                duration: 1000
-              })
-            }
+            console.log(error)
+            // 离开的路由跳转
           })
-        }).catch(error => {
-          console.log(error)
-          // 离开的路由跳转
-        })
+        }
       }
     }
   }

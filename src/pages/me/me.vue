@@ -274,6 +274,7 @@
             if (response.data.login) {
               this.isLogin = true
               this.nickName = response.data.nickName
+              console.log('显示user' + response.data.user)
               for (let i = 0; i < this.operation.length; i++) {
                 let pathArray = this.operation[i].path.split('/')
                 this.operation[i].path = `/${pathArray[1]}/${response.data.user}/${pathArray[2]}`

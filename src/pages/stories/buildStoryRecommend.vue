@@ -16,7 +16,7 @@
       <span><input type="text" placeholder="搜索"></span>
     </div>
     <div class="star-friend">
-      <span><img src="../../img/icon/graystar.png" /></span>
+      <span><img src="../../img/icon/gray_star.png" /></span>
       <span>星标好友</span>
     </div>
     <div class="friend-list">

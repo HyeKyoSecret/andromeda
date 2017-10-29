@@ -232,57 +232,70 @@
           {
             name: '我的消息',
             icon: require('../../img/icon/my_message.png'),
-            path: '/me/message/words'
+            path: '/people/message/words'
           },
           {
             name: '我的创作',
             icon: require('../../img/icon/my_creation.png'),
-            path: `/me/myCreation`
+            path: `/people/myCreation`
           },
           {
             name: '我的订阅',
             icon: require('../../img/icon/my_subscription.png'),
-            path: '/me/message/words'
+            path: '/people/message/words'
           },
           {
             name: '我的关注',
             icon: require('../../img/icon/my_focus.png'),
-            path: '/me/message/words'
+            path: '/people/message/words'
           },
           {
             name: '我的好友',
             icon: require('../../img/icon/my_friend.png'),
-            path: '/me/message/words'
+            path: '/people/message/words'
           },
           {
             name: '我的轨迹',
             icon: require('../../img/icon/my_trail.png'),
-            path: '/me/message/words'
+            path: '/people/message/words'
           }
         ],
-        isLogin: false,
+        isUser: false,
         nickName: ''
       }
     },
     created: function () {
-      this.checkLogin()
+      this.checkUser()
     },
     methods: {
-      checkLogin () {
-        Axios.get('/checkLogin')
-          .then((response) => {
-            if (response.data.login) {
-              this.isLogin = true
-              this.nickName = response.data.nickName
-              console.log('显示user' + response.data.user)
-              for (let i = 0; i < this.operation.length; i++) {
-                let pathArray = this.operation[i].path.split('/')
-                this.operation[i].path = `/${pathArray[1]}/${response.data.user}/${pathArray[2]}`
+      checkUser () {
+        Axios.get('/checkUser', {
+          params: {
+            user: this.$route.params.user
+          }
+        }).then(res => {
+          if (res.data.user) {     // url 用户名存在
+            Axios.get('/checkLogin')
+            .then((response) => {
+              if (response.data.login && response.data.user === this.$route.params.user) { // 本人登录
+                this.isUser = true
+                this.nickName = response.data.nickName
+                for (let i = 0; i < this.operation.length; i++) {
+                  let pathArray = this.operation[i].path.split('/')
+                  this.operation[i].path = `/${pathArray[1]}/${response.data.user}/${pathArray[2]}`
+                }
+              } else {  // 访客查看
+                this.isUser = false
               }
-            } else {
-              this.isLogin = false
-            }
-          })
+            })
+          } else {
+            this.$router.push({ path: '/error' })     // 不存在的 url用户名
+          }
+        }).catch(error => {
+          if (error) {
+            this.$router.push({ path: '/error' })    // 不合法的 url 用户名
+          }
+        })
       }
     },
     components: {

@@ -198,6 +198,29 @@ router.get('/checkLogin', (req, res) => {
     })
   }
 })
+router.get('/checkUser', (req, res) => {
+  let user = req.query.user
+  let userReg = /^[0-9a-zA-Z_]{6,16}$/   // 字母数字下划线
+  if (!user) {
+
+  }
+  if (userReg.test(user)) {
+    User.findOne({username: user})
+      .exec((err, user) => {
+        if (err) {
+          res.sendStatus(404)
+        } else {
+          if (user) {
+            res.send({user: true})
+          } else {
+            res.send({user: false})
+          }
+        }
+      })
+  } else {
+    res.sendStatus(404)
+  }
+})
 router.get('/login/quitLogin', (req, res) => {
   req.session.destroy(function (err) {
     if (err) console.log(err)

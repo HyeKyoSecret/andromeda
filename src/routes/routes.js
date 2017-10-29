@@ -12,7 +12,7 @@ export default [
     component: resolve => require(['../pages/dbTest.vue'], resolve)
   },
   {
-    path: '/me/:user',
+    path: '/people/:user?',
     name: 'me',
     component: resolve => require(['../pages/me/me.vue'], resolve),
     children: [

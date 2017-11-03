@@ -201,19 +201,23 @@ router.get('/checkLogin', (req, res) => {
 router.get('/checkUser', (req, res) => {
   let user = req.query.user
   let userReg = /^[0-9a-zA-Z_]{6,16}$/   // 字母数字下划线
-  if (!user) {
-
-  }
+  if (
+    
+  )
   if (userReg.test(user)) {
     User.findOne({username: user})
-      .exec((err, user) => {
+      .exec((err, account) => {
         if (err) {
           res.sendStatus(404)
         } else {
-          if (user) {
-            res.send({user: true})
+          if (account) {
+            if (user === loginUser) {
+              res.send({user:account.nickname, customer: false}) // 是本人，非访客模式
+            } else {
+              res.send({user:account.nickname,customer: true}) // 访客模式
+            }
           } else {
-            res.send({user: false})
+            res.send({user: false}) // 不存在的用户名
           }
         }
       })

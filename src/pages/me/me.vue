@@ -5,7 +5,7 @@
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
-        我
+        我 {{isLogin}}{{this.userStatus}}
       </span>
     </div>
     <div class="me-content">
@@ -261,7 +261,17 @@
           }
         ],
         isUser: false,
+        userStatus: '',
         nickName: ''
+      }
+    },
+    computed: {
+      isLogin: function () {
+        if (this.userStatus !== 'askLogin') {
+          return true
+        } else {
+          return false
+        }
       }
     },
     created: function () {
@@ -269,33 +279,49 @@
     },
     methods: {
       checkUser () {
-        Axios.get('/checkUser', {
-          params: {
-            user: this.$route.params.user
-          }
-        }).then(res => {
-          if (res.data.user) {     // url 用户名存在
-            Axios.get('/checkLogin')
+        console.log(typeof this.$route.params.user)
+        console.log(typeof this.$route.params.user === 'undefined')
+        if (typeof this.$route.params.user === 'undefined') {
+          Axios.get('/checkLogin')
             .then((response) => {
-              if (response.data.login && response.data.user === this.$route.params.user) { // 本人登录
-                this.isUser = true
-                this.nickName = response.data.nickName
+              if (response.data.login) {
+                // alert('本人登录')
+                this.nickName = response.data.nickname
+                this.userStatus = 'isUser'
                 for (let i = 0; i < this.operation.length; i++) {
                   let pathArray = this.operation[i].path.split('/')
                   this.operation[i].path = `/${pathArray[1]}/${response.data.user}/${pathArray[2]}`
                 }
-              } else {  // 访客查看
-                this.isUser = false
+              } else {
+                this.userStatus = 'askLogin'
+              }
+            }).catch(error => {
+              if (error) {
+                // 错误处理
               }
             })
-          } else {
-            this.$router.push({ path: '/error' })     // 不存在的 url用户名
-          }
-        }).catch(error => {
-          if (error) {
-            this.$router.push({ path: '/error' })    // 不合法的 url 用户名
-          }
-        })
+        } else {
+          Axios.get('/checkUser', {
+            params: {
+              user: this.$route.params.user
+            }
+          }).then(res => {
+            if (res.data.user) {
+              this.nickname = res.data.user
+              if (res.data.customer) {
+                alert('访客模式')
+                this.userStatus = 'isCustomer'
+              } else {
+                // alert('本人登录')
+                this.userStatus = 'isUser'
+              }
+            }
+          }).catch(error => {
+            if (error) {
+              this.$router.push({ path: '/error' })    // 不合法的 url 用户名
+            }
+          })
+        }
       }
     },
     components: {

@@ -338,7 +338,7 @@ router.post('/story/buildStory', (req, res) => {
 })
 router.get('/checkRootName', (req, res) => {
   'use strict'
-  let name = req.query.name
+  let name = req.query.name  // 过滤还没检查
   Root.findOne({name: name}, (err, root) => {
     if (err) {
       console.log(err)
@@ -351,5 +351,32 @@ router.get('/checkRootName', (req, res) => {
       }
     }
   })
+})
+router.get('/story/getRootPreview', (req, res) => {
+  'use strict'
+  let rootName = req.query.rootName
+  if (rootName.length > 0 && rootName.length <= 12) {
+    rootName = rootName.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt')
+  }
+  console.log(rootName + '进入')
+  let rootInfo = {
+    name: '',
+    content: '',
+    date: ''
+  }
+  Root.findOne({name: rootName})
+    .exec((err, root) => {
+      if (err) {
+        res.send({rootInfo: null})
+      } else {
+        if (root) {
+          rootInfo.name = root.name
+          rootInfo.content = root.content
+          res.send({rootInfo: rootInfo})
+        } else {
+          res.send({rootInfo: null})
+        }
+      }
+    })
 })
 module.exports = router

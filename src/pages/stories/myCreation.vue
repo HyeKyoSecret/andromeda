@@ -12,7 +12,7 @@
       撰写新的故事
     </div>
     <div>
-      <div class="one-story" v-for="item in story">
+      <router-link :to="'myCreation' + '//' + item.name" tag='div' class="one-story" v-for="item in story">
         <div class="story-information">
           <div class="cover">
             <div><img src="../../img/photo/LegendofZelda.png" /></div>
@@ -43,7 +43,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </router-link>
     </div>
     <foot-menu></foot-menu>
   </div>
@@ -59,29 +59,14 @@
     data () {
       return {
         isUser: false,
-        title: '他的创作',
+        title: '我的创作',
         story: []
       }
     },
     created: function () {
-      this.checkLogin()
       this.fetchData()
     },
     methods: {
-      checkLogin () {
-        Axios.get('/checkLogin')
-          .then(response => {
-            if (!response.data.login) {
-              this.isUser = false
-              this.title = '他的创作'
-            } else {
-              if (response.data.login && response.data.user === this.$route.params.user) {
-                this.isUser = true
-                this.title = '我的创作'
-              }
-            }
-          })
-      },
       fetchData () {
         Axios.get('/user/getMyCreation', {
           params: {

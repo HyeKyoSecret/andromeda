@@ -46,6 +46,10 @@ export default [
       {
         path: 'myCreation',
         component: resolve => require(['../pages/stories/myCreation.vue'], resolve)
+      },
+      {
+        path: 'myCreation/:rootName',
+        component: resolve => require(['../pages/stories/myCreationNode.vue'], resolve)
       }
     ]
   },

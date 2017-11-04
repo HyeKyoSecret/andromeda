@@ -22,10 +22,10 @@
         </div>
         <div class="right-part">
           <div class="story-name">
-            <span class="name">塞尔达传说</span>
+            <span class="name">{{rootInfo.name}}</span>
             <span class="beginning">开头</span>
           </div>
-          <div class="story-content">是非成败转头空，青山依旧在，惯看秋月春风。一壶浊酒喜相逢，古今多少事，滚滚败转头空相逢，古今多少事，滚滚败转头空今多少事，逢，古今多少事，滚滚败转头空</div>
+          <div class="story-content">{{rootInfo.content}}</div>
           <div class="like-quantity">
             <span><img src="../../img/icon/gray_thumb.png" /></span>
             <span>18次</span>
@@ -39,9 +39,59 @@
 </template>
 <script>
   import FootMenu from '../../components/foot-menu.vue'
+  import Axios from 'axios'
   export default {
     components: {
       FootMenu
+    },
+    data () {
+      return {
+        rootInfo: {
+          name: '',
+          content: '',
+          date: ''
+        }
+      }
+    },
+    created: function () {
+      this.checkUser()
+    },
+    methods: {
+      checkUser: function () {
+        Axios.get('/checkUser', {
+          params: {
+            user: this.$route.params.user
+          }
+        }).then(response => {
+          if (response.data.user) {
+            console.log('user++++++' + response.data.user)
+            if (!response.data.customer) {
+              // 本人
+              Axios.get('/story/getRootPreview', {
+                params: {
+                  rootName: this.$route.params.rootName
+                }
+              }).then(response => {
+                if (response.data.rootInfo) {
+                  this.rootInfo.name = response.data.rootInfo.name
+                  this.rootInfo.content = response.data.rootInfo.conetnt
+                } else {
+                  this.$router.push({ path: '/error' })
+                }
+              })
+            } else {
+              // 访客
+            }
+          } else {
+            // 用户名不存在或不合法
+            this.$router.push({ path: '/error' })
+          }
+        })
+      }.catch(error => {
+        if (error) {
+          this.$router.push({ path: '/error' })
+        }
+      })
     }
   }
 </script>

@@ -5,7 +5,7 @@
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
-        我 {{isLogin}}{{this.userStatus}}
+        我
       </span>
     </div>
     <div class="me-content">
@@ -267,11 +267,7 @@
     },
     computed: {
       isLogin: function () {
-        if (this.userStatus !== 'askLogin') {
-          return true
-        } else {
-          return false
-        }
+        return this.userStatus !== 'askLogin'
       }
     },
     created: function () {
@@ -279,16 +275,13 @@
     },
     methods: {
       checkUser () {
-        console.log(typeof this.$route.params.user)
-        console.log(typeof this.$route.params.user === 'undefined')
         if (typeof this.$route.params.user === 'undefined') {
           Axios.get('/checkLogin')
             .then((response) => {
               if (response.data.login) {
-                // alert('本人登录')
-                this.nickName = response.data.nickname
+                this.nickName = response.data.nickName
                 this.userStatus = 'isUser'
-                for (let i = 0; i < this.operation.length; i++) {
+                for (let i = 0; i < this.operation.length; i++) { // 修改path
                   let pathArray = this.operation[i].path.split('/')
                   this.operation[i].path = `/${pathArray[1]}/${response.data.user}/${pathArray[2]}`
                 }
@@ -307,18 +300,23 @@
             }
           }).then(res => {
             if (res.data.user) {
-              this.nickname = res.data.user
+              this.nickName = res.data.user
               if (res.data.customer) {
                 alert('访客模式')
                 this.userStatus = 'isCustomer'
               } else {
-                // alert('本人登录')
                 this.userStatus = 'isUser'
+                for (let i = 0; i < this.operation.length; i++) { // 修改path
+                  let pathArray = this.operation[i].path.split('/')
+                  this.operation[i].path = `/${pathArray[1]}/${res.data.user}/${pathArray[2]}`
+                }
               }
+            } else {
+              this.$router.push({ path: '/error' })    // 发生错误或用户名不合法
             }
           }).catch(error => {
             if (error) {
-              this.$router.push({ path: '/error' })    // 不合法的 url 用户名
+              this.$router.push({ path: '/error' })
             }
           })
         }

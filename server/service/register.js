@@ -201,28 +201,43 @@ router.get('/checkLogin', (req, res) => {
 router.get('/checkUser', (req, res) => {
   let user = req.query.user
   let userReg = /^[0-9a-zA-Z_]{6,16}$/   // 字母数字下划线
-  if (
-    
-  )
+  let loginUser
+  if (req.session.user) {        // 获取当前登录信息
+    loginUser = req.session.user
+  } else if (req.cookies.And) {
+    if (req.cookies.And.user) {
+      loginUser = req.cookies.And.user
+    } else {
+      loginUser = ''
+    }
+  } else {
+    loginUser = ''
+  }
   if (userReg.test(user)) {
+    let userInfo = {
+      user: '',
+      nickName: ''
+    }
     User.findOne({username: user})
       .exec((err, account) => {
         if (err) {
-          res.sendStatus(404)
+          res.send({user: null})
         } else {
           if (account) {
+            userInfo.user = account.username
+            userInfo.nickName = account.nickname
             if (user === loginUser) {
-              res.send({user:account.nickname, customer: false}) // 是本人，非访客模式
+              res.send({user: userInfo, customer: false}) // 是本人，非访客模式
             } else {
-              res.send({user:account.nickname,customer: true}) // 访客模式
+              res.send({user: userInfo, customer: true}) // 访客模式
             }
           } else {
-            res.send({user: false}) // 不存在的用户名
+            res.send({user: null}) // 不存在的用户名
           }
         }
       })
   } else {
-    res.sendStatus(404)
+    res.send({user: null})
   }
 })
 router.get('/login/quitLogin', (req, res) => {

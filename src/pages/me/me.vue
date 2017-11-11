@@ -276,7 +276,7 @@
     methods: {
       checkUser () {
         if (typeof this.$route.params.user === 'undefined') {
-          Axios.get('/checkLogin')
+          Axios.get('/register/checkLogin')
             .then((response) => {
               if (response.data.login) {
                 this.nickName = response.data.nickName
@@ -294,7 +294,7 @@
               }
             })
         } else {
-          Axios.get('/checkUser', {
+          Axios.get('/register/checkUser', {
             params: {
               user: this.$route.params.user
             }

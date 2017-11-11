@@ -58,7 +58,7 @@
     },
     methods: {
       checkUser: function () {
-        Axios.get('/checkUser', {
+        Axios.get('/register/checkUser', {
           params: {
             user: this.$route.params.user
           }
@@ -74,9 +74,10 @@
               }).then(response => {
                 if (response.data.rootInfo) {
                   this.rootInfo.name = response.data.rootInfo.name
-                  this.rootInfo.content = response.data.rootInfo.conetnt
+                  this.rootInfo.content = response.data.rootInfo.content
                 } else {
-                  this.$router.push({ path: '/error' })
+                  alert('abc')
+//                  this.$router.push({path: '/error'})
                 }
               })
             } else {
@@ -84,14 +85,16 @@
             }
           } else {
             // 用户名不存在或不合法
-            this.$router.push({ path: '/error' })
+            console.log('xxx')
+//            this.$router.push({path: '/error'})
+          }
+        }).catch((error) => {
+          if (error) {
+            console.log('catch error')
+//            this.$router.push({path: '/error'})
           }
         })
-      }.catch(error => {
-        if (error) {
-          this.$router.push({ path: '/error' })
-        }
-      })
+      }
     }
   }
 </script>

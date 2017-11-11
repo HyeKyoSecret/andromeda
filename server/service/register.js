@@ -139,7 +139,7 @@ router.post('/login', (req, res) => {
     res.send({permit: false, message: '验证码错误'})
   }
 })
-router.get('/checkLogin', (req, res) => {
+router.get('/register/checkLogin', (req, res) => {
   'use strict'
   console.log('session中获取到账户名' + req.session.user)
   if (req.session.user) {
@@ -198,7 +198,7 @@ router.get('/checkLogin', (req, res) => {
     })
   }
 })
-router.get('/checkUser', (req, res) => {
+router.get('/register/checkUser', (req, res) => {
   let user = req.query.user
   let userReg = /^[0-9a-zA-Z_]{6,16}$/   // 字母数字下划线
   let loginUser
@@ -237,10 +237,10 @@ router.get('/checkUser', (req, res) => {
         }
       })
   } else {
-    res.send({user: null})
+    res.send({user: null})  // 不合法
   }
 })
-router.get('/login/quitLogin', (req, res) => {
+router.get('/register/quitLogin', (req, res) => {
   req.session.destroy(function (err) {
     if (err) console.log(err)
     res.cookie('And', {account: null}, {maxAge: 0}) // 删除cookie

@@ -12,7 +12,7 @@
       撰写新的故事
     </div>
     <div>
-      <router-link :to="'myCreation' + '//' + item.name" tag='div' class="one-story" v-for="item in story">
+      <router-link :to="item.path" tag='div' class="one-story" v-for="item in story">
         <div class="story-information">
           <div class="cover">
             <div><img src="../../img/photo/LegendofZelda.png" /></div>
@@ -77,7 +77,8 @@
             for (let i = 0; i < response.data.result.length; i++) {
               this.story.push({
                 name: response.data.result[i].name,
-                content: response.data.result[i].content
+                content: response.data.result[i].content,
+                path: this.$route.path + '//' + response.data.result[i].name
               })
             }
           } else {

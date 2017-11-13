@@ -237,7 +237,7 @@
           {
             name: '我的创作',
             icon: require('../../img/icon/my_creation.png'),
-            path: `/people/myCreation`
+            path: `/people/creation`
           },
           {
             name: '我的订阅',
@@ -300,7 +300,7 @@
             }
           }).then(res => {
             if (res.data.user) {
-              this.nickName = res.data.user
+              this.nickName = res.data.user.nickName
               if (res.data.customer) {
                 alert('访客模式')
                 this.userStatus = 'isCustomer'
@@ -308,7 +308,7 @@
                 this.userStatus = 'isUser'
                 for (let i = 0; i < this.operation.length; i++) { // 修改path
                   let pathArray = this.operation[i].path.split('/')
-                  this.operation[i].path = `/${pathArray[1]}/${res.data.user}/${pathArray[2]}`
+                  this.operation[i].path = `/${pathArray[1]}/${res.data.user.user}/${pathArray[2]}`
                 }
               }
             } else {

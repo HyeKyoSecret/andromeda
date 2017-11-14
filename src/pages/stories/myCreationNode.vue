@@ -9,11 +9,11 @@
       </span>
     </div>
     <div class="open-authorized">
-      开放自由编写
+      <div class="line">
+        <div class="name">开放自由续写</div>
+        <mt-switch v-model="writePermit" class="switch"></mt-switch>
+      </div>
     </div>
-<!--    <div class="already-authorized">
-      已开放自由编写
-    </div>-->
     <div class="one-node">
       <div class="story-information">
         <div class="cover">
@@ -40,6 +40,7 @@
 <script>
   import FootMenu from '../../components/foot-menu.vue'
   import Axios from 'axios'
+  import { Toast } from 'mint-ui'
   export default {
     components: {
       FootMenu
@@ -50,7 +51,25 @@
           name: '',
           content: '',
           date: ''
-        }
+        },
+        writePermit: null
+      }
+    },
+    watch: {
+      writePermit: function (curVal) {
+        console.log(curVal)
+        Axios.post('/story/changeWritePermit', {
+          rootName: this.rootInfo.name,
+          writePermit: curVal
+        }).then((response) => {
+          if (response.data === 'error') {
+            Toast({
+              message: '网络错误，请稍后再试',
+              position: 'middle',
+              duration: 1000
+            })
+          }
+        })
       }
     },
     created: function () {
@@ -64,7 +83,6 @@
           }
         }).then(response => {
           if (response.data.user) {
-            console.log('user++++++' + response.data.user)
             if (!response.data.customer) {
               // 本人
               Axios.get('/story/getRootPreview', {
@@ -75,9 +93,9 @@
                 if (response.data.rootInfo) {
                   this.rootInfo.name = response.data.rootInfo.name
                   this.rootInfo.content = response.data.rootInfo.content
+                  this.writePermit = response.data.rootInfo.writePermit
                 } else {
-                  alert('abc')
-//                  this.$router.push({path: '/error'})
+                  this.$router.push({path: '/error'})
                 }
               })
             } else {
@@ -85,13 +103,11 @@
             }
           } else {
             // 用户名不存在或不合法
-            console.log('xxx')
-//            this.$router.push({path: '/error'})
+            this.$router.push({path: '/error'})
           }
         }).catch((error) => {
           if (error) {
-            console.log('catch error')
-//            this.$router.push({path: '/error'})
+            this.$router.push({path: '/error'})
           }
         })
       }
@@ -133,24 +149,25 @@
       }
     }
     .open-authorized {
-      margin: 10px 25% 0 25%;
-      background-color: $icon-red;
-      height: 30px;
-      color: white;
-      text-align: center;
-      line-height:30px;
-      border-radius: 5px;
-      font-size:16px;
-    }
-    .already-authorized {
-      margin: 10px 25% 0 25%;
-      background-color: $main-color;
-      height: 30px;
-      color: white;
-      text-align: center;
-      line-height:30px;
-      border-radius: 5px;
-      font-size:16px;
+      width: 100%;
+      border-top: 1px solid $border-gray;
+      height: 70px;
+      background: white;
+      color: $font-dark;
+      .line {
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        .name {
+          flex: 4;
+          margin-left: 15px;
+          font-size: 16px;
+        }
+        .switch {
+          flex: 1;
+          margin-left: 18%;
+        }
+      }
     }
     .one-node {
       height: 145px;
@@ -208,6 +225,7 @@
           }
           .story-content {
             margin-top: 3px;
+            min-height: 50px;
             color: $font-dark;
             font-size: 14px;
             display: -webkit-box;

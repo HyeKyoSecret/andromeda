@@ -78,7 +78,7 @@
               this.story.push({
                 name: response.data.result[i].name,
                 content: response.data.result[i].content,
-                path: this.$route.path + '//' + response.data.result[i].name
+                path: `myCreation/${response.data.result[i].name}`
               })
             }
           } else {

@@ -48,7 +48,7 @@ export default [
         component: resolve => require(['../pages/stories/myCreation.vue'], resolve)
       },
       {
-        path: 'creation/:rootName',
+        path: 'myCreation/:rootName',
         alias: 'creationNode',
         component: resolve => require(['../pages/stories/myCreationNode.vue'], resolve)
       }

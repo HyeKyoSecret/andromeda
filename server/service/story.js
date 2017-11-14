@@ -362,6 +362,7 @@ router.get('/story/getRootPreview', (req, res) => {
   let rootInfo = {
     name: '',
     content: '',
+    writePermit: null,
     date: ''
   }
   Root.findOne({name: rootName})
@@ -372,11 +373,26 @@ router.get('/story/getRootPreview', (req, res) => {
         if (root) {
           rootInfo.name = root.name
           rootInfo.content = root.content
+          rootInfo.writePermit = root.writePermit
           res.send({rootInfo: rootInfo})
         } else {
           res.send({rootInfo: null})
         }
       }
     })
+})
+router.post('/story/changeWritePermit', (req, res) => {
+  'use strict'
+  let writePermit = req.body.writePermit
+  if (typeof writePermit === 'boolean') {
+    Root.updateOne({name: req.body.rootName}, {$set: {'writePermit': writePermit}})
+      .exec((err) => {
+        if (err) {
+          res.send('error')
+        } else {
+          res.send('ok')
+        }
+      })
+  }
 })
 module.exports = router

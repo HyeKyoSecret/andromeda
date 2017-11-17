@@ -5,26 +5,23 @@
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
-        塞尔达传说
+        {{storyInfo.title}}
       </span>
     </div>
     <div class="marker">
       <img src="../../img/icon/marker_selected.png" />
     </div>
     <div class="context">
-      是非成败转头空，青山依旧在，惯看秋月春风。一壶浊酒喜相逢，古今多少事，滚滚长江东逝水，浪花淘尽英雄。 几度夕阳红。白发渔樵江渚上，都付笑谈中。
-      滚滚长江东逝水，浪花淘尽英雄。是非成败转头空，青山依旧在，几度夕阳红。白发渔樵江渚上，惯看秋月春风。一壶浊酒喜相逢，古今多少事，都付笑谈中。
-      ，浪花一壶浊酒喜相逢，古今多少事，滚滚长江东逝水，浪花淘尽英雄。 几度夕阳红。白发渔樵江渚上，都付笑谈中。
-      滚滚长江东逝水，浪花淘尽英雄。是非成败转头空，青山依旧在，几度夕阳红。白发渔樵江渚上，惯看秋月春风。一壶浊酒喜相逢，古今多少事，都付笑谈中。
+      {{storyInfo.content}}
     </div>
     <div class="related-info">
       <div class="anchor"><img src="../../img/icon/anchor.png" /></div>
       <div class="author-info">
         <div class="like">
-          <span >作者:林克</span>
+          <span >作者:{{storyInfo.author}}</span>
           <span ><img src="../../img/icon/redheart.png" /></span>
         </div>
-        <div class="time">2017.10.14 19:37</div>
+        <div class="time">{{storyInfo.date}}</div>
         <div class="follow-number">
           <span class="tri"><img src="../../img/icon/triangle_downward.png"/></span>
           <span class="number">1563</span>
@@ -194,9 +191,9 @@
           position: absolute;
           left: 50%;
           top: 8px;
-          width: 65px;
-          height: 57px;
-          margin-left: -40px;
+          width: 61px;
+          height: 52px;
+          margin-left: -39px;
         }
       }
     }
@@ -226,3 +223,39 @@
     }
   }
   </style>
+<script>
+  import Axios from 'axios'
+  export default {
+    data () {
+      return {
+        storyInfo: {
+          title: '',
+          content: '',
+          author: '',
+          date: ''
+        }
+      }
+    },
+    created: function () {
+      this.getData()
+    },
+    methods: {
+      getData () {
+        Axios.get('/story/getStory', {
+          params: {
+            id: this.$route.params.id
+          }
+        }).then(response => {
+          if (response.data.permit && response.data.result) {
+            this.storyInfo.title = response.data.result.title
+            this.storyInfo.content = response.data.result.content
+            this.storyInfo.author = response.data.result.author
+            this.storyInfo.date = response.data.result.date
+          } else {
+            this.$router.replace('/error')
+          }
+        })
+      }
+    }
+  }
+</script>

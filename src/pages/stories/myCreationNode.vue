@@ -14,7 +14,7 @@
         <mt-switch v-model="writePermit" class="switch"></mt-switch>
       </div>
     </div>
-    <div class="one-node">
+    <div class="one-node" @click="goStory(rootInfo.id)">
       <div class="story-information">
         <div class="cover">
           <div><img src="../../img/photo/LegendofZelda.png" /></div>
@@ -30,7 +30,7 @@
             <span><img src="../../img/icon/gray_thumb.png" /></span>
             <span>18次</span>
           </div>
-          <div class="time">2017年11月19日</div>
+          <div class="time">{{rootInfo.date}}</div>
         </div>
       </div>
     </div>
@@ -91,9 +91,11 @@
                 }
               }).then(response => {
                 if (response.data.rootInfo) {
+                  this.rootInfo.id = response.data.rootInfo.id
                   this.rootInfo.name = response.data.rootInfo.name
                   this.rootInfo.content = response.data.rootInfo.content
                   this.writePermit = response.data.rootInfo.writePermit
+                  this.rootInfo.date = response.data.rootInfo.date
                 } else {
                   this.$router.push({path: '/error'})
                 }
@@ -103,13 +105,16 @@
             }
           } else {
             // 用户名不存在或不合法
-            this.$router.push({path: '/error'})
+            this.$router.replace({path: '/error'})
           }
         }).catch((error) => {
           if (error) {
-            this.$router.push({path: '/error'})
+            this.$router.replace({path: '/error'})
           }
         })
+      },
+      goStory: function (id) {
+        this.$router.push(`/story/${id}`)
       }
     }
   }
@@ -159,13 +164,13 @@
         display: flex;
         align-items: center;
         .name {
-          flex: 4;
+          flex: 5;
           margin-left: 15px;
           font-size: 16px;
         }
         .switch {
           flex: 1;
-          margin-left: 18%;
+          margin-left: 15px;
         }
       }
     }

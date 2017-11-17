@@ -302,7 +302,7 @@
             if (res.data.user) {
               this.nickName = res.data.user.nickName
               if (res.data.customer) {
-                alert('访客模式')
+                alert('访客模式,url尚未完成')
                 this.userStatus = 'isCustomer'
               } else {
                 this.userStatus = 'isUser'

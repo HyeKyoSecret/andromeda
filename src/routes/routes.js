@@ -80,7 +80,7 @@ export default [
     meta: { requiresAuth: true }
   },
   {
-    path: '/readStory',         // 阅读
+    path: '/story/:id',         // 阅读
     component: resolve => require(['../pages/stories/readStory.vue'], resolve)
   },
   {

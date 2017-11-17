@@ -6,6 +6,8 @@ const Root = require('../db/StoryRoot')
 const Story = require('../db/Story')
 const User = require('../db/User')
 const router = express.Router()
+const moment = require('moment')
+moment.locale('zh-cn')
 // router.post('/story/buildRoot', (req, res) => {
 //   let rootName = req.body.rootName
 //   let rootStory = {
@@ -78,6 +80,38 @@ router.post('/story/buildRoot', (req, res) => {
     })
   } else {
     res.send({permit: false, message: '没有权限操作'})
+  }
+})
+router.get('/story/getStory', (req, res) => {
+  'use strict'
+  let id = req.query.id
+  let rootReg = /^R([0-9]){5}$/
+  let result = {
+    title: '',
+    content: '',
+    author: '',
+    date: ''
+  }
+  if (rootReg.test(id)) {
+    Root.findOne({id: id})
+      .populate('author')
+      .exec((err, root) => {
+        if (err) {
+          res.send({permit: false})
+        } else {
+          if (root) {
+            result.title = root.name
+            result.content = root.content
+            result.author = root.author.nickname
+            result.date = moment(root.date).format('YYYY年M月D日 H:m')
+            res.send({permit: true, result: result})
+          } else {
+            res.send({permit: false})
+          }
+        }
+      })
+  } else {
+    res.send({permit: false})
   }
 })
 router.post('/story/saveDraft', (req, res) => {
@@ -358,7 +392,6 @@ router.get('/story/getRootPreview', (req, res) => {
   if (rootName.length > 0 && rootName.length <= 12) {
     rootName = rootName.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt')
   }
-  console.log(rootName + '进入')
   let rootInfo = {
     name: '',
     content: '',
@@ -371,9 +404,11 @@ router.get('/story/getRootPreview', (req, res) => {
         res.send({rootInfo: null})
       } else {
         if (root) {
+          rootInfo.id = root.id
           rootInfo.name = root.name
           rootInfo.content = root.content
           rootInfo.writePermit = root.writePermit
+          rootInfo.date = moment(root.date).format('LL')
           res.send({rootInfo: rootInfo})
         } else {
           res.send({rootInfo: null})

@@ -12,7 +12,12 @@ router.get('/user/getMyCreation', (req, res) => {
     let userReg = /^[0-9a-zA-Z_]{6,16}$/
     if (userReg.test(user)) {
       User.findOne({username: user})
-        .populate('myCreation.root')
+        .populate({
+          path: 'myCreation.root',
+          options: {
+            sort: {date: -1}
+          }
+        })
         .exec((err, user) => {
           if (err) {
             res.send({permit: false})

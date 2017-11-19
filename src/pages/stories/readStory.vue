@@ -39,7 +39,7 @@
         <div>订阅</div>
       </div>
       <div class="write-continue">
-        <div><img src="../../img/icon/writecontinue.png" /></div>
+        <div><img src="../../img/icon/writecontinue.png" @click="writeStory"/></div>
       </div>
       <div class="button">
         <img src="../../img/icon/yellowcomment.png" />
@@ -59,6 +59,7 @@
       <div class="button">热门节点</div>
       <div class="button">书签</div>
     </div>
+    <writeStory v-show="writeWindow" v-on:close="closeWrite"></writeStory>
   </div>
 </template>
 <style lang='scss' scoped>
@@ -225,6 +226,7 @@
   </style>
 <script>
   import Axios from 'axios'
+  import writeStory from '../../components/story/writeStory.vue'
   export default {
     data () {
       return {
@@ -233,13 +235,23 @@
           content: '',
           author: '',
           date: ''
-        }
+        },
+        writeWindow: false
       }
+    },
+    components: {
+      writeStory
     },
     created: function () {
       this.getData()
     },
     methods: {
+      writeStory () {
+        this.writeWindow = true
+      },
+      closeWrite () {
+        this.writeWindow = false
+      },
       getData () {
         Axios.get('/story/getStory', {
           params: {

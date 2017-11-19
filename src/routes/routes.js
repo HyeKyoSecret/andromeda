@@ -108,6 +108,10 @@ export default [
     component: resolve => require(['../pages/search/search.vue'], resolve)
   },
   {
+    path: '/writeStory',
+    component: resolve => require(['../components/story/writeStory.vue'], resolve)
+  },
+  {
     path: '/marker',
     component: resolve => require(['../pages/stories/marker.vue'], resolve)
   },

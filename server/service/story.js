@@ -168,7 +168,7 @@ router.get('/story/getRootStory', (req, res) => {
     }
   })
 })
-router.post('/story/buildStory', (req, res) => {
+router.post('/story/xuildStory', (req, res) => {
   let ftNode = req.body.ftNode
   let nodeName = req.body.nodeName
   let node = {

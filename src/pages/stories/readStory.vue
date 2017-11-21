@@ -59,7 +59,7 @@
       <div class="button">热门节点</div>
       <div class="button">书签</div>
     </div>
-    <writeStory v-show="writeWindow" v-on:close="closeWrite"></writeStory>
+    <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
   </div>
 </template>
 <style lang='scss' scoped>
@@ -98,7 +98,7 @@
     .context {
       margin: 50px 10px 0 10px;
       font-size: 16px;
-      height: 320px;
+      height: calc(100vh - 250px);
       color: $font-dark;
     }
     .related-info {
@@ -234,7 +234,8 @@
           title: '',
           content: '',
           author: '',
-          date: ''
+          date: '',
+          ftNode: ''
         },
         writeWindow: false
       }
@@ -244,6 +245,7 @@
     },
     created: function () {
       this.getData()
+      this.ftNode = this.$route.params.id
     },
     methods: {
       writeStory () {

@@ -12,7 +12,7 @@
       撰写新的故事
     </div>
     <div>
-      <router-link :to="item.path" tag='div' class="one-story" v-for="item in story">
+      <router-link :to="item.path" tag='div' class="one-story" v-for="item in story" :key="item.name">
         <div class="story-information">
           <div class="cover">
             <div><img src="../../img/photo/LegendofZelda.png" /></div>

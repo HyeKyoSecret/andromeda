@@ -5,7 +5,7 @@
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
-        续写
+        续写&nbsp;{{title}}
       </span>
       <span class="fake-commit" v-if='!writeCheck'>发布</span>
       <span class="commit" @click="buildStory" v-else="">发布</span>
@@ -25,6 +25,7 @@
         storyContent: ''
       }
     },
+    props: ['ftNode', 'title'],
     watch: {
       storyContent: function () {
         if (!this.storyContent) {
@@ -50,8 +51,12 @@
     },
     methods: {
       buildStory: function () {
+        console.log('构建故事')
         Axios.post('/story/buildStory', {
-//          ftNode
+          ftNode: this.ftNode,
+          content: this.storyContent
+        }).then((response) => {
+          console.log(response.data)
         })
       },
       closeWindow () {

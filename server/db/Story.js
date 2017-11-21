@@ -4,14 +4,14 @@
 const mongoose = require('./mongoose')
 const Schema = mongoose.Schema
 let StoryCountsSchema = new Schema({
-  _id: {type: String, required: true},
+  id: {type: String, required: true},
   seq: { type: Number, default: 0 }
 })
 let StoryCounts = mongoose.model('StoryCounts', StoryCountsSchema)
 const StorySchema = new Schema({
   id: String,
   date: { type: Date, default: Date.now },
-  name: String,
+  root: { type: Schema.Types.ObjectId, ref: 'StoryRoot' },
   content: String,
   lc: {
     type: Schema.Types.ObjectId,
@@ -24,12 +24,7 @@ const StorySchema = new Schema({
     ref: 'Story'
   },
   author: {
-    type: Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  writeOpen: {
-    type: Boolean,
-    default: false
+    type: String
   }
 })
 StorySchema.pre('save', function (next) {

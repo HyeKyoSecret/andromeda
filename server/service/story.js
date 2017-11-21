@@ -8,20 +8,6 @@ const User = require('../db/User')
 const router = express.Router()
 const moment = require('moment')
 moment.locale('zh-cn')
-// router.post('/story/buildRoot', (req, res) => {
-//   let rootName = req.body.rootName
-//   let rootStory = {
-//     name: rootName
-//   }
-//   let newRoot = new Root(rootStory)
-//   newRoot.save((err) => {
-//     if (err) {
-//       console.log(err)
-//     } else {
-//       res.send('ok')
-//     }
-//   })
-// })
 router.post('/story/buildRoot', (req, res) => {
   let rootName = req.body.rootName
   let rootContent = req.body.rootContent
@@ -86,6 +72,7 @@ router.get('/story/getStory', (req, res) => {
   'use strict'
   let id = req.query.id
   let rootReg = /^R([0-9]){5}$/
+  let storyReg = /^S([0-9]){5}$/
   let result = {
     title: '',
     content: '',
@@ -104,6 +91,24 @@ router.get('/story/getStory', (req, res) => {
             result.content = root.content
             result.author = root.author.nickname
             result.date = moment(root.date).format('YYYY年M月D日 H:m')
+            res.send({permit: true, result: result})
+          } else {
+            res.send({permit: false})
+          }
+        }
+      })
+  } else if (storyReg.test(id)) {
+    Story.findOne({ id: id })
+      .populate('root')
+      .exec((err, story) => {
+        if (err) {
+          res.send({permit: false})
+        } else {
+          if (story) {
+            result.title = story.root.name
+            result.content = story.content
+            result.author = story.author
+            result.date = moment(story.date).format('YYYY年M月D日 H:m')
             res.send({permit: true, result: result})
           } else {
             res.send({permit: false})
@@ -370,6 +375,221 @@ router.post('/story/xuildStory', (req, res) => {
     }
   })
 })
+router.post('/story/buildStory', (req, res) => {
+  'use strict'
+  let ftNode = req.body.ftNode
+  let content = req.body.content
+  let author
+  if (req.session.user) {
+    author = req.session.user
+  } else if (req.cookies.And) {
+    author = req.cookies.And.user
+  } else {
+    // 拒绝
+  }
+  let story = {
+    content: content,
+    author: author
+  }
+  let newStory = new Story(story)
+  newStory.save((saveErr, doc) => {
+    if (saveErr) {
+      // 拒绝
+    }
+    if (ftNode.split('')[0] === 'R') { // 从ftNode id上判断前驱节点是否是根节点
+      Root.findOne({id: ftNode})
+        .exec((rootErr, root) => {
+          if (rootErr) {
+            // 拒绝
+          }
+          if (root) {   // 查询到ftNode是根节点
+            if (root.lc) {    // root.lc 非空
+              Story.findOne({_id: root.lc})
+                .exec((storyErr, story) => {
+                  if (storyErr) {
+                    // 拒绝
+                  } else {
+                    if (story) {
+                      let p = story.rb     // 创建指针p 指向当前故事的rb
+                      let changeP = function () {
+                        return new Promise(function (resolve, reject) {
+                          Story.findOne({_id: p}, (error, nStory) => {
+                            if (error) {
+                              console.log(error)
+                            } else {
+                              p = nStory.rb
+                              if (!p) {
+                                nStory.update({$set: {rb: doc._id}})
+                                  .exec((err3) => {
+                                    if (err3) {
+                                      console.log(err3)
+                                    }
+                                    doc.update({$set: {root: nStory.root}}, (err6) => {
+                                      if (err6) {
+                                        console.log(err6)
+                                      }
+                                      res.send('ok')
+                                    })
+                                  })
+                              }
+                              resolve(p)
+                              reject('error+++++!!')
+                            }
+                          })
+                        })
+                      }
+
+                      let search = async function () {
+                        if (!p) { // root的第一个子节点的rb为空
+                          story.update({$set: {rb: doc._id}})
+                            .exec((err4) => {
+                              if (err4) {
+                                console.log(err4)
+                                // 拒绝
+                              }
+                              doc.update({$set: {root: story.root}}, (err6) => {
+                                if (err6) {
+                                  console.log(err6)
+                                  // 拒绝
+                                }
+                                res.send('ok')
+                              })
+                            })
+                        }
+                        while (p) {
+                          p = await changeP()
+                        }
+                      }
+
+                      search().catch((err) => {
+                        'use strict'
+                        console.log('执行出现了错误' + err)
+                        res.send('error')
+                      })
+                    } else {
+                      console.log('根节点的lc故事出错')
+                      res.send('error')
+                    }
+                  }
+                })
+            } else { // root.lc 不存在
+              root.update({$set: {lc: doc._id}})
+                .exec(err => {
+                  if (err) {
+                    console.log(err)
+                  }
+                  doc.update({$set: {root: root._id}}, (docErr) => {
+                    if (docErr) {
+                      // 拒绝
+                    }
+                    res.send('ok')
+                  })
+                })
+            }
+          } else {
+            // 非root拒绝
+          }
+        })
+    } else if (ftNode.split('')[0] === 'S') { // 从ftNode id上判断前驱节点是否是普通故事节点
+      Story.findOne({id: ftNode})
+        .exec((err, odstory) => {
+          'use strict'
+          if (err) {
+            console.log(err)
+            res.send('error')
+          } else {
+            if (odstory) {    // 前驱结点是普通故事结点
+              if (odstory.lc) {   // 普通故事结点lc非空
+                Story.findOne({_id: odstory.lc})
+                  .exec((err, story) => {
+                    if (err) {
+                      console.log(err)
+                      res.send('error')
+                    } else {
+                      if (story) {
+                        console.log('找到' + story.name)
+                        let p = story.rb
+                        let changeP = function () {
+                          return new Promise(function (resolve, reject) {
+                            Story.findOne({_id: p}, (error, nStory) => {
+                              if (error) {
+                                console.log(error)
+                              } else {
+                                p = nStory.rb
+                                if (!p) {
+                                  nStory.update({$set: {rb: doc._id}})
+                                    .exec((err3) => {
+                                      if (err3) {
+                                        console.log(err3)
+                                        // 拒绝
+                                      }
+                                      doc.update({$set: {root: nStory.root}}, (err6) => {
+                                        if (err6) {
+                                          console.log(err6)
+                                        }
+                                        res.send('ok')
+                                      })
+                                    })
+                                }
+                                resolve(p)
+                                reject('error+++++!!')
+                              }
+                            })
+                          })
+                        }
+
+                        let search = async function () {
+                          if (!p) {
+                            story.update({$set: {rb: doc._id}})
+                              .exec((err4) => {
+                                if (err4) {
+                                  console.log(err4)
+                                  // 拒绝
+                                }
+                                doc.update({$set: {root: story.root}}, (err6) => {
+                                  if (err6) {
+                                    console.log(err6)
+                                    // 拒绝
+                                  }
+                                  res.send('ok')
+                                })
+                              })
+                          }
+                          while (p) {
+                            p = await changeP()
+                          }
+                        }
+
+                        search().catch((err) => {
+                          'use strict'
+                          console.log('执行出现了错误' + err)
+                          res.send('error')
+                        })
+                      } else {
+                        res.send('error')
+                      }
+                    }
+                  })
+              } else {    // 普通故事结点.lc为空
+                odstory.update({$set: {lc: doc._id}})
+                  .exec(err => {
+                    if (err) {
+                      console.log(err)
+                    }
+                    doc.update({$set: {root: odstory.root}}, (docErr) => {
+                      if (docErr) {
+                        // 拒绝
+                      }
+                      res.send('ok')
+                    })
+                  })
+              }
+            }
+          }
+        })
+    }
+  })
+})
 router.get('/checkRootName', (req, res) => {
   'use strict'
   let name = req.query.name  // 过滤还没检查
@@ -420,7 +640,7 @@ router.post('/story/changeWritePermit', (req, res) => {
   'use strict'
   let writePermit = req.body.writePermit
   if (typeof writePermit === 'boolean') {
-    Root.updateOne({name: req.body.rootName}, {$set: {'writePermit': writePermit}})
+    Root.update({name: req.body.rootName}, {$set: {'writePermit': writePermit}})
       .exec((err) => {
         if (err) {
           res.send('error')

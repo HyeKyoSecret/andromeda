@@ -32,7 +32,11 @@ const UserSchema = new Schema({
       name: String,
       content: String,
       writePermit: Boolean
-    }
+    },
+    story: [{
+      id: String,
+      content: String
+    }]
   }
 })
 const User = mongoose.model('User', UserSchema)

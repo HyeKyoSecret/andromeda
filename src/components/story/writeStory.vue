@@ -16,7 +16,7 @@
   </div>
 </template>
 <script>
-  import { Toast } from 'mint-ui'
+  import { MessageBox, Toast } from 'mint-ui'
   import Axios from 'axios'
   export default {
     data () {
@@ -26,6 +26,9 @@
       }
     },
     props: ['ftNode', 'title'],
+    created: function () {
+      this.loadDraft()
+    },
     watch: {
       storyContent: function () {
         if (!this.storyContent) {
@@ -60,7 +63,58 @@
         })
       },
       closeWindow () {
-        this.$emit('close')
+        if (this.storyContent) {
+          MessageBox.confirm('是否保存草稿?').then(action => {
+            Axios.post('/story/saveStoryDraft', {
+              id: this.ftNode,
+              storyContent: this.storyContent
+            }).then(response => {
+              if (response.data.permit) {
+                // 草稿保存成功的路由跳转
+                this.$emit('close')
+              } else {
+                Toast({
+                  message: response.data.message,
+                  position: 'middle',
+                  duration: 1000
+                })
+              }
+            }).catch(error => {
+              if (error) {
+                Toast({
+                  message: '草稿保存失败',
+                  position: 'middle',
+                  duration: 1000
+                })
+                this.$emit('close')
+              }
+            })
+          }).catch(error => {
+            console.log(error)
+            // 离开的路由跳转
+          })
+        } else {
+          this.$emit('close')
+        }
+      },
+      loadDraft () {
+        Axios.get('/story/getStoryDraft', {
+          params: {
+            id: this.ftNode
+          }
+        }).then(response => {
+          if (response.data) {
+            this.storyContent = response.data
+          }
+        }).catch(err => {
+          if (err) {
+            Toast({
+              message: '草稿载入失败',
+              position: 'middle',
+              duration: 1000
+            })
+          }
+        })
       }
     }
   }

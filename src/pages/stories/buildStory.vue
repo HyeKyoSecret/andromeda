@@ -382,7 +382,7 @@
     },
     methods: {
       loadDraft () {
-        Axios.get('/story/getDraft')
+        Axios.get('/story/getRootDraft')
           .then(response => {
             if (response.data.draft) {
               console.log(this.writePermit)
@@ -470,7 +470,7 @@
       leaveBuild () {
         if (this.rootName || this.rootContent) {
           MessageBox.confirm('是否保存草稿?').then(action => {
-            Axios.post('/story/saveDraft', {
+            Axios.post('/story/saveRootDraft', {
               rootName: this.rootName,
               rootContent: this.rootContent,
               writePermit: this.writePermit

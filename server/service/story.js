@@ -119,12 +119,17 @@ router.get('/story/getStory', (req, res) => {
     res.send({permit: false})
   }
 })
-router.post('/story/saveDraft', (req, res) => {
+router.post('/story/saveRootDraft', (req, res) => {
   'use strict'
   let rootName = req.body.rootName
   let rootContent = req.body.rootContent
   let writePermit = req.body.writePermit
-  let author = req.session.user || req.cookies.And.user
+  let author
+  if (req.session.user) {
+    author = req.session.user
+  } else if (req.cookies.And) {
+    author = req.cookies.And.user
+  }
   if (author) {
     User.findOne({username: author}, (err, user) => {
       if (err) {
@@ -146,7 +151,56 @@ router.post('/story/saveDraft', (req, res) => {
     res.send({permit: false, message: '没有权限操作'})
   }
 })
-router.get('/story/getDraft', (req, res) => {
+router.post('/story/saveStoryDraft', (req, res) => {
+  'use strict'
+  console.log('草稿保存路由进入')
+  let author
+  if (req.session.user) {
+    author = req.session.user
+  } else if (req.cookies.And) {
+    author = req.cookies.And.user
+  }
+  if (author) {
+    User.findOne({username: author}, (err, user) => {
+      if (err) {
+        console.log(err)
+      }
+      if (user) {
+        if (user.myCreationDraft.story.length === 0) {
+          user.myCreationDraft.story.push({
+            id: req.body.id,
+            content: req.body.storyContent
+          })
+        } else {
+          for (let i = 0; i < user.myCreationDraft.story.length; i++) {
+            if (user.myCreationDraft.story[i].id === req.body.id) {
+              user.myCreationDraft.story[i].content = req.body.storyContent
+            } else {
+              if (i === user.myCreationDraft.story.length - 1) {
+                user.myCreationDraft.story.push({
+                  id: req.body.id,
+                  content: req.body.storyContent
+                })
+              }
+            }
+          }
+        }
+        user.save((userError) => {
+          if (userError) {
+            // 拒绝
+            res.send({permit: false, message: '发生错误请稍后再试'})
+          }
+          res.send({permit: true})
+        })
+      } else {
+        // 拒绝
+      }
+    })
+  } else {
+    res.send({permit: false, message: '没有权限操作'})
+  }
+})
+router.get('/story/getRootDraft', (req, res) => {
   'use strict'
   let author = req.session.user || req.cookies.And.user
   User.findOne({username: author}, (err, user) => {
@@ -161,6 +215,34 @@ router.get('/story/getDraft', (req, res) => {
           writePermit: user.myCreationDraft.root.writePermit
         })
       }
+    }
+  })
+})
+router.get('/story/getStoryDraft', (req, res) => {
+  'use strict'
+  let author
+  let result
+  if (req.session.user) {
+    author = req.session.user
+  } else if (req.cookies.And) {
+    author = req.cookies.And.user
+  }
+  let id = req.query.id
+  User.findOne({username: author}, (err, user) => {
+    if (err) {
+      res.send(null)
+    }
+    if (user.myCreationDraft.story.length) {
+      for (let i = 0; i < user.myCreationDraft.story.length; i++) {
+        console.log('A' + user.myCreationDraft.story[i].id)
+        console.log('B' + id)
+        if (user.myCreationDraft.story[i].id === id) {
+          result = user.myCreationDraft.story[i].content
+        }
+      }
+      res.send(result)
+    } else {
+      res.send(null)
     }
   })
 })
@@ -428,7 +510,13 @@ router.post('/story/buildStory', (req, res) => {
                                       if (err6) {
                                         console.log(err6)
                                       }
-                                      res.send('ok')
+                                      User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
+                                        .exec((err7) => {
+                                          if (err7) {
+                                            // 拒绝
+                                          }
+                                          res.send('ok')
+                                        })
                                     })
                                   })
                               }
@@ -452,7 +540,13 @@ router.post('/story/buildStory', (req, res) => {
                                   console.log(err6)
                                   // 拒绝
                                 }
-                                res.send('ok')
+                                User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
+                                  .exec((err7) => {
+                                    if (err7) {
+                                      // 拒绝
+                                    }
+                                    res.send('ok')
+                                  })
                               })
                             })
                         }
@@ -482,7 +576,13 @@ router.post('/story/buildStory', (req, res) => {
                     if (docErr) {
                       // 拒绝
                     }
-                    res.send('ok')
+                    User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
+                      .exec((err7) => {
+                        if (err7) {
+                          // 拒绝
+                        }
+                        res.send('ok')
+                      })
                   })
                 })
             }
@@ -527,7 +627,13 @@ router.post('/story/buildStory', (req, res) => {
                                         if (err6) {
                                           console.log(err6)
                                         }
-                                        res.send('ok')
+                                        User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
+                                          .exec((err7) => {
+                                            if (err7) {
+                                              // 拒绝
+                                            }
+                                            res.send('ok')
+                                          })
                                       })
                                     })
                                 }
@@ -551,7 +657,13 @@ router.post('/story/buildStory', (req, res) => {
                                     console.log(err6)
                                     // 拒绝
                                   }
-                                  res.send('ok')
+                                  User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
+                                    .exec((err7) => {
+                                      if (err7) {
+                                        // 拒绝
+                                      }
+                                      res.send('ok')
+                                    })
                                 })
                               })
                           }
@@ -580,7 +692,13 @@ router.post('/story/buildStory', (req, res) => {
                       if (docErr) {
                         // 拒绝
                       }
-                      res.send('ok')
+                      User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
+                        .exec((err7) => {
+                          if (err7) {
+                            // 拒绝
+                          }
+                          res.send('ok')
+                        })
                     })
                   })
               }

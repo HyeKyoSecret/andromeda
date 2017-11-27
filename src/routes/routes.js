@@ -116,11 +116,8 @@ export default [
     component: resolve => require(['../pages/stories/marker.vue'], resolve)
   },
   {
-    path: '/error',
-    component: resolve => require(['../pages/error.vue'], resolve)
-  },
-  {
     path: '*',
+    name: 'error',
     component: resolve => require(['../pages/error.vue'], resolve)
   }
 ]

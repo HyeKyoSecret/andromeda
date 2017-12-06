@@ -294,6 +294,7 @@
               }
             })
         } else {
+          console.log('进入else部分')
           Axios.get('/register/checkUser', {
             params: {
               user: this.$route.params.user
@@ -312,12 +313,10 @@
                 }
               }
             } else {
-              this.$router.push({ path: '/error' })    // 发生错误或用户名不合法
+              alert(res.data.user)
             }
           }).catch(error => {
-            if (error) {
-              this.$router.push({ path: '/error' })
-            }
+            alert('error' + error)
           })
         }
       }

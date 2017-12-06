@@ -8,7 +8,7 @@
         塞尔达传说
       </span>
     </div>
-    <div class="open-authorized">
+    <div class="open-authorized" v-if="!writePermit">
       <div class="line">
         <div class="name">开放自由续写</div>
         <mt-switch v-model="writePermit" class="switch"></mt-switch>

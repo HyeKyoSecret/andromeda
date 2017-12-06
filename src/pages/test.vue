@@ -1,6 +1,7 @@
 <template>
   <div class="finger-demo">
   <div class="green" v-for="item in green">item</div>
+  <button @click="chenyixun">触发按钮</button>
   </div>
 </template>
 <script>
@@ -28,6 +29,9 @@
       this.splitPath()
     },
     methods: {
+      chenyixun () {
+        this.$emit('hide')
+      },
       og: debounce(function () {
         console.log(this.message)
         console.log('123')

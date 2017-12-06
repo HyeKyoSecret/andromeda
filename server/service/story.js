@@ -119,6 +119,10 @@ router.get('/story/getStory', (req, res) => {
     res.send({permit: false})
   }
 })
+router.get('/story/test', (req, res) => {
+  'use strict'
+  console.log('test收到转发内容' + req.query.id)
+})
 router.post('/story/saveRootDraft', (req, res) => {
   'use strict'
   let rootName = req.body.rootName
@@ -153,13 +157,13 @@ router.post('/story/saveRootDraft', (req, res) => {
 })
 router.post('/story/saveStoryDraft', (req, res) => {
   'use strict'
-  console.log('草稿保存路由进入')
   let author
   if (req.session.user) {
     author = req.session.user
   } else if (req.cookies.And) {
     author = req.cookies.And.user
   }
+  console.log('author' + author)
   if (author) {
     User.findOne({username: author}, (err, user) => {
       if (err) {
@@ -221,30 +225,33 @@ router.get('/story/getRootDraft', (req, res) => {
 router.get('/story/getStoryDraft', (req, res) => {
   'use strict'
   let author
-  let result
+  let result = ''
   if (req.session.user) {
     author = req.session.user
   } else if (req.cookies.And) {
     author = req.cookies.And.user
   }
   let id = req.query.id
-  User.findOne({username: author}, (err, user) => {
-    if (err) {
-      res.send(null)
-    }
-    if (user.myCreationDraft.story.length) {
-      for (let i = 0; i < user.myCreationDraft.story.length; i++) {
-        console.log('A' + user.myCreationDraft.story[i].id)
-        console.log('B' + id)
-        if (user.myCreationDraft.story[i].id === id) {
-          result = user.myCreationDraft.story[i].content
-        }
+  let storyReg = /^S([0-9]){5}$/
+  if (storyReg.test(id)) {
+    User.findOne({username: author}, (err, user) => {
+      if (err) {
+        res.send(null)
       }
-      res.send(result)
-    } else {
-      res.send(null)
-    }
-  })
+      if (user.myCreationDraft.story.length) {
+        for (let i = 0; i < user.myCreationDraft.story.length; i++) {
+          if (user.myCreationDraft.story[i].id === id) {
+            result = user.myCreationDraft.story[i].content
+          }
+        }
+        res.send(result)
+      } else {
+        res.send(result)
+      }
+    })
+  } else {   // id 不合法
+    res.send(result)
+  }
 })
 router.get('/story/getRootStory', (req, res) => {
   Root.find({}, (err, doc) => {

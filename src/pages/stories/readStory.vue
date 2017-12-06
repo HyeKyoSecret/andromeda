@@ -266,7 +266,7 @@
             this.storyInfo.author = response.data.result.author
             this.storyInfo.date = response.data.result.date
           } else {
-            this.$router.replace({name: 'error'})
+            this.$emit('error')
           }
         })
       }

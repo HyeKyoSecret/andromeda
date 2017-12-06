@@ -1,14 +1,29 @@
 <template>
   <div id="app">
     <transition name="fade">
-      <router-view></router-view>
+      <router-view v-on:error="closeSelf" v-if="!errorPage"></router-view>
     </transition>
+    <ErrorPage v-if="errorPage"></ErrorPage>
   </div>
 </template>
 <script>
   // import FastClick from 'fastclick'
+  import ErrorPage from './components/error/errorPage.vue'
   export default {
-    name: 'app'
+    name: 'app',
+    data () {
+      return {
+        errorPage: false
+      }
+    },
+    components: {
+      ErrorPage
+    },
+    methods: {
+      closeSelf () {
+        this.errorPage = true
+      }
+    }
     /*
     ,
      created: function () {

@@ -40,3 +40,4 @@ StorySchema.pre('save', function (next) {
 })
 const Story = mongoose.model('Story', StorySchema)
 module.exports = Story
+

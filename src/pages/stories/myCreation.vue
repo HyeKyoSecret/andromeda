@@ -28,18 +28,18 @@
           <div class="right-part">
             <div class="story-name">
               <span class="name">{{item.name}}</span>
-              <span class="owner">题主</span>
+              <span class="owner" v-if="item.isRoot">题主</span>
             </div>
             <div class="info-quantity">
               <span><img src="../../img/icon/gray_pen.png" /></span>
-              <span>3篇</span>
+              <span>{{item.num}}篇</span>
             </div>
             <div class="info-quantity">
               <span><img src="../../img/icon/gray_thumb.png" /></span>
               <span>122次</span>
             </div>
             <div class="last-write-time">
-              最后创作时间：2017年6月12日
+              最后创作时间：{{item.latestDate}}
             </div>
           </div>
         </div>
@@ -52,6 +52,7 @@
   import FootMenu from '../../components/foot-menu.vue'
   import Axios from 'axios'
   import { Toast } from 'mint-ui'
+  import moment from 'moment'
   export default {
     components: {
       FootMenu
@@ -76,9 +77,12 @@
           if (response.data.permit) {
             for (let i = 0; i < response.data.result.length; i++) {
               this.story.push({
-                name: response.data.result[i].name,
-                content: response.data.result[i].content,
-                path: `myCreation/${response.data.result[i].name}`
+                name: response.data.result[i].root,
+                num: response.data.result[i].data.length,
+                latestDate: moment(response.data.result[i].timeStamp).format('YYYY年M月D日'),
+                path: '/login',
+                isRoot: response.data.result[i].label
+//                path: `myCreation/${response.data.result[i].name}`
               })
             }
           } else {

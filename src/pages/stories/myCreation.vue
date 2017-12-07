@@ -12,7 +12,7 @@
       撰写新的故事
     </div>
     <div>
-      <router-link :to="item.path" tag='div' class="one-story" v-for="item in story" :key="item.name">
+      <router-link :to="item.path" tag='div' class="one-story" v-for="item in story" :key="item.name" v-bind:zty="12345">
         <div class="story-information">
           <div class="cover">
             <div><img src="../../img/photo/LegendofZelda.png" /></div>
@@ -80,8 +80,9 @@
                 name: response.data.result[i].root,
                 num: response.data.result[i].data.length,
                 latestDate: moment(response.data.result[i].timeStamp).format('YYYY年M月D日'),
-                path: '/login',
-                isRoot: response.data.result[i].label
+                isRoot: response.data.result[i].label,
+                path: this.getPath(response.data.result[i]),
+                data: response.data.data
 //                path: `myCreation/${response.data.result[i].name}`
               })
             }
@@ -101,6 +102,19 @@
             })
           }
         })
+      },
+      getPath (val) {
+        let path
+        if (!val.label) {
+          if (val.data.length === 1) {
+            path = `/story/${val.data[0]}`
+          } else {
+            path = `myCreation/${val.root}`
+          }
+        } else {
+          path = `myCreation/${val.root}`
+        }
+        return path
       }
     }
   }

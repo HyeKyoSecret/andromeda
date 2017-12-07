@@ -8,29 +8,41 @@
         塞尔达传说
       </span>
     </div>
-    <div class="open-authorized" v-if="!writePermit">
-      <div class="line">
-        <div class="name">开放自由续写</div>
-        <mt-switch v-model="writePermit" class="switch"></mt-switch>
+    <div v-if="result.root">
+      <div class="open-authorized" v-if="!writePermit">
+        <div class="line">
+          <div class="name">开放自由续写</div>
+          <mt-switch v-model="writePermit" class="switch"></mt-switch>
+        </div>
+      </div>
+      <div class="one-node" @click="goStory(rootInfo.id)">
+        <div class="story-information">
+          <div class="cover">
+            <div><img src="../../img/photo/LegendofZelda.png" /></div>
+            <div class="change-cover">更换封面</div>
+          </div>
+          <div class="right-part">
+            <div class="story-name">
+              <span class="name">{{result.root.name}}</span>
+              <span class="beginning">开头</span>
+            </div>
+            <div class="story-content">{{result.root.content}}</div>
+            <div class="like-quantity">
+              <span><img src="../../img/icon/gray_thumb.png" /></span>
+              <span>18次</span>
+            </div>
+            <div class="time">{{result.root.date}}</div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="one-node" @click="goStory(rootInfo.id)">
-      <div class="story-information">
-        <div class="cover">
-          <div><img src="../../img/photo/LegendofZelda.png" /></div>
-          <div class="change-cover">更换封面</div>
-        </div>
-        <div class="right-part">
-          <div class="story-name">
-            <span class="name">{{rootInfo.name}}</span>
-            <span class="beginning">开头</span>
-          </div>
-          <div class="story-content">{{rootInfo.content}}</div>
-          <div class="like-quantity">
-            <span><img src="../../img/icon/gray_thumb.png" /></span>
-            <span>18次</span>
-          </div>
-          <div class="time">{{rootInfo.date}}</div>
+    <div v-if="result.story">
+      <div class="story-preview"  v-for="item in result.story" :key="item.id">
+        <div class="content">{{item.content}}</div>
+        <div class="info">
+          <span><img src="../../img/icon/gray_thumb.png" /></span>
+          <span>18</span>
+          <span class="date">{{item.date}}</span>
         </div>
       </div>
     </div>
@@ -52,12 +64,13 @@
           content: '',
           date: ''
         },
-        writePermit: null
+        temp: {},
+        result: {},
+        writePermit: true
       }
     },
     watch: {
       writePermit: function (curVal) {
-        console.log(curVal)
         Axios.post('/story/changeWritePermit', {
           rootName: this.rootInfo.name,
           writePermit: curVal
@@ -85,20 +98,26 @@
           if (response.data.user) {
             if (!response.data.customer) {
               // 本人
-              Axios.get('/story/getRootPreview', {
+              Axios.get('/user/getMyCreation', {
                 params: {
-                  rootName: this.$route.params.rootName
+                  user: this.$route.params.user
+//                  rootName: this.$route.params.rootName
                 }
               }).then(response => {
-                if (response.data.rootInfo) {
-                  this.rootInfo.id = response.data.rootInfo.id
-                  this.rootInfo.name = response.data.rootInfo.name
-                  this.rootInfo.content = response.data.rootInfo.content
-                  this.writePermit = response.data.rootInfo.writePermit
-                  this.rootInfo.date = response.data.rootInfo.date
-                } else {
-                  this.$router.push({path: '/error'})
+                let arr = response.data.result
+                for (let i = 0; i < arr.length; i++) {
+                  if (arr[i].root === this.$route.params.rootName) {
+                    this.temp = arr[i]
+                  }
                 }
+                Axios.post('/story/getMyCreationPreview', {
+                  data: this.temp
+                }).then(response => {
+                  this.result = response.data
+                  if (response.data.root) {
+                    this.writePermit = response.data.root.writePermit
+                  }
+                })
               })
             } else {
               // 访客
@@ -257,6 +276,45 @@
             font-size: 14px;
             color: $font-gray;
           }
+        }
+      }
+    }
+    .story-preview {
+      margin-top: 10px;
+      width: 100%;
+      background: white;
+      &:last-child {
+        margin-bottom: 200px;
+      }
+      .content {
+        width: 95%;
+        margin: 0 auto;
+        padding-top: 15px;
+        min-height: 28px;
+        display: -webkit-box;
+        display: -moz-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        -moz-box-orient: vertical;
+        -moz-line-clamp: 2;
+        overflow: hidden;
+        font-size: 14px;
+        color: $font-dark;
+      }
+      .info {
+        height: 30px;
+        line-height: 30px;
+        margin-top: 15px;
+        border-top: 1px solid $bg-gray;
+        text-align: right;
+        font-size: 14px;
+        color: $font-gray;
+        img {
+          width: 14px;
+        }
+        .date {
+          margin-left: 15px;
+          margin-right: 15px;
         }
       }
     }

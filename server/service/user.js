@@ -11,7 +11,7 @@ router.get('/user/getMyCreation', (req, res) => {
   let rootList = []
   let storyList = []
   let result = []
-  function bubbleSort (arr) {
+  function bubbleSort (arr) {   // 排序算法
     for (let i = 0; i < arr.length - 1; i++) {
       for (let j = 0; j < arr.length - 1 - i; j++) {
         if (arr[j]['timeStamp'] < arr[j + 1]['timeStamp']) {
@@ -50,7 +50,7 @@ router.get('/user/getMyCreation', (req, res) => {
                   rootList.push({
                     root: root.name,
                     timeStamp: root.date.getTime(),
-                    data: root.id,
+                    data: [root.id],
                     label: 'root'
                   })
                 })
@@ -85,9 +85,6 @@ router.get('/user/getMyCreation', (req, res) => {
                     }
                   }
                 }
-                console.log('注入前')
-                console.log(rootList)
-                console.log('____________________')
                 for (let i = 0; i < dest.length; i++) {
                   rootList.push({
                     root: dest[i].root,
@@ -95,18 +92,13 @@ router.get('/user/getMyCreation', (req, res) => {
                     timeStamp: dest[i].timeStamp
                   })
                 }
-                console.log('查dest')
-                console.log(dest)
-                console.log('********************')
-                console.log(rootList)
-                console.log('+++++++++++++++++++')
                 let temp = {}
                 for (let i = 0; i < rootList.length; i++) {
                   let ai = rootList[i]
                   if (!temp[ai.root]) {
                     result.push({
                       root: ai.root,
-                      data: [ai.data],
+                      data: ai.data,
                       label: ai.label,
                       date: ai.date,
                       timeStamp: ai.timeStamp
@@ -116,7 +108,6 @@ router.get('/user/getMyCreation', (req, res) => {
                     for (let j = 0; j < result.length; j++) {
                       let dj = result[j]
                       if (dj.root === ai.root) {
-                        dj.date = ai.date
                         dj.timeStamp = ai.timeStamp
                         for (let k = 0; k < ai.data.length; k++) {
                           dj.data.push(ai.data[k])
@@ -126,10 +117,8 @@ router.get('/user/getMyCreation', (req, res) => {
                     }
                   }
                 }
-                console.log('result集合')
-                console.log(JSON.stringify(result))
-                console.log('排序后')
-                console.log(JSON.stringify(bubbleSort(result)))
+                // console.log('排序后')
+                // console.log(JSON.stringify(bubbleSort(result)))
               }
               res.send({permit: true, result: result})
             } else {

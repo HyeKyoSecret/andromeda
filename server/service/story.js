@@ -731,35 +731,84 @@ router.get('/checkRootName', (req, res) => {
     }
   })
 })
-router.get('/story/getRootPreview', (req, res) => {
+router.post('/story/getMyCreationPreview', (req, res) => {
   'use strict'
-  let rootName = req.query.rootName
-  if (rootName.length > 0 && rootName.length <= 12) {
-    rootName = rootName.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt')
+  let data = req.body.data
+  let result = {
+    root: {
+      id: '',
+      name: '',
+      date: null,
+      content: '',
+      writePermit: null
+    },
+    story: []
   }
-  let rootInfo = {
-    name: '',
-    content: '',
-    writePermit: null,
-    date: ''
-  }
-  Root.findOne({name: rootName})
-    .exec((err, root) => {
+  if (data.label) {
+    if (data.data.length === 1) {
+      Root.findOne({id: data.data[0]})
+        .exec((err, root) => {
+          if (err) {
+            console.log(err)
+          }
+          if (root) {
+            result.root.id = root.id
+            result.root.name = root.name
+            result.root.date = moment(root.date).format('LL')
+            result.root.content = root.content
+            result.root.writePermit = root.writePermit
+            res.send(result)
+          }
+        })
+    } else if (data.data.length > 1) {
+      Root.findOne({id: data.data[0]})
+        .exec((err, root) => {
+          if (err) {
+            console.log(err)
+          }
+          if (root) {
+            console.log('root' + root.id)
+            result.root.id = root.id
+            result.root.name = root.name
+            result.root.date = moment(root.date).format('LL')
+            result.root.content = root.content
+            result.root.writePermit = root.writePermit
+            data.data.splice(0, 1)
+            Story.find({id: {$in: data.data}}, (err, story) => {
+              if (err) {
+                console.log(err)
+              }
+              if (story) {
+                for (let i = 0; i < story.length; i++) {
+                  result.story.push({
+                    id: story[i].id,
+                    content: story[i].content,
+                    date: moment(story[i].date).format('LL')
+                  })
+                }
+                res.send(result)
+              }
+            })
+          }
+        })
+    }
+  } else {
+    Story.find({id: {$in: data.data}}, (err, story) => {
       if (err) {
-        res.send({rootInfo: null})
-      } else {
-        if (root) {
-          rootInfo.id = root.id
-          rootInfo.name = root.name
-          rootInfo.content = root.content
-          rootInfo.writePermit = root.writePermit
-          rootInfo.date = moment(root.date).format('LL')
-          res.send({rootInfo: rootInfo})
-        } else {
-          res.send({rootInfo: null})
+        console.log(err)
+      }
+      if (story) {
+        for (let i = 0; i < story.length; i++) {
+          result.story.push({
+            id: story[i].id,
+            content: story[i].content,
+            date: story[i].date
+          })
         }
+        res.send(result)
       }
     })
+  }
 })
 router.post('/story/changeWritePermit', (req, res) => {
   'use strict'

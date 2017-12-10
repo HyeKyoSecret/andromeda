@@ -30,7 +30,8 @@
     </div>
     <div class="read-foot-menu">
       <div class="button">
-        <img src="../../img/icon/yellowthumb.png" />
+        <!--<img src="../../img/icon/yellowthumb.png" />-->
+        <img src="../../img/icon/yellowthumb_unselected.png" @click="addZan"/>
         <div>赞</div>
         <!--<div>10</div>-->
       </div>
@@ -246,6 +247,7 @@
     created: function () {
       this.getData()
       this.ftNode = this.$route.params.id
+      this.fetchMenuData()
     },
     methods: {
       writeStory () {
@@ -268,6 +270,23 @@
           } else {
             this.$emit('error')
           }
+        })
+      },
+      fetchMenuData () {
+        Axios.get('/story/getMenuData', {
+          params: {
+            id: this.$route.params.id
+          }
+        }).then(response => {
+          console.log(response.data)
+        })
+      },
+      addZan () {
+        // 查用户权限
+        Axios.post('/story/addZan', {
+          id: this.$route.params.id
+        }).then(response => {
+          console.log(response.data)
         })
       }
     }

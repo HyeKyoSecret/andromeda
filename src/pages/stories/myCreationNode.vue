@@ -9,13 +9,18 @@
       </span>
     </div>
     <div v-if="result.root">
-      <div class="open-authorized" v-if="!writePermit">
+      <transition
+        name="custom-classes-transition"
+        leave-active-class="animated bounceOutUp"
+      >
+      <div class="open-authorized" v-if="!writeAuthorized">
         <div class="line">
           <div class="name">开放自由续写</div>
           <mt-switch v-model="writePermit" class="switch"></mt-switch>
         </div>
       </div>
-      <div class="one-node" @click="goStory(rootInfo.id)">
+      </transition>
+      <div class="one-node" @click="goStory(result.root.id)">
         <div class="story-information">
           <div class="cover">
             <div><img src="../../img/photo/LegendofZelda.png" /></div>
@@ -37,7 +42,7 @@
       </div>
     </div>
     <div v-if="result.story">
-      <div class="story-preview"  v-for="item in result.story" :key="item.id">
+      <div class="story-preview"  v-for="item in result.story" :key="item.id" @click="goStory(item.id)">
         <div class="content">{{item.content}}</div>
         <div class="info">
           <span><img src="../../img/icon/gray_thumb.png" /></span>
@@ -52,7 +57,7 @@
 <script>
   import FootMenu from '../../components/foot-menu.vue'
   import Axios from 'axios'
-  import { Toast } from 'mint-ui'
+  import { Toast, MessageBox } from 'mint-ui'
   export default {
     components: {
       FootMenu
@@ -66,23 +71,34 @@
         },
         temp: {},
         result: {},
-        writePermit: true
+        writePermit: true,
+        writeAuthorized: true
       }
     },
     watch: {
       writePermit: function (curVal) {
-        Axios.post('/story/changeWritePermit', {
-          rootName: this.rootInfo.name,
-          writePermit: curVal
-        }).then((response) => {
-          if (response.data === 'error') {
-            Toast({
-              message: '网络错误，请稍后再试',
-              position: 'middle',
-              duration: 1000
+        if (curVal === false) {
+          console.log('不触发')
+        } else {
+          MessageBox.confirm('开放自由续写后将无法再关闭，确认开放吗?').then(action => {
+            Axios.post('/story/changeWritePermit', {
+              rootName: this.result.root.name,
+              writePermit: curVal
+            }).then((response) => {
+              if (response.data === 'error') {
+                Toast({
+                  message: '网络错误，请稍后再试',
+                  position: 'middle',
+                  duration: 1000
+                })
+              } else {
+                this.writeAuthorized = true
+              }
             })
-          }
-        })
+          }).catch(action => {
+            this.writePermit = false
+          })
+        }
       }
     },
     created: function () {
@@ -115,7 +131,9 @@
                 }).then(response => {
                   this.result = response.data
                   if (response.data.root) {
-                    this.writePermit = response.data.root.writePermit
+                    this.writeAuthorized = response.data.root.writePermit
+                    console.log('开放续写？' + this.writeAuthorized)
+                    this.writePermit = this.writeAuthorized
                   }
                 })
               })
@@ -140,6 +158,7 @@
 </script>
 <style lang='scss' scoped>
   @import "../../scss/style.css";
+  @import "../../scss/animate.min.css";
   @import "../../scss/config";
   .my-creation-node {
     position: absolute;

@@ -51,7 +51,7 @@
 <script>
   import FootMenu from '../../components/foot-menu.vue'
   import Axios from 'axios'
-  import { Toast } from 'mint-ui'
+  import { Toast, Indicator } from 'mint-ui'
   import moment from 'moment'
   export default {
     components: {
@@ -69,11 +69,16 @@
     },
     methods: {
       fetchData () {
+        Indicator.open({
+          text: '加载中...',
+          spinnerType: 'fading-circle'
+        })
         Axios.get('/user/getMyCreation', {
           params: {
             user: this.$route.params.user
           }
         }).then((response) => {
+          Indicator.close()
           if (response.data.permit) {
             for (let i = 0; i < response.data.result.length; i++) {
               this.story.push({
@@ -83,7 +88,6 @@
                 isRoot: response.data.result[i].label,
                 path: this.getPath(response.data.result[i]),
                 data: response.data.data
-//                path: `myCreation/${response.data.result[i].name}`
               })
             }
           } else {
@@ -94,6 +98,7 @@
             })
           }
         }).catch((error) => {
+          Indicator.close()
           if (error) {
             Toast({
               message: '找不到资源，请检查url',
@@ -243,5 +248,8 @@
         }
       }
     }
+  }
+  .mint-indicator {
+    z-index: 999;
   }
 </style>

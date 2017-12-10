@@ -119,6 +119,81 @@ router.get('/story/getStory', (req, res) => {
     res.send({permit: false})
   }
 })
+router.get('/story/getMenuData', (req, res) => {
+  'use strict'
+  let rootReg = /^R([0-9]){5}$/
+  let storyReg = /^S([0-9]){5}$/
+  let id = req.query.id
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  let result = {
+    num: null,
+    zan: null
+  }
+  function getUser (user) {
+    return new Promise((resolve, reject) => {
+      User.findOne({username: user}, (err, user) => {
+        if (err) {
+          console.log(err)
+        }
+        if (user) {
+          resolve(user._id)
+        } else {
+          // 未登录用户,奇怪用户。。
+          resolve('customer')
+        }
+      })
+    })
+  }
+  let getZan = async function () {
+    let userId = await getUser(user).toString()
+    if (rootReg.test(id)) {
+      // 444
+      Root.findOne({id: id})
+        .exec((err2, root) => {
+          if (err2) {
+            res.send({error: true})
+          }
+          if (root.zan) {
+            result.zan = root.zan.some(function (ele) {
+              return ele === userId
+            })
+            result.num = root.zan.length
+            res.send({error: false, result: result})
+          } else {
+            result.zan = false
+            result.num = 0
+            res.send({error: false, result: result})
+          }
+        })
+    } else if (storyReg.test(id)) {
+      Story.findOne({id: id})
+        .exec((err2, story) => {
+          if (err2) {
+            res.send({error: true})
+          }
+          if (story.zan) {
+            result.zan = story.zan.some(function (ele) {
+              return ele === userId
+            })
+            result.num = story.zan.length
+            res.send({error: false, result: result})
+          } else {
+            result.zan = false
+            result.num = 0
+            res.send({error: false, result: result})
+          }
+        })
+    } else {
+      res.send({error: true})
+    }
+  }
+  getZan()
+})
 router.get('/story/test', (req, res) => {
   'use strict'
   console.log('test收到转发内容' + req.query.id)
@@ -767,7 +842,6 @@ router.post('/story/getMyCreationPreview', (req, res) => {
             console.log(err)
           }
           if (root) {
-            console.log('root' + root.id)
             result.root.id = root.id
             result.root.name = root.name
             result.root.date = moment(root.date).format('LL')
@@ -823,5 +897,20 @@ router.post('/story/changeWritePermit', (req, res) => {
         }
       })
   }
+})
+router.post('/story/addZan', (req, res) => {
+  'use strict'
+  let id = req.body.id
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  } else {
+    res.send({login: false})
+    return
+  }
+  // 记得story 不能用save 要用update
+  Root.updateOne({id: id}, {$push:{'zan':}})
 })
 module.exports = router

@@ -120,7 +120,7 @@ router.get('/user/getMyCreation', (req, res) => {
                 // console.log('排序后')
                 // console.log(JSON.stringify(bubbleSort(result)))
               }
-              res.send({permit: true, result: result})
+              res.send({permit: true, result: bubbleSort(result)})
             } else {
               res.send({permit: false, type: '404'})
             }

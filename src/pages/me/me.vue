@@ -294,7 +294,6 @@
               }
             })
         } else {
-          console.log('进入else部分')
           Axios.get('/register/checkUser', {
             params: {
               user: this.$route.params.user

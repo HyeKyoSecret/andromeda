@@ -30,9 +30,9 @@
     </div>
     <div class="read-foot-menu">
       <div class="button">
-        <!--<img src="../../img/icon/yellowthumb.png" />-->
-        <img src="../../img/icon/yellowthumb_unselected.png" @click="addZan"/>
-        <div>赞</div>
+        <img v-if='menuInfo.zan' src="../../img/icon/yellowthumb.png"/>
+        <img src="../../img/icon/yellowthumb_unselected.png" v-else @click="addZan"/>
+        <div>{{menuInfo.num}}赞</div>
         <!--<div>10</div>-->
       </div>
       <div class="button">
@@ -238,6 +238,10 @@
           date: '',
           ftNode: ''
         },
+        menuInfo: {
+          zan: false,
+          num: 0
+        },
         writeWindow: false
       }
     },
@@ -278,7 +282,9 @@
             id: this.$route.params.id
           }
         }).then(response => {
-          console.log(response.data)
+          this.menuInfo.zan = response.data.result.zan
+          this.menuInfo.num = response.data.result.num
+          console.log(response.data.result)
         })
       },
       addZan () {
@@ -286,7 +292,15 @@
         Axios.post('/story/addZan', {
           id: this.$route.params.id
         }).then(response => {
-          console.log(response.data)
+          if (response.data.login) {
+            if (response.data.success) {
+              this.fetchMenuData()
+            } else {
+              //
+            }
+          } else {
+            // 33
+          }
         })
       }
     }

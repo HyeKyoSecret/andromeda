@@ -135,22 +135,28 @@ router.get('/story/getMenuData', (req, res) => {
     zan: null
   }
   function getUser (user) {
-    return new Promise((resolve, reject) => {
+    console.log('getUser中的参数' + user)
+    return new Promise(function (resolve, reject) {
       User.findOne({username: user}, (err, user) => {
         if (err) {
           console.log(err)
         }
         if (user) {
-          resolve(user._id)
-        } else {
-          // 未登录用户,奇怪用户。。
-          resolve('customer')
+          console.log('id' +　user._id)
+          resolve('12345')
         }
       })
     })
   }
-  let getZan = async function () {
+  // var start = async function () {
+  //   let result = await getUser('swallow');
+  //   console.log(result); // 收到 ‘ok’
+  // }
+  // start()
+  let getZan = async function (user) {
+    console.log('212' + user)
     let userId = await getUser(user).toString()
+    console.log('kkkkkkkk  ' + userId)
     if (rootReg.test(id)) {
       // 444
       Root.findOne({id: id})
@@ -160,8 +166,11 @@ router.get('/story/getMenuData', (req, res) => {
           }
           if (root.zan) {
             result.zan = root.zan.some(function (ele) {
+              console.log('ele' + ele)
+              console.log('userId' + JSON.stringify(userId))
               return ele === userId
             })
+            console.log('zannnnnnnnnnn' + result.zan)
             result.num = root.zan.length
             res.send({error: false, result: result})
           } else {
@@ -192,11 +201,7 @@ router.get('/story/getMenuData', (req, res) => {
       res.send({error: true})
     }
   }
-  getZan()
-})
-router.get('/story/test', (req, res) => {
-  'use strict'
-  console.log('test收到转发内容' + req.query.id)
+  getZan(user)
 })
 router.post('/story/saveRootDraft', (req, res) => {
   'use strict'
@@ -910,7 +915,22 @@ router.post('/story/addZan', (req, res) => {
     res.send({login: false})
     return
   }
-  // 记得story 不能用save 要用update
-  Root.updateOne({id: id}, {$push:{'zan':}})
+  User.findOne({username: user})
+    .exec((err, user) => {
+      if (err) {
+        console.log(err)
+      }
+      if (user) {
+        Root.updateOne({id: id}, {$push:{'zan': user._id}})
+          .exec((err2) => {
+            if (err2) {
+              res.send({login: true, success: false})
+            }
+            res.send({login: true, success: true})
+          })
+      } else {
+        res.send({login: true, success: false})
+      }
+    })
 })
 module.exports = router

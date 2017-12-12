@@ -13,9 +13,9 @@ const StroyRootSchema = new Schema({
   date: { type: Date, default: Date.now },
   name: String,
   content: String,
-  zan: {
+  zan: [{
     type: Schema.Types.ObjectId, ref: 'User'
-  },
+  }],
   author: {
     type: Schema.Types.ObjectId,
     ref: 'User'

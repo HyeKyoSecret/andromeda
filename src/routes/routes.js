@@ -45,12 +45,16 @@ export default [
       },
       {
         path: 'creation',
-        component: resolve => require(['../pages/stories/myCreation.vue'], resolve)
+        component: resolve => require(['../pages/me/myCreation.vue'], resolve)
+      },
+      {
+        path: 'subscribe',
+        component: resolve => require(['../pages/me/subscribe.vue'], resolve)
       },
       {
         path: 'myCreation/:rootName',
         alias: 'creationNode',
-        component: resolve => require(['../pages/stories/myCreationNode.vue'], resolve)
+        component: resolve => require(['../pages/me/myCreationNode.vue'], resolve)
       }
     ]
   },
@@ -92,16 +96,12 @@ export default [
     component: resolve => require(['../pages/discover/discover.vue'], resolve)
   },
   {
-    path: '/subscribe',
-    component: resolve => require(['../pages/book/subscribe.vue'], resolve)
-  },
-  {
     path: '/start',
     component: resolve => require(['../pages/start/start.vue'], resolve)
   },
   {
     path: '/myCreationNode',
-    component: resolve => require(['../pages/stories/myCreationNode.vue'], resolve)
+    component: resolve => require(['../pages/me/myCreationNode.vue'], resolve)
   },
   {
     path: '/search',

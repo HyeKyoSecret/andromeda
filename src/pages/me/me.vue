@@ -242,7 +242,7 @@
           {
             name: '我的订阅',
             icon: require('../../img/icon/my_subscription.png'),
-            path: '/people/message/words'
+            path: '/people/subscribe'
           },
           {
             name: '我的关注',

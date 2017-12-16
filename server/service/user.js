@@ -134,4 +134,38 @@ router.get('/user/getMyCreation', (req, res) => {
     res.status(404)
   }
 })
+router.get('/user/getMySubscription', (req, res) => {
+  'use strict'
+  // let sysUser
+  // if (req.session.user) {
+  //   sysUser = req.session.user
+  // } else if (req.cookies.And) {
+  //   sysUser = req.cookies.And.user
+  // }
+  let user = req.query.user
+  // let result = []
+  // User.findOne({username: user})
+  //   .populate('subscribe')
+  //   .exec((err, user) => {
+  //     if (err) {
+  //       console.log(err)
+  //     }
+  //     if (user) {
+  //       for (let i = 0; i < user.subscribe.length; i++) {
+  //         let sub = user.subscribe
+  //         result.push({
+  //           id: sub[i].id,
+  //           name: sub[i].name,
+  //           follower: sub[i].subscribe.length
+  //         })
+  //       }
+  //       console.log(result)
+  //       res.send(result)
+  //     } else {
+  //       // error
+  //     }
+  //   })
+  console.log(user)
+})
+router.get('/test/tree')
 module.exports = router

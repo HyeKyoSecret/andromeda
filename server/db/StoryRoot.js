@@ -30,7 +30,13 @@ const StroyRootSchema = new Schema({
     type: Schema.Types.ObjectId,
     default: null,
     ref: 'Story'
-  }
+  },
+  subscribe: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  ]
 })
 StroyRootSchema.pre('save', function (next) {
   'use strict'

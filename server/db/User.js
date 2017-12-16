@@ -27,6 +27,22 @@ const UserSchema = new Schema({
       ref: 'Story'
     }]
   },
+  zan: {
+    root: [{
+      type: Schema.Types.ObjectId,
+      ref: 'StoryRoot'
+    }],
+    story: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Story'
+    }]
+  },
+  subscribe: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'StoryRoot'
+    }
+  ],
   myCreationDraft: {
     root: {
       name: String,

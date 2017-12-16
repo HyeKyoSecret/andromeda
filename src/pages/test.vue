@@ -1,11 +1,11 @@
 <template>
   <div class="finger-demo">
-  <div class="green" v-for="item in green">item</div>
   <button @click="chenyixun">触发按钮</button>
   </div>
 </template>
 <script>
-  import debounce from '../js/throttle.js'
+//  import debounce from '../js/throttle.js'
+  import Axios from 'axios'
   export default {
     data () {
       return {
@@ -21,42 +21,21 @@
         searchQuery: '',
         searchQueryIsDirty: false,
         isCalculating: false,
-        green: [1, 2, 3, 4, 5],
         path: '/me/myCreation'
       }
     },
     created: function () {
-      this.splitPath()
+      this.stackTest()
     },
     methods: {
       chenyixun () {
         this.$emit('hide')
       },
-      og: debounce(function () {
-        console.log(this.message)
-        console.log('123')
-      }, 500),
-      test () {
-        let p = 0
-        let sleep = function (time) {
-          return new Promise(function (resolve, reject) {
-            setTimeout(function () {
-              p = p + 1
-              resolve(p)
-              reject('error')
-            }, time)
+      stackTest () {
+        Axios.get('/story/getStack')
+          .then(response => {
+            console.log(response.data)
           })
-        }
-        let start = async function () {
-          while (p < 50) {
-            p = await sleep(400)
-            console.log(p)
-          }
-        }
-        start()
-      },
-      splitPath () {
-        console.log(this.path.split('/'))
       }
     }
   }

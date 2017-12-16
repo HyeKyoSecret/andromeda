@@ -7,6 +7,8 @@ const Story = require('../db/Story')
 const User = require('../db/User')
 const router = express.Router()
 const moment = require('moment')
+const rootReg = /^R([0-9]){5}$/
+const storyReg = /^S([0-9]){5}$/
 moment.locale('zh-cn')
 router.post('/story/buildRoot', (req, res) => {
   let rootName = req.body.rootName
@@ -71,8 +73,7 @@ router.post('/story/buildRoot', (req, res) => {
 router.get('/story/getStory', (req, res) => {
   'use strict'
   let id = req.query.id
-  let rootReg = /^R([0-9]){5}$/
-  let storyReg = /^S([0-9]){5}$/
+
   let result = {
     title: '',
     content: '',
@@ -121,8 +122,6 @@ router.get('/story/getStory', (req, res) => {
 })
 router.get('/story/getMenuData', (req, res) => {
   'use strict'
-  let rootReg = /^R([0-9]){5}$/
-  let storyReg = /^S([0-9]){5}$/
   let id = req.query.id
   let user
   if (req.session.user) {
@@ -134,29 +133,22 @@ router.get('/story/getMenuData', (req, res) => {
     num: null,
     zan: null
   }
-  function getUser (user) {
-    console.log('getUser中的参数' + user)
+  let uid = function (user) {
     return new Promise(function (resolve, reject) {
       User.findOne({username: user}, (err, user) => {
         if (err) {
           console.log(err)
         }
         if (user) {
-          console.log('id' +　user._id)
-          resolve('12345')
+          resolve(user._id)
+        } else {
+          resolve('customer')
         }
       })
     })
   }
-  // var start = async function () {
-  //   let result = await getUser('swallow');
-  //   console.log(result); // 收到 ‘ok’
-  // }
-  // start()
   let getZan = async function (user) {
-    console.log('212' + user)
-    let userId = await getUser(user).toString()
-    console.log('kkkkkkkk  ' + userId)
+    let userId = await uid(user)
     if (rootReg.test(id)) {
       // 444
       Root.findOne({id: id})
@@ -164,19 +156,20 @@ router.get('/story/getMenuData', (req, res) => {
           if (err2) {
             res.send({error: true})
           }
-          if (root.zan) {
-            result.zan = root.zan.some(function (ele) {
-              console.log('ele' + ele)
-              console.log('userId' + JSON.stringify(userId))
-              return ele === userId
-            })
-            console.log('zannnnnnnnnnn' + result.zan)
-            result.num = root.zan.length
-            res.send({error: false, result: result})
+          if (root) {
+            if (root.zan) {
+              result.zan = root.zan.some(function (ele) {
+                return ele.toString() === userId.toString()
+              })
+              result.num = root.zan.length
+              res.send({error: false, result: result})
+            } else {
+              result.zan = false
+              result.num = 0
+              res.send({error: false, result: result})
+            }
           } else {
-            result.zan = false
-            result.num = 0
-            res.send({error: false, result: result})
+            res.send({error: true})
           }
         })
     } else if (storyReg.test(id)) {
@@ -187,7 +180,7 @@ router.get('/story/getMenuData', (req, res) => {
           }
           if (story.zan) {
             result.zan = story.zan.some(function (ele) {
-              return ele === userId
+              return ele.toString() === userId.toString()
             })
             result.num = story.zan.length
             res.send({error: false, result: result})
@@ -310,9 +303,10 @@ router.get('/story/getStoryDraft', (req, res) => {
     author = req.session.user
   } else if (req.cookies.And) {
     author = req.cookies.And.user
+  } else {
+    return
   }
   let id = req.query.id
-  let storyReg = /^S([0-9]){5}$/
   if (storyReg.test(id)) {
     User.findOne({username: author}, (err, user) => {
       if (err) {
@@ -694,7 +688,6 @@ router.post('/story/buildStory', (req, res) => {
                       res.send('error')
                     } else {
                       if (story) {
-                        console.log('找到' + story.name)
                         let p = story.rb
                         let changeP = function () {
                           return new Promise(function (resolve, reject) {
@@ -918,19 +911,380 @@ router.post('/story/addZan', (req, res) => {
   User.findOne({username: user})
     .exec((err, user) => {
       if (err) {
-        console.log(err)
+        res.send({login: true, success: false})
       }
       if (user) {
-        Root.updateOne({id: id}, {$push:{'zan': user._id}})
-          .exec((err2) => {
-            if (err2) {
-              res.send({login: true, success: false})
+        if (rootReg.test(id)) {
+          Root.findOneAndUpdate({id: id}, {$push: {'zan': user._id}})
+            .exec((err2, root) => {
+              if (err2) {
+                res.send({login: true, success: false})
+              }
+              user.update({$push: {'zan.root': root._id}}, {upsert: true})
+                .exec(err3 => {
+                  if (err3) {
+                    res.send({login: true, success: false})
+                  } else {
+                    res.send({login: true, success: true})
+                  }
+                })
+            })
+        } else if (storyReg.test(id)) {
+          Story.findOneAndUpdate({id: id}, {$push: {'zan': user._id}})
+            .exec((err2, story) => {
+              if (err2) {
+                res.send({login: true, success: false})
+              }
+              user.update({$push: {'zan.story': story._id}}, {upsert: true})
+                .exec(err3 => {
+                  if (err3) {
+                    res.send({login: true, success: false})
+                  } else {
+                    res.send({login: true, success: true})
+                  }
+                })
+            })
+        } else {
+          res.send({login: true, success: false})
+        }
+      } else {
+        res.send({login: false, success: false})
+      }
+    })
+})
+router.post('/story/cancelZan', (req, res) => {
+  'use strict'
+  let id = req.body.id
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  } else {
+    res.send({login: false})
+    return
+  }
+  User.findOne({username: user}, (err, userId) => {
+    if (err) {
+      res.send({login: false, success: false})
+    }
+    if (user) {
+      if (rootReg.test(id)) {
+        Root.findOneAndUpdate({id: id}, {$pull: {'zan': userId._id}}, (err2, root) => {
+          if (err2) {
+            res.send({login: false, success: false})
+          }
+          for (let i = 0; i < userId.zan.root.length; i++) {
+            if (userId.zan.root[i].toString() === root._id.toString()) {
+              userId.zan.root.splice(i, 1)
+              break
+            }
+          }
+          userId.save((err3) => {
+            if (err3) {
+              console.log(err3)
             }
             res.send({login: true, success: true})
           })
+        })
+      } else if (storyReg.test(id)) {
+        Story.findOneAndUpdate({id: id}, {$pull: {'zan': userId._id}}, (err2, story) => {
+          if (err2) {
+            res.send({login: false, success: false})
+          }
+          for (let i = 0; i < userId.zan.story.length; i++) {
+            if (userId.zan.story[i].toString() === story._id.toString()) {
+              userId.zan.story.splice(i, 1)
+              break
+            }
+          }
+          userId.save((err3) => {
+            if (err3) {
+              console.log(err3)
+            }
+            res.send({login: true, success: true})
+          })
+        })
       } else {
         res.send({login: true, success: false})
       }
+    } else {
+      res.send({login: false, success: false})
+    }
+  })
+})
+router.get('/story/getSubscribe', (req, res) => {
+  'use strict'
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  } else {
+    res.send({login: false})
+    return
+  }
+  let rootId = function (id) {
+    let rId = id
+    return new Promise((resolve, reject) => {
+      if (rootReg.test(rId)) {
+        Root.findOne({id: id})
+          .exec((err, root) => {
+            if (err) {
+              reject()
+            }
+            if (root) {
+              resolve(root._id)
+            } else {
+              reject()
+            }
+          })
+      } else if (storyReg.test(id)) {
+        Story.findOne({id: id})
+          .populate('root')
+          .exec((err, story) => {
+            if (err) {
+              reject()
+            }
+            if (story.root) {
+              resolve(story.root._id)
+            } else {
+              reject()
+            }
+          })
+      } else {
+        reject()
+      }
     })
+  }
+  let exe = async function () {
+    try {
+      let id = await rootId(req.query.id)
+      User.findOne({username: user})
+        .exec((err, user) => {
+          if (err) {
+            res.send({login: true, success: false})
+          }
+          if (user) {
+            let result = user.subscribe.some((item) => {
+              return item.toString() === id.toString()
+            })
+            res.send({login: true, success: true, result: result})
+          } else {
+            res.send({login: true, success: false})
+          }
+        })
+    } catch (e) {
+      res.send({login: true, success: false})
+    }
+  }
+  exe()
+})
+router.post('/story/addSubscribe', (req, res) => {
+  'use strict'
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  } else {
+    res.send({login: false})
+    return
+  }
+  let rootId = function (id) {
+    let rId = id
+    return new Promise((resolve, reject) => {
+      if (rootReg.test(rId)) {
+        resolve(rId)
+      } else if (storyReg.test(id)) {
+        Story.findOne({id: id})
+          .populate('root')
+          .exec((err, story) => {
+            if (err) {
+              reject()
+            }
+            if (story.root) {
+              resolve(story.root.id)
+            } else {
+              reject()
+            }
+          })
+      } else {
+        reject()
+      }
+    })
+  }
+  let exe = async function () {
+    try {
+      let id = await rootId(req.body.id)
+      User.findOne({username: user}, (err, user) => {
+        if (err) {
+          res.send({login: true, success: false})
+        }
+        if (user) {
+          Root.findOneAndUpdate({id: id}, {$addToSet: {'subscribe': user._id}}, (err2, root) => {
+            if (err2) {
+              res.send({login: true, success: false})
+            }
+            user.update({$addToSet: {'subscribe': root._id}})
+              .exec((err3) => {
+                if (err3) {
+                  res.send({login: true, success: false})
+                }
+                res.send({login: true, success: true})
+              })
+          })
+        } else {
+          res.send({login: false, success: false})
+        }
+      })
+    } catch (e) {
+      res.send({login: false, success: false})
+    }
+  }
+  exe()
+})
+router.post('/story/cancelSubscribe', (req, res) => {
+  'use strict'
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  } else {
+    res.send({login: false})
+    return
+  }
+  let rootId = function (id) {
+    let rId = id
+    return new Promise((resolve, reject) => {
+      if (rootReg.test(rId)) {
+        resolve(rId)
+      } else if (storyReg.test(id)) {
+        Story.findOne({id: id})
+          .populate('root')
+          .exec((err, story) => {
+            if (err) {
+              reject()
+            }
+            if (story.root) {
+              resolve(story.root.id)
+            } else {
+              reject()
+            }
+          })
+      } else {
+        reject()
+      }
+    })
+  }
+  let exe = async function () {
+    try {
+      let id = await rootId(req.body.id)
+      User.findOne({username: user})
+        .exec((err, userId) => {
+          if (err) {
+            res.send({login: true, success: false})
+          }
+          if (userId) {
+            Root.findOneAndUpdate({id: id}, {$pull: {'subscribe': userId._id}}, (err2, root) => {
+              if (err2) {
+                res.send({login: false, success: false})
+              }
+              for (let i = 0; i < userId.subscribe.length; i++) {
+                if (userId.subscribe[i].toString() === root._id.toString()) {
+                  userId.subscribe.splice(i, 1)
+                  break
+                }
+              }
+              userId.save((err3) => {
+                if (err3) {
+                  console.log(err3)
+                }
+                res.send({login: true, success: true})
+              })
+            })
+          } else {
+            res.send({login: false, success: false})
+          }
+        })
+    } catch (e) {
+      res.send({login: true, success: false})
+    }
+  }
+  exe()
+})
+router.get('/story/getStack', (req, res) => {
+  'use strict'
+  let fid = 'R10006'
+  let stack = []
+  let p
+  Root.findOne({id: fid}, (err, root) => {
+    if (err) {
+      console.log(err)
+    }
+    let getObj = function (id) {
+      return new Promise((resolve, reject) => {
+        Story.findOne({_id: id})
+          .exec((err, story) => {
+            if (err) {
+              console.log(err)
+            }
+            if (story) {
+              resolve(story)
+            } else {
+              Root.findOne({_id: id}, (err, root) => {
+                if (err) {
+                  console.log(err)
+                }
+                if (root) {
+                  resolve(root)
+                } else {
+                  resolve(null)
+                }
+              })
+            }
+          })
+      })
+    }
+
+    let exe = async function (root) {
+      p = root._id
+      let _temp
+      let count = 0
+      while (p || stack.length) {
+        console.log('_________________________________________')
+        if (p) {
+          count = count + 1
+          _temp = await getObj(p)
+          console.log('temp' + _temp)
+          stack.push({
+            _id: _temp._id,
+            id: _temp.id,
+            content: _temp.content
+          })
+          p = _temp.lc
+          console.log('stack' + JSON.stringify(stack))
+          console.log(p)
+        } else {
+          stack.pop()
+          console.log('stack' + JSON.stringify(stack))
+          console.log('temp' + _temp)
+          p = _temp.rb
+          console.log(p)
+          if (!p && stack.length > 1) {
+            _temp = await getObj(stack[stack.length - 1]._id)
+            p = _temp.rb
+            console.log('新的P' + p)
+            stack.pop()
+            console.log('新的Stack' + JSON.stringify(stack))
+          }
+          // console.log('*********' + stack[stack.length - 1].content + await getObj(stack[stack.length - 1]._id))
+        }
+      }
+      console.log('$$$$$$$$$$$' + count)
+    }
+    exe(root)
+  })
 })
 module.exports = router

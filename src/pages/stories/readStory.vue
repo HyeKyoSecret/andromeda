@@ -29,14 +29,20 @@
       </div>
     </div>
     <div class="read-foot-menu">
-      <div class="button">
-        <img v-if='menuInfo.zan' src="../../img/icon/yellowthumb.png"/>
-        <img src="../../img/icon/yellowthumb_unselected.png" v-else @click="addZan"/>
+      <div class="button" v-if='menuInfo.zan'>
+        <img v-if='menuInfo.zan' src="../../img/icon/yellowthumb.png" @click="cancelZan"/>
         <div>{{menuInfo.num}}赞</div>
-        <!--<div>10</div>-->
       </div>
-      <div class="button">
+      <div class="button" v-else>
+        <img src="../../img/icon/yellowthumb_unselected.png"  @click="addZan"/>
+        <div>{{menuInfo.num}}赞</div>
+      </div>
+      <div class="button" v-if='menuInfo.subscribe' @click="cancelSubscribe">
         <img src="../../img/icon/yellowstar.png" />
+        <div>已订阅</div>
+      </div>
+      <div class="button" v-else @click="addSubscribe">
+        <img src="../../img/icon/yellowstar_unselected.png" />
         <div>订阅</div>
       </div>
       <div class="write-continue">
@@ -227,6 +233,7 @@
   </style>
 <script>
   import Axios from 'axios'
+  import { Toast, MessageBox } from 'mint-ui'
   import writeStory from '../../components/story/writeStory.vue'
   export default {
     data () {
@@ -240,7 +247,8 @@
         },
         menuInfo: {
           zan: false,
-          num: 0
+          num: 0,
+          subscribe: false
         },
         writeWindow: false
       }
@@ -284,7 +292,17 @@
         }).then(response => {
           this.menuInfo.zan = response.data.result.zan
           this.menuInfo.num = response.data.result.num
-          console.log(response.data.result)
+        })
+        Axios.get('/story/getSubscribe', {
+          params: {
+            id: this.$route.params.id
+          }
+        }).then(response => {
+          if (response.data.login && response.data.success) {
+            this.menuInfo.subscribe = response.data.result
+          } else {
+            this.menuInfo.subscribe = false
+          }
         })
       },
       addZan () {
@@ -296,10 +314,93 @@
             if (response.data.success) {
               this.fetchMenuData()
             } else {
-              //
+              Toast({
+                message: '发生错误请稍后再试',
+                position: 'middle',
+                duration: 1000
+              })
             }
           } else {
-            // 33
+            MessageBox({
+              title: '您需要登录才可进行操作',
+              message: '现在去登录吗?',
+              showCancelButton: true
+            }).then(action => {
+              this.$router.push('/login')
+              // 这边欠一个重定向
+            })
+          }
+        })
+      },
+      cancelZan () {
+        Axios.post('/story/cancelZan', {
+          id: this.$route.params.id
+        }).then(response => {
+          if (response.data.login) {
+            if (response.data.success) {
+              this.fetchMenuData()
+            } else {
+              Toast({
+                message: '发生错误请稍后再试',
+                position: 'middle',
+                duration: 1000
+              })
+            }
+          } else {
+            Toast({
+              message: '发生错误请稍后再试',
+              position: 'middle',
+              duration: 1000
+            })
+          }
+        })
+      },
+      addSubscribe () {
+        Axios.post('/story/addSubscribe', {
+          id: this.$route.params.id
+        }).then(response => {
+          if (response.data.login) {
+            if (response.data.success) {
+              this.fetchMenuData()
+            } else {
+              Toast({
+                message: '发生错误请稍后再试',
+                position: 'middle',
+                duration: 1000
+              })
+            }
+          } else {
+            MessageBox({
+              title: '您需要登录才可进行操作',
+              message: '现在去登录吗?',
+              showCancelButton: true
+            }).then(action => {
+              this.$router.push('/login')
+              // 这边欠一个重定向
+            })
+          }
+        })
+      },
+      cancelSubscribe () {
+        Axios.post('/story/cancelSubscribe', {
+          id: this.$route.params.id
+        }).then(response => {
+          if (response.data.login) {
+            if (response.data.success) {
+              this.fetchMenuData()
+            } else {
+              Toast({
+                message: '发生错误请稍后再试',
+                position: 'middle',
+                duration: 1000
+              })
+            }
+          } else {
+            Toast({
+              message: '发生错误请稍后再试',
+              position: 'middle',
+              duration: 1000
+            })
           }
         })
       }

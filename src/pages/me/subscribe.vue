@@ -204,3 +204,27 @@
   }
 
 </style>
+<script>
+  import Axios from 'axios'
+  export default {
+    data () {
+      return {
+        //
+      }
+    },
+    created: function () {
+      this.getData()
+    },
+    methods: {
+      getData () {
+        Axios.get('/user/getMySubscription', {
+          params: {
+            user: this.$route.params.user
+          }
+        }).then(response => {
+          console.log(JSON.stringify(response.data))
+        })
+      }
+    }
+  }
+</script>

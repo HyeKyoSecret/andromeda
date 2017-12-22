@@ -27,7 +27,8 @@ const StorySchema = new Schema({
     ref: 'Story'
   },
   author: {
-    type: String
+    type: Schema.Types.ObjectId,
+    ref: 'User'
   }
 })
 StorySchema.pre('save', function (next) {

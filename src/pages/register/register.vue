@@ -171,6 +171,7 @@
         }).then((response) => {
           Toast({
             message: response.data,
+            position: 'middle',
             duration: 700
           })
           this.getCaptcha()

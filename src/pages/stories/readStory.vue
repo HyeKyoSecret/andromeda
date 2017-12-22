@@ -15,10 +15,10 @@
       {{storyInfo.content}}
     </div>
     <div class="related-info">
-      <div class="anchor"><img src="../../img/icon/anchor.png" /></div>
+      <!--<div class="anchor"><img src="../../img/icon/anchor.png" /></div>-->
       <div class="author-info">
         <div class="like">
-          <span >作者:{{storyInfo.author}}</span>
+          <span >作者:&nbsp;{{storyInfo.author}}</span>
           <span ><img src="../../img/icon/redheart.png" /></span>
         </div>
         <div class="time">{{storyInfo.date}}</div>
@@ -129,8 +129,8 @@
         .like {
           span{
             img {
-              height: 25px;
-              width: 25px;
+              height: 20px;
+              width: 20px;
               margin-left: 5px;
               vertical-align: middle;
             }
@@ -150,7 +150,7 @@
           color: $font-gray;
           font-size: 15px;
           text-align: right;
-          margin-top: 25px;
+          margin-top: 10px;
           margin-right: 20px;
           img {
             height: 15px;

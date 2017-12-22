@@ -91,11 +91,17 @@
               })
             }
           } else {
-            Toast({
-              message: '发生错误，请稍后再试',
-              position: 'middle',
-              duration: 1000
-            })
+            if (response.data.type === '404') {
+              // 用户名错误
+              this.$emit('error')
+            } else {
+              // 数据库错误
+              Toast({
+                message: '发生错误，请稍后再试',
+                position: 'middle',
+                duration: 1000
+              })
+            }
           }
         }).catch((error) => {
           Indicator.close()

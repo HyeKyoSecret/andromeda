@@ -16,18 +16,18 @@
               <img src="../../img/icon/already_read.png" />
               <div class="read-amount">918</div>
           </div>
-          <div class="story-name">塞尔达传说</div>
+          <div class="story-name">{{cover.name}}</div>
           <div class="quantity">
             <img src="../../img/icon/gray_flag.png" />
-            <div class="amount">4985篇</div>
+            <div class="amount">{{cover.nodeNum}} 篇</div>
           </div>
           <div class="quantity">
            <img src="../../img/icon/gray_book.png"/>
-            <div class="amount">155人</div>
+            <div class="amount">{{cover.follower}} 人</div>
           </div>
           <div class="quantity">
             <img src="../../img/icon/gray_pen.png" />
-            <div class="amount">55篇</div>
+            <div class="amount">{{cover.myCreation}} 篇</div>
           </div>
           <div class="continue-read">
             继续阅读
@@ -35,38 +35,11 @@
         </div>
       </div>
     </div>
-    <div class="shelf">
-      <div class="book">
+    <div class="shelf" v-for="item in contentList" >
+      <div class="book" v-for="q in item" @click="changeCover(q)">
         <div class="cover"><img src="../../img/photo/LegendofZelda.png" /></div>
         <div class="progress-bar"></div>
-        <div class="name">塞尔达传说</div>
-      </div>
-      <div class="book">
-        <div class="cover"><img src="../../img/photo/LegendofZelda.png" /></div>
-        <div class="progress-bar"></div>
-        <div class="name">塞尔达传说</div>
-      </div>
-      <div class="book">
-        <div class="cover"><img src="../../img/photo/LegendofZelda.png" /></div>
-        <div class="progress-bar"></div>
-        <div class="name">塞尔达传说</div>
-      </div>
-    </div>
-    <div class="shelf">
-      <div class="book">
-        <div class="cover"><img src="../../img/photo/LegendofZelda.png" /></div>
-        <div class="progress-bar"></div>
-        <div class="name">塞尔达传说</div>
-      </div>
-      <div class="book">
-        <div class="cover"><img src="../../img/photo/LegendofZelda.png" /></div>
-        <div class="progress-bar"></div>
-        <div class="name">塞尔达传说</div>
-      </div>
-      <div class="book">
-        <div class="cover"><img src="../../img/photo/LegendofZelda.png" /></div>
-        <div class="progress-bar"></div>
-        <div class="name">塞尔达传说</div>
+        <div class="name">{{q.name}}</div>
       </div>
     </div>
   </div>
@@ -163,6 +136,7 @@
             margin-left: 25%;
             margin-right: 25%;
             height :20px;
+            line-height: 20px;
             background-color: #00db75 ;
             font-size: 12px;
             border-radius: 5px;
@@ -175,9 +149,14 @@
     .shelf {
       margin-top: 20px;
       border-bottom: 1px solid $line-gray;
-      display: flex;
+      height: 130px;
+      &:last-child{
+        margin-bottom: 85px;
+        border: none;
+      }
       .book {
-        flex: 1;
+        width: 33.3%;
+        float: left;
         text-align: center;
         font-size: 0;
         .cover {
@@ -196,7 +175,7 @@
           background-color: #00db75;
         }
         .name {
-          font-size: 14px;
+          font-size: 12px;
           color: $font-dark;
         }
       }
@@ -209,20 +188,64 @@
   export default {
     data () {
       return {
-        //
+        subList: [],
+        contentList: [],
+        cover: {
+          id: '',
+          name: '',
+          follower: 0,
+          nodeNum: 0,
+          myCreation: 0
+        }
       }
     },
     created: function () {
       this.getData()
     },
     methods: {
+      changeCover: function (obj) {
+        this.cover.id = obj.id
+        this.cover.name = obj.name
+        this.cover.follower = obj.follower
+        Axios.all([Axios.get('/user/getSubStack', {params: {id: obj.id}}), Axios.get('/user/getContribute', {params: {id: this.cover.id}})])
+          .then(Axios.spread((stack, contr) => {
+            this.cover.nodeNum = stack.data.count
+            this.cover.myCreation = contr.data.count
+          }))
+      },
       getData () {
         Axios.get('/user/getMySubscription', {
           params: {
             user: this.$route.params.user
           }
         }).then(response => {
-          console.log(JSON.stringify(response.data))
+          response.data.forEach(data => {
+            this.subList.push({
+              id: data.id,
+              name: data.name,
+              follower: data.follower
+            })
+          })
+          if (this.subList) {
+            this.cover.id = this.subList[0].id
+            this.cover.name = this.subList[0].name
+            this.cover.follower = this.subList[0].follower
+          }
+          let temp = parseInt(this.subList.length / 3)
+          for (let i = 0; i <= temp; i++) {
+            this.contentList[i] = []
+          }
+          for (let i = 0; i <= temp; i++) {
+            for (let j = 0; j < 3; j++) {
+              if (this.subList[i * 3 + j]) {
+                this.contentList[i][j] = this.subList[i * 3 + j]
+              } else {
+                break
+              }
+            }
+          }
+          console.log('end' + JSON.stringify(this.contentList))
+          this.changeCover(this.cover)
         })
       }
     }

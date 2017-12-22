@@ -7,8 +7,8 @@ const Story = require('../db/Story')
 const User = require('../db/User')
 const router = express.Router()
 const moment = require('moment')
-const rootReg = /^R([0-9]){5}$/
-const storyReg = /^S([0-9]){5}$/
+const rootReg = /^R([0-9]){7}$/
+const storyReg = /^S([0-9]){7}$/
 moment.locale('zh-cn')
 router.post('/story/buildRoot', (req, res) => {
   let rootName = req.body.rootName
@@ -17,8 +17,10 @@ router.post('/story/buildRoot', (req, res) => {
   let author = req.session.user || req.cookies.And.user
   if (author) {
     let rootStory = {
-      name: rootName.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),     // 过滤大于小于美元符号
-      content: rootContent.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),
+      // name: rootName.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),     // 过滤大于小于美元符号
+      name: rootName,
+      content: rootContent,
+      // content: rootContent.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),
       writePermit: writePermit
     }
     User.findOne({username: author}, (err, user) => {
@@ -41,24 +43,20 @@ router.post('/story/buildRoot', (req, res) => {
                     console.log(err3)
                     res.send({permit: false, message: '服务器忙，请稍后再试'})
                   } else {
-                    user.myCreation.root.push(root._id)
-                    user.save((error) => {
-                      if (error) {
-                        console.log(error)
-                        res.send({permit: false, message: '服务器忙，请稍后再试'})
-                      } else {
-                        user.myCreationDraft.root.name = ''
-                        user.myCreationDraft.root.content = ''
-                        user.myCreationDraft.root.writePermit = true
-                        user.save(saveError => {
-                          if (saveError) {
-                            res.send({permit: false, message: '服务器忙，请稍后再试'})
-                          } else {
-                            res.send({permit: true, message: '发布成功'})
-                          }
-                        })
-                      }
-                    })
+                    user.update({$push: {'myCreation.root': root._id}})
+                      .exec(err => {
+                        if (err) {
+                          res.send({permit: false, message: '服务器忙，请稍后再试'})
+                        }
+                        user.update({$set: {'user.myCreationDraft.root.name': '', 'user.myCreationDraft.root.content': '', 'user.myCreationDraft.root.writePermit': true}})
+                          .exec(saveError => {
+                            if (saveError) {
+                              res.send({permit: false, message: '发生错误，请稍后再试'})
+                            } else {
+                              res.send({permit: true, message: '发布成功'})
+                            }
+                          })
+                      })
                   }
                 })
               }
@@ -101,6 +99,7 @@ router.get('/story/getStory', (req, res) => {
   } else if (storyReg.test(id)) {
     Story.findOne({ id: id })
       .populate('root')
+      .populate('author')
       .exec((err, story) => {
         if (err) {
           res.send({permit: false})
@@ -108,8 +107,8 @@ router.get('/story/getStory', (req, res) => {
           if (story) {
             result.title = story.root.name
             result.content = story.content
-            result.author = story.author
-            result.date = moment(story.date).format('YYYY年M月D日 H:m')
+            result.author = story.author.nickname
+            result.date = moment(story.date).format('YYYY年M月D日 HH:mm')
             res.send({permit: true, result: result})
           } else {
             res.send({permit: false})
@@ -212,16 +211,14 @@ router.post('/story/saveRootDraft', (req, res) => {
       if (err) {
         res.send({permit: false, message: '发生错误，请稍后再试'})
       } else {
-        user.myCreationDraft.root.name = rootName
-        user.myCreationDraft.root.content = rootContent
-        user.myCreationDraft.root.writePermit = writePermit
-        user.save(error => {
-          if (error) {
-            res.send({permit: false, message: '发生错误，请稍后再试'})
-          } else {
-            res.send({permit: true})
-          }
-        })
+        user.update({$set: {'user.myCreationDraft.root.name': rootName, 'user.myCreationDraft.root.content': rootContent, 'user.myCreationDraft.root.writePermit': writePermit}})
+          .exec(error => {
+            if (error) {
+              res.send({permit: false, message: '发生错误，请稍后再试'})
+            } else {
+              res.send({permit: true})
+            }
+          })
       }
     })
   } else {
@@ -236,7 +233,6 @@ router.post('/story/saveStoryDraft', (req, res) => {
   } else if (req.cookies.And) {
     author = req.cookies.And.user
   }
-  console.log('author' + author)
   if (author) {
     User.findOne({username: author}, (err, user) => {
       if (err) {
@@ -254,23 +250,21 @@ router.post('/story/saveStoryDraft', (req, res) => {
               user.myCreationDraft.story[i].content = req.body.storyContent
             } else {
               if (i === user.myCreationDraft.story.length - 1) {
-                user.myCreationDraft.story.push({
-                  id: req.body.id,
-                  content: req.body.storyContent
-                })
+                user.update({$push: {'myCreationDraft.story': {'id': req.body.id, 'content': req.body.storyContent}}})
+                  .exec(error => {
+                    if (error) {
+                      // 拒绝
+                      res.send({permit: false, message: '发生错误请稍后再试'})
+                    }
+                    res.send({permit: true})
+                  })
               }
             }
           }
         }
-        user.save((userError) => {
-          if (userError) {
-            // 拒绝
-            res.send({permit: false, message: '发生错误请稍后再试'})
-          }
-          res.send({permit: true})
-        })
       } else {
         // 拒绝
+        res.send({permit: false, message: '发生错误请稍后再试'})
       }
     })
   } else {
@@ -548,245 +542,266 @@ router.post('/story/buildStory', (req, res) => {
   } else if (req.cookies.And) {
     author = req.cookies.And.user
   } else {
-    // 拒绝
+    res.send({login: false})
   }
   let story = {
-    content: content,
-    author: author
+    content: content
   }
-  let newStory = new Story(story)
-  newStory.save((saveErr, doc) => {
-    if (saveErr) {
-      // 拒绝
-    }
-    if (ftNode.split('')[0] === 'R') { // 从ftNode id上判断前驱节点是否是根节点
-      Root.findOne({id: ftNode})
-        .exec((rootErr, root) => {
-          if (rootErr) {
+  User.findOne({username: author})
+    .exec((err, user) => {
+      if (err) {
+        res.send({login: true, success: false})
+      }
+      if (user) {
+        story.author = user._id
+        let newStory = new Story(story)
+        newStory.save((saveErr, doc) => {
+          if (saveErr) {
             // 拒绝
+            res.send({login: true, success: false})
           }
-          if (root) {   // 查询到ftNode是根节点
-            if (root.lc) {    // root.lc 非空
-              Story.findOne({_id: root.lc})
-                .exec((storyErr, story) => {
-                  if (storyErr) {
-                    // 拒绝
-                  } else {
-                    if (story) {
-                      let p = story.rb     // 创建指针p 指向当前故事的rb
-                      let changeP = function () {
-                        return new Promise(function (resolve, reject) {
-                          Story.findOne({_id: p}, (error, nStory) => {
-                            if (error) {
-                              console.log(error)
-                            } else {
-                              p = nStory.rb
-                              if (!p) {
-                                nStory.update({$set: {rb: doc._id}})
-                                  .exec((err3) => {
-                                    if (err3) {
-                                      console.log(err3)
+          if (ftNode.split('')[0] === 'R') { // 从ftNode id上判断前驱节点是否是根节点
+            Root.findOne({id: ftNode})
+              .exec((rootErr, root) => {
+                if (rootErr) {
+                  res.send({login: true, success: false})
+                }
+                if (root) {   // 查询到ftNode是根节点
+                  if (root.lc) {    // root.lc 非空
+                    Story.findOne({_id: root.lc})
+                      .exec((storyErr, story) => {
+                        if (storyErr) {
+                          res.send({login: true, success: false})
+                        } else {
+                          if (story) {
+                            let p = story.rb     // 创建指针p 指向当前故事的rb
+                            let changeP = function () {
+                              return new Promise(function (resolve, reject) {
+                                Story.findOne({_id: p}, (error, nStory) => {
+                                  if (error) {
+                                    res.send({login: true, success: false})
+                                  } else {
+                                    p = nStory.rb
+                                    if (!p) {
+                                      nStory.update({$set: {rb: doc._id}})
+                                        .exec((err3) => {
+                                          if (err3) {
+                                            res.send({login: true, success: false})
+                                          }
+                                          doc.update({$set: {root: nStory.root}}, (err6) => {
+                                            if (err6) {
+                                              res.send({login: true, success: false})
+                                            }
+                                            User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
+                                              .exec((err7) => {
+                                                if (err7) {
+                                                  res.send({login: true, success: false})
+                                                }
+                                                res.send('ok')
+                                              })
+                                          })
+                                        })
                                     }
-                                    doc.update({$set: {root: nStory.root}}, (err6) => {
+                                    resolve(p)
+                                    reject('error')
+                                  }
+                                })
+                              })
+                            }
+
+                            let search = async function () {
+                              if (!p) { // root的第一个子节点的rb为空
+                                story.update({$set: {rb: doc._id}})
+                                  .exec((err4) => {
+                                    if (err4) {
+                                      console.log(err4)
+                                      res.send({login: true, success: false})
+                                      // 拒绝
+                                    }
+                                    doc.update({$set: {root: story.root}}, (err6) => {
                                       if (err6) {
                                         console.log(err6)
+                                        res.send({login: true, success: false})
+                                        // 拒绝
                                       }
                                       User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
                                         .exec((err7) => {
                                           if (err7) {
+                                            res.send({login: true, success: false})
                                             // 拒绝
                                           }
-                                          res.send('ok')
+                                          res.send('发布成功')
                                         })
                                     })
                                   })
                               }
-                              resolve(p)
-                              reject('error+++++!!')
-                            }
-                          })
-                        })
-                      }
-
-                      let search = async function () {
-                        if (!p) { // root的第一个子节点的rb为空
-                          story.update({$set: {rb: doc._id}})
-                            .exec((err4) => {
-                              if (err4) {
-                                console.log(err4)
-                                // 拒绝
+                              while (p) {
+                                p = await changeP()
                               }
-                              doc.update({$set: {root: story.root}}, (err6) => {
-                                if (err6) {
-                                  console.log(err6)
-                                  // 拒绝
-                                }
-                                User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
-                                  .exec((err7) => {
-                                    if (err7) {
-                                      // 拒绝
-                                    }
-                                    res.send('ok')
-                                  })
-                              })
-                            })
-                        }
-                        while (p) {
-                          p = await changeP()
-                        }
-                      }
+                            }
 
-                      search().catch((err) => {
-                        'use strict'
-                        console.log('执行出现了错误' + err)
-                        res.send('error')
-                      })
-                    } else {
-                      console.log('根节点的lc故事出错')
-                      res.send('error')
-                    }
-                  }
-                })
-            } else { // root.lc 不存在
-              root.update({$set: {lc: doc._id}})
-                .exec(err => {
-                  if (err) {
-                    console.log(err)
-                  }
-                  doc.update({$set: {root: root._id}}, (docErr) => {
-                    if (docErr) {
-                      // 拒绝
-                    }
-                    User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
-                      .exec((err7) => {
-                        if (err7) {
-                          // 拒绝
+                            search().catch((err) => {
+                              'use strict'
+                              console.log('执行出现了错误' + err)
+                              res.send('error')
+                            })
+                          } else {
+                            console.log('根节点的lc故事出错')
+                            res.send('error')
+                          }
                         }
-                        res.send('ok')
                       })
-                  })
-                })
-            }
-          } else {
-            // 非root拒绝
-          }
-        })
-    } else if (ftNode.split('')[0] === 'S') { // 从ftNode id上判断前驱节点是否是普通故事节点
-      Story.findOne({id: ftNode})
-        .exec((err, odstory) => {
-          'use strict'
-          if (err) {
-            console.log(err)
-            res.send('error')
-          } else {
-            if (odstory) {    // 前驱结点是普通故事结点
-              if (odstory.lc) {   // 普通故事结点lc非空
-                Story.findOne({_id: odstory.lc})
-                  .exec((err, story) => {
-                    if (err) {
-                      console.log(err)
-                      res.send('error')
-                    } else {
-                      if (story) {
-                        let p = story.rb
-                        let changeP = function () {
-                          return new Promise(function (resolve, reject) {
-                            Story.findOne({_id: p}, (error, nStory) => {
-                              if (error) {
-                                console.log(error)
-                              } else {
-                                p = nStory.rb
+                  } else { // root.lc 不存在
+                    root.update({$set: {lc: doc._id}})
+                      .exec(err => {
+                        if (err) {
+                          console.log(err)
+                        }
+                        doc.update({$set: {root: root._id}}, (docErr) => {
+                          if (docErr) {
+                            // 拒绝
+                          }
+                          User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
+                            .exec((err7) => {
+                              if (err7) {
+                                // 拒绝
+                                res.send({login: true, success: false})
+                              }
+                              res.send('发布成功')
+                            })
+                        })
+                      })
+                  }
+                } else {
+                  // 非root拒绝
+                  res.send({login: true, success: false})
+                }
+              })
+          } else if (ftNode.split('')[0] === 'S') { // 从ftNode id上判断前驱节点是否是普通故事节点
+            Story.findOne({id: ftNode})
+              .exec((err, odstory) => {
+                'use strict'
+                if (err) {
+                  console.log(err)
+                  res.send('error')
+                } else {
+                  if (odstory) {    // 前驱结点是普通故事结点
+                    if (odstory.lc) {   // 普通故事结点lc非空
+                      Story.findOne({_id: odstory.lc})
+                        .exec((err, story) => {
+                          if (err) {
+                            console.log(err)
+                            res.send('error')
+                          } else {
+                            if (story) {
+                              let p = story.rb
+                              let changeP = function () {
+                                return new Promise(function (resolve, reject) {
+                                  Story.findOne({_id: p}, (error, nStory) => {
+                                    if (error) {
+                                      console.log(error)
+                                    } else {
+                                      p = nStory.rb
+                                      if (!p) {
+                                        nStory.update({$set: {rb: doc._id}})
+                                          .exec((err3) => {
+                                            if (err3) {
+                                              console.log(err3)
+                                              res.send({login: true, success: false})
+                                              // 拒绝
+                                            }
+                                            doc.update({$set: {root: nStory.root}}, (err6) => {
+                                              if (err6) {
+                                                console.log(err6)
+                                              }
+                                              User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
+                                                .exec((err7) => {
+                                                  if (err7) {
+                                                    res.send({login: true, success: false})
+                                                    // 拒绝
+                                                  }
+                                                  res.send('发布成功')
+                                                })
+                                            })
+                                          })
+                                      }
+                                      resolve(p)
+                                      reject('error!')
+                                    }
+                                  })
+                                })
+                              }
+
+                              let search = async function () {
                                 if (!p) {
-                                  nStory.update({$set: {rb: doc._id}})
-                                    .exec((err3) => {
-                                      if (err3) {
-                                        console.log(err3)
+                                  story.update({$set: {rb: doc._id}})
+                                    .exec((err4) => {
+                                      if (err4) {
+                                        console.log(err4)
+                                        res.send({login: true, success: false})
                                         // 拒绝
                                       }
-                                      doc.update({$set: {root: nStory.root}}, (err6) => {
+                                      doc.update({$set: {root: story.root}}, (err6) => {
                                         if (err6) {
                                           console.log(err6)
+                                          res.send({login: true, success: false})
+                                          // 拒绝
                                         }
                                         User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
                                           .exec((err7) => {
                                             if (err7) {
                                               // 拒绝
+                                              res.send({login: true, success: false})
                                             }
-                                            res.send('ok')
+                                            res.send('发布成功')
                                           })
                                       })
                                     })
                                 }
-                                resolve(p)
-                                reject('error+++++!!')
+                                while (p) {
+                                  p = await changeP()
+                                }
                               }
-                            })
-                          })
-                        }
 
-                        let search = async function () {
-                          if (!p) {
-                            story.update({$set: {rb: doc._id}})
-                              .exec((err4) => {
-                                if (err4) {
-                                  console.log(err4)
+                              search().catch((err) => {
+                                'use strict'
+                                console.log('执行出现了错误' + err)
+                                res.send('error')
+                              })
+                            } else {
+                              res.send('error')
+                            }
+                          }
+                        })
+                    } else {    // 普通故事结点.lc为空
+                      odstory.update({$set: {lc: doc._id}})
+                        .exec(err => {
+                          if (err) {
+                            console.log(err)
+                          }
+                          doc.update({$set: {root: odstory.root}}, (docErr) => {
+                            if (docErr) {
+                              // 拒绝
+                            }
+                            User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
+                              .exec((err7) => {
+                                if (err7) {
                                   // 拒绝
                                 }
-                                doc.update({$set: {root: story.root}}, (err6) => {
-                                  if (err6) {
-                                    console.log(err6)
-                                    // 拒绝
-                                  }
-                                  User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
-                                    .exec((err7) => {
-                                      if (err7) {
-                                        // 拒绝
-                                      }
-                                      res.send('ok')
-                                    })
-                                })
+                                res.send('发布成功')
                               })
-                          }
-                          while (p) {
-                            p = await changeP()
-                          }
-                        }
-
-                        search().catch((err) => {
-                          'use strict'
-                          console.log('执行出现了错误' + err)
-                          res.send('error')
+                          })
                         })
-                      } else {
-                        res.send('error')
-                      }
                     }
-                  })
-              } else {    // 普通故事结点.lc为空
-                odstory.update({$set: {lc: doc._id}})
-                  .exec(err => {
-                    if (err) {
-                      console.log(err)
-                    }
-                    doc.update({$set: {root: odstory.root}}, (docErr) => {
-                      if (docErr) {
-                        // 拒绝
-                      }
-                      User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
-                        .exec((err7) => {
-                          if (err7) {
-                            // 拒绝
-                          }
-                          res.send('ok')
-                        })
-                    })
-                  })
-              }
-            }
+                  }
+                }
+              })
           }
         })
-    }
-  })
+      } else {
+        res.send({login: false})
+      }
+    })
 })
 router.get('/checkRootName', (req, res) => {
   'use strict'
@@ -1253,7 +1268,6 @@ router.get('/story/getStack', (req, res) => {
       let _temp
       let count = 0
       while (p || stack.length) {
-        console.log('_________________________________________')
         if (p) {
           count = count + 1
           _temp = await getObj(p)
@@ -1275,14 +1289,10 @@ router.get('/story/getStack', (req, res) => {
           if (!p && stack.length > 1) {
             _temp = await getObj(stack[stack.length - 1]._id)
             p = _temp.rb
-            console.log('新的P' + p)
             stack.pop()
-            console.log('新的Stack' + JSON.stringify(stack))
           }
-          // console.log('*********' + stack[stack.length - 1].content + await getObj(stack[stack.length - 1]._id))
         }
       }
-      console.log('$$$$$$$$$$$' + count)
     }
     exe(root)
   })

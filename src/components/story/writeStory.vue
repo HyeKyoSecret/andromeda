@@ -54,12 +54,15 @@
     },
     methods: {
       buildStory: function () {
-        console.log('构建故事')
         Axios.post('/story/buildStory', {
           ftNode: this.ftNode,
           content: this.storyContent
         }).then((response) => {
-          console.log(response.data)
+          Toast({
+            message: response.data,
+            position: 'middle',
+            duration: 1000
+          })
         })
       },
       closeWindow () {

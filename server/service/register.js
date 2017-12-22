@@ -112,7 +112,7 @@ router.get('/login/getCaptcha', (req, res) => {
   res.set('Content-Type', 'image/svg+xml')
   res.status(200).send(captcha.data)
 })
-router.post('/login', (req, res) => {
+router.post('/register/login', (req, res) => {
   'use strict'
   if (req.body.captcha.toLowerCase() === req.session.loginCaptchaText) {
     let username = req.body.username
@@ -125,7 +125,7 @@ router.post('/login', (req, res) => {
           if (user.password === md5(password)) {
             req.session.user = user.username
             res.cookie('And', {user: user.username}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 14), httpOnly: true })
-            res.send({permit: true, message: '登录成功'})
+            res.send({permit: true, id: user.id, message: '登录成功'})
           } else {
             res.send({permit: false, message: '用户名密码不正确'})
           }
@@ -141,7 +141,6 @@ router.post('/login', (req, res) => {
 })
 router.get('/register/checkLogin', (req, res) => {
   'use strict'
-  console.log('session中获取到账户名' + req.session.user)
   if (req.session.user) {
     User.findOne({username: req.session.user})
       .exec((err, user) => {
@@ -155,7 +154,7 @@ router.get('/register/checkLogin', (req, res) => {
           if (user) {
             res.send({
               login: true,
-              user: req.session.user,
+              user: user.id,
               nickName: user.nickname
             })
           } else {
@@ -180,7 +179,7 @@ router.get('/register/checkLogin', (req, res) => {
           req.session.user = req.cookies.And.user
           res.send({
             login: true,
-            user: req.session.user,
+            user: result.id,
             nickName: result.nickname
           })
         } else {
@@ -200,16 +199,12 @@ router.get('/register/checkLogin', (req, res) => {
 })
 router.get('/register/checkUser', (req, res) => {
   let user = req.query.user
-  let userReg = /^[0-9a-zA-Z_]{6,16}$/   // 字母数字下划线
+  let userReg = /^U([0-9]){7}$/
   let loginUser
   if (req.session.user) {        // 获取当前登录信息
     loginUser = req.session.user
-  } else if (req.cookies.And) {
-    if (req.cookies.And.user) {
-      loginUser = req.cookies.And.user
-    } else {
-      loginUser = ''
-    }
+  } else if (req.cookies.And && req.cookies.And.user) {
+    loginUser = req.cookies.And.user
   } else {
     loginUser = ''
   }
@@ -218,15 +213,15 @@ router.get('/register/checkUser', (req, res) => {
       user: '',
       nickName: ''
     }
-    User.findOne({username: user})
+    User.findOne({id: user})
       .exec((err, account) => {
         if (err) {
           res.send({user: null})
         } else {
           if (account) {
-            userInfo.user = account.username
+            userInfo.user = account.id
             userInfo.nickName = account.nickname
-            if (user === loginUser) {
+            if (account.username === loginUser) {
               res.send({user: userInfo, customer: false}) // 是本人，非访客模式
             } else {
               res.send({user: userInfo, customer: true}) // 访客模式

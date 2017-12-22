@@ -95,15 +95,13 @@
         let userReg = /^[0-9a-zA-Z_]{6,16}$/
         let passwordReg = /^[A-Za-z0-9]{6,16}$/
         if (this.username && this.password && userReg.test(this.username) && passwordReg.test(this.password) && this.captcha) {
-          Axios.post('/login', {
+          Axios.post('/register/login', {
             username: this.username,
             password: this.password,
             captcha: this.captcha
           }).then((response) => {
-            console.log(response)
             if (response.data) {
               try {
-                console.log(response.data.permit + 'permit')
                 if (!response.data.permit) {
                   this.getCaptcha()
                   throw new Error(response.data.message)
@@ -113,7 +111,7 @@
                     position: 'middle',
                     duration: 1000
                   })
-                  this.$router.push({name: 'me', params: { user: this.username }})
+                  this.$router.push({name: 'me', params: { user: response.data.id }})
                 }
               } catch (e) {
                 this.getCaptcha()

@@ -3,6 +3,8 @@
  */
 const express = require('express')
 const User = require('../db/User')
+const Root = require('../db/StoryRoot')
+const Story = require('../db/Story')
 // const moment = require('moment')
 const router = express.Router()
 router.get('/user/getMyCreation', (req, res) => {
@@ -24,9 +26,9 @@ router.get('/user/getMyCreation', (req, res) => {
     return arr
   }
   if (user) {
-    let userReg = /^[0-9a-zA-Z_]{6,16}$/
+    let userReg = /^U([0-9]){7}$/
     if (userReg.test(user)) {
-      User.findOne({username: user})
+      User.findOne({id: user})
         .populate({
           path: 'myCreation.root',
           options: {
@@ -117,8 +119,6 @@ router.get('/user/getMyCreation', (req, res) => {
                     }
                   }
                 }
-                // console.log('排序后')
-                // console.log(JSON.stringify(bubbleSort(result)))
               }
               res.send({permit: true, result: bubbleSort(result)})
             } else {
@@ -143,29 +143,156 @@ router.get('/user/getMySubscription', (req, res) => {
   //   sysUser = req.cookies.And.user
   // }
   let user = req.query.user
-  // let result = []
-  // User.findOne({username: user})
-  //   .populate('subscribe')
-  //   .exec((err, user) => {
-  //     if (err) {
-  //       console.log(err)
-  //     }
-  //     if (user) {
-  //       for (let i = 0; i < user.subscribe.length; i++) {
-  //         let sub = user.subscribe
-  //         result.push({
-  //           id: sub[i].id,
-  //           name: sub[i].name,
-  //           follower: sub[i].subscribe.length
-  //         })
-  //       }
-  //       console.log(result)
-  //       res.send(result)
-  //     } else {
-  //       // error
-  //     }
-  //   })
-  console.log(user)
+  let result = []
+  User.findOne({id: user})
+    .populate('subscribe')
+    .exec((err, user) => {
+      if (err) {
+        console.log(err)
+      }
+      if (user) {
+        for (let i = 0; i < user.subscribe.length; i++) {
+          let sub = user.subscribe
+          result.push({
+            id: sub[i].id,
+            name: sub[i].name,
+            follower: sub[i].subscribe.length
+          })
+        }
+        res.send(result)
+      } else {
+        // error
+      }
+    })
 })
-router.get('/test/tree')
+router.get('/user/getSubStack', (req, res) => {
+  'use strict'
+  let fid = req.query.id
+  let stack = []
+  let p
+  Root.findOne({id: fid}, (err, root) => {
+    if (err) {
+      console.log(err)
+    }
+    let getObj = function (id) {
+      return new Promise((resolve, reject) => {
+        Story.findOne({_id: id})
+          .exec((err, story) => {
+            if (err) {
+              console.log(err)
+            }
+            if (story) {
+              resolve(story)
+            } else {
+              Root.findOne({_id: id}, (err, root) => {
+                if (err) {
+                  console.log(err)
+                }
+                if (root) {
+                  resolve(root)
+                } else {
+                  resolve(null)
+                }
+              })
+            }
+          })
+      })
+    }
+
+    let exe = async function (root) {
+      p = root._id
+      let _temp
+      let count = 0
+      while (p || stack.length) {
+        if (p) {
+          count = count + 1
+          _temp = await getObj(p)
+          stack.push({
+            _id: _temp._id,
+            id: _temp.id,
+            content: _temp.content
+          })
+          p = _temp.lc
+        } else {
+          stack.pop()
+          p = _temp.rb
+          if (!p && stack.length > 1) {
+            _temp = await getObj(stack[stack.length - 1]._id)
+            p = _temp.rb
+            stack.pop()
+          }
+        }
+      }
+      res.send({count: count})
+    }
+    exe(root)
+  })
+})
+router.get('/user/getContribute', (req, res) => {
+  'use strict'
+  let id = req.query.id
+  let count = 0
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  } else {
+    res.send({count: count})
+  }
+
+  Root.findOne({id: id}, (err, root) => {
+    if (err) {
+      res.send({error: true})
+    }
+    if (root) {
+      User.findOne({username: user})
+        .exec((err, user) => {
+          if (err) {
+            res.send({error: true})
+          }
+          let getStoryRoot = function (id) {
+            return new Promise((resolve, reject) => {
+              Story.findOne({_id: id})
+                .populate('root')
+                .exec((err, story) => {
+                  if (err) {
+                    reject(err)
+                  }
+                  if (story) {
+                    resolve(story.root._id)
+                  } else {
+                    resolve()
+                  }
+                })
+            })
+          }
+
+          if (user) {
+            user.myCreation.root.forEach(croot => {
+              if (croot && root && croot.toString() === root._id.toString()) {
+                count += 1
+              }
+            })
+            let exe = async function () {
+              for (let i = 0; i < user.myCreation.story.length; i++) {
+                let cstory = await getStoryRoot(user.myCreation.story[i])
+                if (cstory && root && cstory.toString() === root._id.toString()) {
+                  count += 1
+                }
+                if (i === user.myCreation.story.length - 1) {
+                  res.send({count: count})
+                }
+              }
+            }
+            exe()
+          } else {
+            res.send({error: true})
+          }
+        })
+    } else {
+      res.send({error: true})
+    }
+  })
+})
 module.exports = router

@@ -224,6 +224,7 @@
 </style>
 <script>
   import FootMenu from '../../components/foot-menu.vue'
+  import { Toast } from 'mint-ui'
   import Axios from 'axios'
   export default {
     data () {
@@ -290,7 +291,11 @@
               }
             }).catch(error => {
               if (error) {
-                // 错误处理
+                Toast({
+                  message: '发生错误',
+                  position: 'middle',
+                  duration: 700
+                })
               }
             })
         } else {
@@ -312,7 +317,7 @@
                 }
               }
             } else {
-              alert(res.data.user)
+              this.$emit('error')
             }
           }).catch(error => {
             alert('error' + error)

@@ -8,7 +8,7 @@ let RootCountsSchema = new Schema({
   seq: { type: Number, default: 0 }
 })
 let RootCounts = mongoose.model('RootCounts', RootCountsSchema)
-const StroyRootSchema = new Schema({
+const StoryRootSchema = new Schema({
   id: { type: String },
   date: { type: Date, default: Date.now },
   name: String,
@@ -38,7 +38,7 @@ const StroyRootSchema = new Schema({
     }
   ]
 })
-StroyRootSchema.pre('save', function (next) {
+StoryRootSchema.pre('save', function (next) {
   'use strict'
   let doc = this
   RootCounts.findOneAndUpdate({name: 'rootId'}, { $inc: { seq: 1 } }, function (error, counter) {
@@ -49,5 +49,5 @@ StroyRootSchema.pre('save', function (next) {
     next()
   })
 })
-const StoryRoot = mongoose.model('StoryRoot', StroyRootSchema)
+const StoryRoot = mongoose.model('StoryRoot', StoryRootSchema)
 module.exports = StoryRoot

@@ -385,7 +385,6 @@
         Axios.get('/story/getRootDraft')
           .then(response => {
             if (response.data.draft) {
-              console.log(this.writePermit)
               this.rootName = response.data.name
               this.rootContent = response.data.content
               this.writePermit = response.data.writePermit

@@ -226,7 +226,7 @@
               follower: data.follower
             })
           })
-          if (this.subList) {
+          if (this.subList.length) {
             this.cover.id = this.subList[0].id
             this.cover.name = this.subList[0].name
             this.cover.follower = this.subList[0].follower
@@ -244,7 +244,6 @@
               }
             }
           }
-          console.log('end' + JSON.stringify(this.contentList))
           this.changeCover(this.cover)
         })
       }

@@ -14,7 +14,7 @@ router.post('/story/buildRoot', (req, res) => {
   let rootName = req.body.rootName
   let rootContent = req.body.rootContent
   let writePermit = req.body.writePermit
-  let author = req.session.user || req.cookies.And.user
+  let author = req.session.user || (req.cookies.And && req.cookies.And.user)
   if (author) {
     let rootStory = {
       // name: rootName.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),     // 过滤大于小于美元符号
@@ -48,7 +48,7 @@ router.post('/story/buildRoot', (req, res) => {
                         if (err) {
                           res.send({permit: false, message: '服务器忙，请稍后再试'})
                         }
-                        user.update({$set: {'user.myCreationDraft.root.name': '', 'user.myCreationDraft.root.content': '', 'user.myCreationDraft.root.writePermit': true}})
+                        user.update({$set: {'myCreationDraft.root.name': '', 'myCreationDraft.root.content': '', 'myCreationDraft.root.writePermit': true}})
                           .exec(saveError => {
                             if (saveError) {
                               res.send({permit: false, message: '发生错误，请稍后再试'})
@@ -65,7 +65,7 @@ router.post('/story/buildRoot', (req, res) => {
       }
     })
   } else {
-    res.send({permit: false, message: '没有权限操作'})
+    res.send({permit: false, message: '没有权限操作，请先登录'})
   }
 })
 router.get('/story/getStory', (req, res) => {
@@ -211,7 +211,7 @@ router.post('/story/saveRootDraft', (req, res) => {
       if (err) {
         res.send({permit: false, message: '发生错误，请稍后再试'})
       } else {
-        user.update({$set: {'user.myCreationDraft.root.name': rootName, 'user.myCreationDraft.root.content': rootContent, 'user.myCreationDraft.root.writePermit': writePermit}})
+        user.update({$set: {'myCreationDraft.root.name': rootName, 'myCreationDraft.root.content': rootContent, 'myCreationDraft.root.writePermit': writePermit}})
           .exec(error => {
             if (error) {
               res.send({permit: false, message: '发生错误，请稍后再试'})
@@ -542,7 +542,7 @@ router.post('/story/buildStory', (req, res) => {
   } else if (req.cookies.And) {
     author = req.cookies.And.user
   } else {
-    res.send({login: false})
+    res.send({error: true, type: 'login', message: '发布失败，请先登录'})
   }
   let story = {
     content: content
@@ -550,28 +550,27 @@ router.post('/story/buildStory', (req, res) => {
   User.findOne({username: author})
     .exec((err, user) => {
       if (err) {
-        res.send({login: true, success: false})
+        res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
       }
       if (user) {
         story.author = user._id
         let newStory = new Story(story)
         newStory.save((saveErr, doc) => {
           if (saveErr) {
-            // 拒绝
-            res.send({login: true, success: false})
+            res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
           }
           if (ftNode.split('')[0] === 'R') { // 从ftNode id上判断前驱节点是否是根节点
             Root.findOne({id: ftNode})
               .exec((rootErr, root) => {
                 if (rootErr) {
-                  res.send({login: true, success: false})
+                  res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                 }
                 if (root) {   // 查询到ftNode是根节点
                   if (root.lc) {    // root.lc 非空
                     Story.findOne({_id: root.lc})
                       .exec((storyErr, story) => {
                         if (storyErr) {
-                          res.send({login: true, success: false})
+                          res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                         } else {
                           if (story) {
                             let p = story.rb     // 创建指针p 指向当前故事的rb
@@ -579,31 +578,30 @@ router.post('/story/buildStory', (req, res) => {
                               return new Promise(function (resolve, reject) {
                                 Story.findOne({_id: p}, (error, nStory) => {
                                   if (error) {
-                                    res.send({login: true, success: false})
+                                    res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                   } else {
                                     p = nStory.rb
                                     if (!p) {
                                       nStory.update({$set: {rb: doc._id}})
                                         .exec((err3) => {
                                           if (err3) {
-                                            res.send({login: true, success: false})
+                                            res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                           }
                                           doc.update({$set: {root: nStory.root}}, (err6) => {
                                             if (err6) {
-                                              res.send({login: true, success: false})
+                                              res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                             }
                                             User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
                                               .exec((err7) => {
                                                 if (err7) {
-                                                  res.send({login: true, success: false})
+                                                  res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                                 }
-                                                res.send('ok')
+                                                res.send({success: true, message: '发布成功'})
                                               })
                                           })
                                         })
                                     }
                                     resolve(p)
-                                    reject('error')
                                   }
                                 })
                               })
@@ -614,23 +612,18 @@ router.post('/story/buildStory', (req, res) => {
                                 story.update({$set: {rb: doc._id}})
                                   .exec((err4) => {
                                     if (err4) {
-                                      console.log(err4)
-                                      res.send({login: true, success: false})
-                                      // 拒绝
+                                      res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                     }
                                     doc.update({$set: {root: story.root}}, (err6) => {
                                       if (err6) {
-                                        console.log(err6)
-                                        res.send({login: true, success: false})
-                                        // 拒绝
+                                        res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                       }
                                       User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
                                         .exec((err7) => {
                                           if (err7) {
-                                            res.send({login: true, success: false})
-                                            // 拒绝
+                                            res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                           }
-                                          res.send('发布成功')
+                                          res.send({success: true, message: '发布成功'})
                                         })
                                     })
                                   })
@@ -642,12 +635,12 @@ router.post('/story/buildStory', (req, res) => {
 
                             search().catch((err) => {
                               'use strict'
-                              console.log('执行出现了错误' + err)
-                              res.send('error')
+                              if (err) {
+                                res.send({error: true, type: 'story', message: '服务器忙，请稍后再试'})
+                              }
                             })
                           } else {
-                            console.log('根节点的lc故事出错')
-                            res.send('error')
+                            res.send({error: true, type: 'story', message: '查询出错，故事已不存在'})
                           }
                         }
                       })
@@ -655,26 +648,24 @@ router.post('/story/buildStory', (req, res) => {
                     root.update({$set: {lc: doc._id}})
                       .exec(err => {
                         if (err) {
-                          console.log(err)
+                          res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                         }
                         doc.update({$set: {root: root._id}}, (docErr) => {
                           if (docErr) {
-                            // 拒绝
+                            res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                           }
                           User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
                             .exec((err7) => {
                               if (err7) {
-                                // 拒绝
-                                res.send({login: true, success: false})
+                                res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                               }
-                              res.send('发布成功')
+                              res.send({success: true, message: '发布成功'})
                             })
                         })
                       })
                   }
                 } else {
-                  // 非root拒绝
-                  res.send({login: true, success: false})
+                  res.send({error: true, type: 'root', message: '查询出错，故事已不存在'})
                 }
               })
           } else if (ftNode.split('')[0] === 'S') { // 从ftNode id上判断前驱节点是否是普通故事节点
@@ -682,16 +673,14 @@ router.post('/story/buildStory', (req, res) => {
               .exec((err, odstory) => {
                 'use strict'
                 if (err) {
-                  console.log(err)
-                  res.send('error')
+                  res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                 } else {
                   if (odstory) {    // 前驱结点是普通故事结点
                     if (odstory.lc) {   // 普通故事结点lc非空
                       Story.findOne({_id: odstory.lc})
                         .exec((err, story) => {
                           if (err) {
-                            console.log(err)
-                            res.send('error')
+                            res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                           } else {
                             if (story) {
                               let p = story.rb
@@ -699,34 +688,30 @@ router.post('/story/buildStory', (req, res) => {
                                 return new Promise(function (resolve, reject) {
                                   Story.findOne({_id: p}, (error, nStory) => {
                                     if (error) {
-                                      console.log(error)
+                                      res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                     } else {
                                       p = nStory.rb
                                       if (!p) {
                                         nStory.update({$set: {rb: doc._id}})
                                           .exec((err3) => {
                                             if (err3) {
-                                              console.log(err3)
-                                              res.send({login: true, success: false})
-                                              // 拒绝
+                                              res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                             }
                                             doc.update({$set: {root: nStory.root}}, (err6) => {
                                               if (err6) {
-                                                console.log(err6)
+                                                res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                               }
                                               User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
                                                 .exec((err7) => {
                                                   if (err7) {
-                                                    res.send({login: true, success: false})
-                                                    // 拒绝
+                                                    res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                                   }
-                                                  res.send('发布成功')
+                                                  res.send({success: true, message: '发布成功'})
                                                 })
                                             })
                                           })
                                       }
                                       resolve(p)
-                                      reject('error!')
                                     }
                                   })
                                 })
@@ -737,23 +722,18 @@ router.post('/story/buildStory', (req, res) => {
                                   story.update({$set: {rb: doc._id}})
                                     .exec((err4) => {
                                       if (err4) {
-                                        console.log(err4)
-                                        res.send({login: true, success: false})
-                                        // 拒绝
+                                        res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                       }
                                       doc.update({$set: {root: story.root}}, (err6) => {
                                         if (err6) {
-                                          console.log(err6)
-                                          res.send({login: true, success: false})
-                                          // 拒绝
+                                          res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                         }
                                         User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
                                           .exec((err7) => {
                                             if (err7) {
-                                              // 拒绝
-                                              res.send({login: true, success: false})
+                                              res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                             }
-                                            res.send('发布成功')
+                                            res.send({success: true, message: '发布成功'})
                                           })
                                       })
                                     })
@@ -764,12 +744,12 @@ router.post('/story/buildStory', (req, res) => {
                               }
 
                               search().catch((err) => {
-                                'use strict'
-                                console.log('执行出现了错误' + err)
-                                res.send('error')
+                                if (err) {
+                                  res.send({error: true, type: 'story', message: '服务器忙，请稍后再试'})
+                                }
                               })
                             } else {
-                              res.send('error')
+                              res.send({error: true, type: 'root', message: '查询出错，故事已不存在'})
                             }
                           }
                         })
@@ -777,18 +757,18 @@ router.post('/story/buildStory', (req, res) => {
                       odstory.update({$set: {lc: doc._id}})
                         .exec(err => {
                           if (err) {
-                            console.log(err)
+                            res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                           }
                           doc.update({$set: {root: odstory.root}}, (docErr) => {
                             if (docErr) {
-                              // 拒绝
+                              res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                             }
                             User.findOneAndUpdate({username: author}, {$push: {'myCreation.story': doc._id}})
                               .exec((err7) => {
                                 if (err7) {
-                                  // 拒绝
+                                  res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                 }
-                                res.send('发布成功')
+                                res.send({success: true, message: '发布成功'})
                               })
                           })
                         })
@@ -799,7 +779,7 @@ router.post('/story/buildStory', (req, res) => {
           }
         })
       } else {
-        res.send({login: false})
+        res.send({error: true, type: 'login', message: '发布失败，请先登录'})
       }
     })
 })

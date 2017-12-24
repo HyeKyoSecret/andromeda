@@ -77,9 +77,7 @@
     },
     watch: {
       writePermit: function (curVal) {
-        if (curVal === false) {
-          console.log('不触发')
-        } else {
+        if (curVal !== false) {
           MessageBox.confirm('开放自由续写后将无法再关闭，确认开放吗?').then(action => {
             Axios.post('/story/changeWritePermit', {
               rootName: this.result.root.name,
@@ -117,7 +115,6 @@
               Axios.get('/user/getMyCreation', {
                 params: {
                   user: this.$route.params.user
-//                  rootName: this.$route.params.rootName
                 }
               }).then(response => {
                 let arr = response.data.result
@@ -132,21 +129,21 @@
                   this.result = response.data
                   if (response.data.root) {
                     this.writeAuthorized = response.data.root.writePermit
-                    console.log('开放续写？' + this.writeAuthorized)
                     this.writePermit = this.writeAuthorized
                   }
                 })
               })
             } else {
               // 访客
+              alert('访客模式')
             }
           } else {
             // 用户名不存在或不合法
-            this.$router.replace({path: '/error'})
+            this.$emit('error')
           }
         }).catch((error) => {
           if (error) {
-            this.$router.replace({path: '/error'})
+            this.$emit('error')
           }
         })
       },

@@ -16,7 +16,7 @@
       </span>
       </div>
       <div class="input-name">
-        <div class="input" ><input type="text" placeholder="请输入故事名字" v-model="rootName"></div>
+        <div class="input" ><input type="text" placeholder="请输入故事名字" v-model.trim="rootName"></div>
       </div>
       <div class="gradient-line"></div>
       <div class="error-info">{{rootNameError}}</div>

@@ -2,15 +2,15 @@
   <div class="read-story">
     <div class="notice">
       <span class="icon">
-        <img src="../../img/icon/back.png">
+        <img src="../../img/icon/back.png" @click="goBack">
       </span>
       <span class="title">
         {{storyInfo.title}}
       </span>
     </div>
-    <div class="marker">
-      <img src="../../img/icon/marker_selected.png" />
-    </div>
+    <!--<div class="marker">-->
+      <!--<img src="../../img/icon/marker_selected.png" />-->
+    <!--</div>-->
     <div class="context">
       {{storyInfo.content}}
     </div>
@@ -262,6 +262,9 @@
       this.fetchMenuData()
     },
     methods: {
+      goBack () {
+        this.$router.go(-1)
+      },
       writeStory () {
         this.writeWindow = true
       },

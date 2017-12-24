@@ -59,7 +59,7 @@
           content: this.storyContent
         }).then((response) => {
           Toast({
-            message: response.data,
+            message: response.data.message,
             position: 'middle',
             duration: 1000
           })
@@ -73,7 +73,6 @@
               storyContent: this.storyContent
             }).then(response => {
               if (response.data.permit) {
-                // 草稿保存成功的路由跳转
                 this.$emit('close')
               } else {
                 Toast({

@@ -476,6 +476,7 @@
             }).then(response => {
               if (response.data.permit) {
                 // 草稿保存成功的路由跳转
+                this.$router.go(-1)
               } else {
                 Toast({
                   message: response.data.message,
@@ -496,6 +497,8 @@
             console.log(error)
             // 离开的路由跳转
           })
+        } else {
+          this.$router.push('/discover')
         }
       }
     }

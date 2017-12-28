@@ -5,7 +5,7 @@
 export default [
   {
     path: '/',
-    component: resolve => require(['../pages/Hello.vue'], resolve)
+    component: resolve => require(['../pages/discover/discover.vue'], resolve)
   },
   {
     path: '/dbTest',

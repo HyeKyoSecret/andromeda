@@ -1,15 +1,17 @@
 <template>
   <div class="foot-menu">
-    <router-link tag='div' to= '/begin' class="button">
-      <img src="../img/icon/foot_begin.png">
-      <div>开始</div>
+    <router-link tag='div' to= '/start' class="button">
+      <div class="f-begin pic"></div>
+      <div class="words">开始</div>
     </router-link>
     <div class="discovery">
-      <router-link tag='div'  to='/discovery'><img src="../img/icon/foot_discovery.png"></router-link>
+      <router-link tag='div' class="circle" to='/discover'>
+        <div class="f-discover"></div>
+      </router-link>
     </div>
-    <router-link tag ='div' class="button" to='/me'>
-      <img src="../img/icon/foot_me.png">
-      <div>我</div>
+    <router-link tag ='div' class="button" to='/people'>
+      <div class="f-me pic"></div>
+      <div class="words">我</div>
     </router-link>
   </div>
 </template>
@@ -23,22 +25,51 @@
     bottom: 0;
     display: flex;
     color: $menu-color;
+    .words {
+      margin-top: -5px;
+    }
+    .pic {
+      height: 35px;
+      background-repeat: no-repeat;
+      background-size: 23px 23px;
+      background-position:center;
+    }
+    .f-begin {
+      background-image: url(../img/icon/foot_begin.png);
+    }
+    .f-me {
+      background-image: url(../img/icon/foot_me.png);
+    }
+    .router-link-active .f-me {
+      background-image: url(../img/icon/foot_me_active.png);
+    }
+    .f-discover {
+      height: 65px;
+      margin-left: -4px;
+      background-image: url(../img/icon/foot_discovery.png);
+      background-repeat: no-repeat;
+      background-size: 55px 45px;
+      background-position:center;
+    }
+    .router-link-active .f-discover {
+      height: 65px;
+      margin-left: -4px;
+      background-image: url(../img/icon/foot_discovery_active.png);
+      background-repeat: no-repeat;
+      background-size: 55px 45px;
+      background-position:center;
+    }
     .button{
       flex: 1;
       display: flex;
       flex-direction: column;
       flex-wrap: nowrap;
       text-align: center;
-      img {
-        margin: 4px auto 0 auto;
-        width: 23px;
-        height: 23px;
-      }
       font-size: 12px;
     }
     .discovery {
       flex: 2;
-      div{
+      .circle{
         width: 86px;
         height: 43px;
         background: white;
@@ -47,14 +78,6 @@
         top: -24px;
         left: 50%;
         margin-left: -43px;
-      }
-      img {
-        position: absolute;
-        left: 50%;
-        top: 12px;
-        width: 55px;
-        height: 45px;
-        margin-left: -30px; // 图标多补1px
       }
     }
   }

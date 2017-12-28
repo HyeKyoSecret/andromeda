@@ -1,18 +1,18 @@
 <template>
-  <div class="start">
+  <div class="start" @click.self="goBack">
     <div class="menu">
-      <div class="button-pen">
+      <router-link tag='div' to="/buildStory" class="button-pen">
         <img src="../../img/icon/white_pen.png" />
-      </div>
-      <div class="button-book">
+      </router-link>
+      <router-link tag='div' to="/buildStory" class="button-book">
         <img src="../../img/icon/white_book.png" />
-      </div>
-      <div class="button-trail">
+      </router-link>
+      <router-link tag='div' to="/buildStory" class="button-trail">
         <img src="../../img/icon/white_trail.png" />
-      </div>
-      <div class="button-search">
+      </router-link>
+      <router-link tag='div' to="/buildStory" class="button-search">
         <img src="../../img/icon/white_search.png" />
-      </div>
+      </router-link>
     </div>
   </div>
 </template>
@@ -82,4 +82,15 @@
   }
 }
 </style>
-
+<script>
+  export default {
+    data () {
+      return {}
+    },
+    methods: {
+      goBack: function () {
+        this.$router.go(-1)
+      }
+    }
+  }
+</script>

@@ -260,6 +260,7 @@
       this.getData()
       this.ftNode = this.$route.params.id
       this.fetchMenuData()
+      this.getNextNode()
     },
     methods: {
       goBack () {
@@ -405,6 +406,15 @@
               duration: 1000
             })
           }
+        })
+      },
+      getNextNode () {
+        Axios.get('/story/getNextNode', {
+          params: {
+            id: this.$route.params.id
+          }
+        }).then(response => {
+          console.log(response.data)
         })
       }
     }

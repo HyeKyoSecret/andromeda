@@ -24,38 +24,74 @@
         </div>
       </div>
     </div>
-    <div class="one-recommendation">
-      <div class="story-information">
-        <div class="cover">
-          <div><img src="../../img/photo/LegendofZelda.png" /></div>
-          <div class="book-number">
-            <span><img src="../../img/icon/graybook.png" /></span>
-            <span class="number">4399</span>
+    <div>
+      <router-link tag="div" v-for="item in storyList" :to="item.path" :key='item.path' class="one-recommendation" >
+        <div class="story-information">
+          <div class="cover">
+            <div><img src="../../img/photo/LegendofZelda.png" /></div>
+            <div class="book-number">
+              <span><img src="../../img/icon/graybook.png" /></span>
+              <span class="number">4399</span>
+            </div>
+          </div>
+          <div class="right-part">
+            <div class="story-name">{{item.storyName}}</div>
+            <div class="story-content">{{item.content}}</div>
           </div>
         </div>
-        <div class="right-part">
-          <div class="story-name">塞尔达传说</div>
-          <div class="story-content">是非成败转头空，青山依旧在，惯看秋月春风。一壶浊酒喜相逢，古今多少事，滚滚败转头空相逢，一壶浊酒喜相逢，古今多少事，滚滚败转头空相逢古今多少事，滚滚败转头空……</div>
+        <div class="assist-info">
+          <div class="reason">
+            推送理由：来自好友2B
+          </div>
+          <div class="author-info">
+            <div class="author-name">作者：{{item.author}}</div>
+            <div class="time">{{item.date}}</div>
+          </div>
         </div>
-      </div>
-      <div class="assist-info">
-        <div class="reason">
-          推送理由：来自好友2B
-        </div>
-        <div class="author-info">
-          <div class="author-name">作者：林克</div>
-          <div class="time">2017.10.14 19:37</div>
-        </div>
-      </div>
+      </router-link>
     </div>
     <foot-menu></foot-menu>
   </div>
 </template>
 <script>
   import FootMenu from '../../components/foot-menu.vue'
+  import Axios from 'axios'
+  import { Toast } from 'mint-ui'
   export default {
     components: {
       FootMenu
+    },
+    data () {
+      return {
+        storyList: []
+      }
+    },
+    created: function () {
+      this.getData()
+    },
+    methods: {
+      getData () {
+        Axios.get('/story/getDefaultDiscovery')
+          .then(response => {
+            if (response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            } else {
+              response.data.result.forEach((o) => {
+                this.storyList.push({
+                  storyName: o.storyName,
+                  content: o.content,
+                  author: o.author,
+                  date: o.date,
+                  path: `/story/${o.path}`
+                })
+              })
+            }
+          })
+      }
     }
   }
 </script>
@@ -157,7 +193,10 @@
       height: 145px;
       width: 100%;
       background-color: white;
-      margin-top: 25px;
+      margin-top: 15px;
+      &:last-child {
+        margin-bottom: 100px;
+      }
       .story-information {
         margin-left: 10px;
         margin-right: 10px;

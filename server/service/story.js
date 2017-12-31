@@ -89,7 +89,7 @@ router.get('/story/getStory', (req, res) => {
             result.title = root.name
             result.content = root.content
             result.author = root.author.nickname
-            result.date = moment(root.date).format('YYYY年M月D日 H:m')
+            result.date = moment(root.date).format('YYYY年M月D日 HH:mm')
             res.send({permit: true, result: result})
           } else {
             res.send({permit: false})
@@ -1276,5 +1276,125 @@ router.get('/story/getStack', (req, res) => {
     }
     exe(root)
   })
+})
+router.get('/story/getDefaultDiscovery', (req, res) => {
+  'use strict'
+  let result = []
+  Root.find({})
+    .populate('author')
+    .exec((err, root) => {
+      if (err) {
+        res.send({error: true, type: 'database', message: '发生错误请稍后再试'})
+      }
+      if (root) {
+        root.forEach((sRoot) => {
+          result.push({
+            storyName: sRoot.name,
+            content: sRoot.content,
+            author: sRoot.author.nickname,
+            date: moment(sRoot.date).format('YYYY.MM.DD HH:mm'),
+            path: sRoot.id
+          })
+        })
+        Story.find({})
+          .populate('root')
+          .populate('author')
+          .exec((error, story) => {
+            if (error) {
+              res.send({error: true, type: 'database', message: '发生错误请稍后再试'})
+            }
+            if (story) {
+              story.forEach((sStory) => {
+                result.push({
+                  storyName: sStory.root.name,
+                  content: sStory.content,
+                  author: sStory.author.nickname,
+                  date: moment(sStory.date).format('YYYY.MM.DD HH:mm'),
+                  path: sStory.id
+                })
+              })
+              res.send({result: result})
+            } else {
+              res.send({result: result})
+            }
+          })
+      } else {
+        res.send({result: result})
+      }
+    })
+})
+router.get('/story/getNextNode', (req, res) => {
+  'use strict'
+  let fid = req.query.id
+  if (rootReg.test(fid)) {
+    let stack = []
+    let storyList = []
+    let p
+    Root.findOne({id: fid}, (err, root) => {
+      if (err) {
+        console.log(err)
+      }
+      let getObj = function (id) {
+        return new Promise((resolve, reject) => {
+          Story.findOne({_id: id})
+            .exec((err, story) => {
+              if (err) {
+                console.log(err)
+              }
+              if (story) {
+                resolve(story)
+              } else {
+                Root.findOne({_id: id}, (err, root) => {
+                  if (err) {
+                    console.log(err)
+                  }
+                  if (root) {
+                    resolve(root)
+                  } else {
+                    resolve(null)
+                  }
+                })
+              }
+            })
+        })
+      }
+
+      let exe = async function (root) {
+        p = root._id
+        let _temp
+        while (p || stack.length) {
+          if (p) {
+            _temp = await getObj(p)
+            storyList.push({
+              _id: _temp._id,
+              id: _temp.id,
+              content: _temp.content
+            })
+            stack.push({
+              _id: _temp._id,
+              id: _temp.id,
+              content: _temp.content
+            })
+            p = _temp.lc
+          } else {
+            stack.pop()
+            p = _temp.rb
+            if (!p && stack.length > 1) {
+              _temp = await getObj(stack[stack.length - 1]._id)
+              p = _temp.rb
+              stack.pop()
+            }
+          }
+        }
+      }
+      exe(root)
+    })
+    // 得到storyList
+    if(root.lc) {
+
+    } else {
+      // rootLc不存在
+    }
+  }
 })
 module.exports = router

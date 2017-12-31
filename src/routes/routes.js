@@ -5,7 +5,10 @@
 export default [
   {
     path: '/',
-    component: resolve => require(['../pages/discover/discover.vue'], resolve)
+    redirect: to => {
+      return '/discover'
+    }
+    // component: resolve => require(['../pages/discover/discover.vue'], resolve)
   },
   {
     path: '/dbTest',

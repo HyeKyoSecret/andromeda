@@ -5,7 +5,7 @@
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
-        塞尔达传说
+        {{result.root.name}}
       </span>
     </div>
     <div v-if="result.root">

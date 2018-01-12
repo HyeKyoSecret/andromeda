@@ -1379,6 +1379,7 @@ router.get('/story/getNextNode', (req, res) => {
           } else {
             stack.pop()
             p = _temp.rb
+            console.log('stack' + stack)
             if (!p && stack.length > 1) {
               _temp = await getObj(stack[stack.length - 1]._id)
               p = _temp.rb
@@ -1390,11 +1391,95 @@ router.get('/story/getNextNode', (req, res) => {
       exe(root)
     })
     // 得到storyList
-    if(root.lc) {
+    // if(root.lc) {
+    //
+    // } else {
+    //   // rootLc不存在
+    // }
+  }
+})
+router.get('/story/prepareTraversal', (req, res) => {
+  'use strict'
+  const fid = req.query.id
+  if (rootReg.test(fid)) {
+    let stack = []
+    let storyList = []
+    let p
+    console.log('fid' + fid)
+    Root.findOne({id: fid}, (err, root) => {
+      if (err) {
+        console.log(err)
+      }
+      const getObj = function (id) {
+        return new Promise((resolve, reject) => {
+          Story.findOne({_id: id})
+            .exec((err, story) => {
+              if (err) {
+                console.log(err)
+              }
+              if (story) {
+                resolve(story)
+              } else {
+                Root.findOne({_id: id}, (err, root) => {
+                  if (err) {
+                    console.log(err)
+                  }
+                  if (root) {
+                    resolve(root)
+                  } else {
+                    resolve(null)
+                  }
+                })
+              }
+            })
+        })
+      }
 
-    } else {
-      // rootLc不存在
-    }
+      const exe = async function (root) {
+        p = root._id
+        let _temp
+        while (p || stack.length) {
+          console.log('p' + p)
+          if (p) {
+            _temp = await getObj(p)
+            storyList.push({
+              // _id: _temp._id,
+              // id: _temp.id,
+              content: _temp.content
+            })
+            // console.log('循环体内的storyList' + JSON.stringify(storyList))
+            stack.push({
+              _id: _temp._id,
+              // id: _temp.id,
+              content: _temp.content
+            })
+            p = _temp.lc
+            console.log('stack' + JSON.stringify(stack))
+          } else {
+            stack.pop()
+            console.log('stack' + JSON.stringify(stack))
+            p = _temp.rb
+            if (!p && stack.length > 1) {
+              console.log('原来的temp' + _temp)
+              _temp = await getObj(stack[stack.length - 1]._id)
+              console.log('重写——temp' + _temp)
+              console.log('当前stack' + JSON.stringify(stack))
+              p = _temp.rb
+              console.log('p的新值' + p)
+              stack.pop()
+              console.log('修改p后的stack' + JSON.stringify(stack))
+            }
+          }
+        }
+      }
+      exe(root)
+    })
+    // 得到storyList
+    // if(root.lc) {
+    //
+    // } else {
+    //   // rootLc不存在
+    // }
   }
 })
 module.exports = router

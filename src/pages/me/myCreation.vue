@@ -76,7 +76,8 @@
         Axios.get('/user/getMyCreation', {
           params: {
             user: this.$route.params.user
-          }
+          },
+          timeout: 5000
         }).then((response) => {
           Indicator.close()
           if (response.data.permit) {
@@ -107,7 +108,7 @@
           Indicator.close()
           if (error) {
             Toast({
-              message: '找不到资源，请检查url',
+              message: '请求超时，请稍后再试',
               position: 'middle',
               duration: 1000
             })

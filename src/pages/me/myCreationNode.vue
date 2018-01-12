@@ -5,7 +5,7 @@
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
-        {{result.root.name}}
+        {{$route.params.rootName}}
       </span>
     </div>
     <div v-if="result.root">

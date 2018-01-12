@@ -36,7 +36,11 @@ const StoryRootSchema = new Schema({
       type: Schema.Types.ObjectId,
       ref: 'User'
     }
-  ]
+  ],
+  tempTraversal: {
+    preOrderTraversal: Array,
+    date: { type: Date, default: Date.now }
+  }
 })
 StoryRootSchema.pre('save', function (next) {
   'use strict'

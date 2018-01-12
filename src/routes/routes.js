@@ -48,7 +48,8 @@ export default [
       },
       {
         path: 'creation',
-        component: resolve => require(['../pages/me/myCreation.vue'], resolve)
+        component: resolve => require(['../pages/me/myCreation.vue'], resolve),
+        meta: { requiresAuth: true }
       },
       {
         path: 'subscribe',

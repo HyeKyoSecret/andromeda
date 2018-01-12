@@ -1,11 +1,11 @@
 <template>
   <div class="finger-demo">
-  <button @click="chenyixun">触发按钮</button>
+  <!--<button @click="chenyixun">触发按钮</button>-->
   </div>
 </template>
 <script>
 //  import debounce from '../js/throttle.js'
-  import Axios from 'axios'
+//  import Axios from 'axios'
   export default {
     data () {
       return {
@@ -17,7 +17,7 @@
         message: '真的有错误',
         details: '',
         showMe1: false,
-        qwert: '',
+        qwert: [1, 2, 3, 4, 5],
         searchQuery: '',
         searchQueryIsDirty: false,
         isCalculating: false,
@@ -25,18 +25,29 @@
       }
     },
     created: function () {
-      this.stackTest()
+      this.adder()
     },
     methods: {
-      chenyixun () {
-        this.$emit('hide')
-      },
-      stackTest () {
-        Axios.get('/story/getStack')
-          .then(response => {
-            console.log(response.data)
-          })
+//      chenyixun () {
+//        this.$emit('hide')
+//      },
+//      stackTest () {
+//        Axios.get('/story/getStack')
+//          .then(response => {
+//            console.log(response.data)
+//          })
+//      }
+      /* eslint-disable */
+      adder () {
+        const props = {
+          size: 1,
+          src: 'xxxx',
+          mode: 'si'
+        }
+        const { size, ...others } = props;
+        console.log(others)
       }
+      /* eslint-enable */
     }
   }
 </script>

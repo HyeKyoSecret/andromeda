@@ -131,7 +131,6 @@ router.get('/user/getMyCreation', (req, res) => {
     }
   } else {
     console.log('不是user')
-    res.status(404)
   }
 })
 router.get('/user/getMySubscription', (req, res) => {

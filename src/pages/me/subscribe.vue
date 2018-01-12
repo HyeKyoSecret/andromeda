@@ -194,8 +194,8 @@
           id: '',
           name: '',
           follower: 0,
-          nodeNum: 0,
-          myCreation: 0
+          nodeNum: 0,  // 后续结点数量
+          myCreation: 0 // 当前用户参与编辑的数量
         }
       }
     },

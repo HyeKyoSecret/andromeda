@@ -260,7 +260,8 @@
       this.getData()
       this.ftNode = this.$route.params.id
       this.fetchMenuData()
-      this.getNextNode()
+//      this.getNextNode()
+      this.prepareRec()
     },
     methods: {
       goBack () {
@@ -408,15 +409,22 @@
           }
         })
       },
-      getNextNode () {
-        Axios.get('/story/getNextNode', {
+      prepareRec () {
+        Axios.get('/story/prepareTraversal', {
           params: {
             id: this.$route.params.id
           }
-        }).then(response => {
-          console.log(response.data)
         })
       }
+//      getNextNode () {
+//        Axios.get('/story/getNextNode', {
+//          params: {
+//            id: this.$route.params.id
+//          }
+//        }).then(response => {
+//          console.log(response.data)
+//        })
+//      }
     }
   }
 </script>

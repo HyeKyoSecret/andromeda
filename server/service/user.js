@@ -5,7 +5,7 @@ const express = require('express')
 const User = require('../db/User')
 const Root = require('../db/StoryRoot')
 const Story = require('../db/Story')
-// const moment = require('moment')
+const moment = require('moment')
 const router = express.Router()
 router.get('/user/getMyCreation', (req, res) => {
   'use strict'
@@ -215,7 +215,7 @@ router.get('/user/getSubStack', (req, res) => {
         } else {
           stack.pop()
           p = _temp.rb
-          if (!p && stack.length > 1) {
+          while (!p && stack.length > 1) {
             _temp = await getObj(stack[stack.length - 1]._id)
             p = _temp.rb
             stack.pop()
@@ -293,5 +293,175 @@ router.get('/user/getContribute', (req, res) => {
       res.send({error: true})
     }
   })
+})
+router.post('/user/addFriendRequest', (req, res) => {
+  'use strict'
+  const id = req.body.id
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    user = req.cookies.And.user
+  }
+  User.findOne({id: id}, (err, toUser) => {
+    if (err) {
+      res.send({error: true, type: 'DB', message: '查询发生错误，请稍后再试'})
+    }
+    if (toUser) {
+      User.findOne({username: user}, (err, user) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '查询发生错误，请稍后再试'})
+        }
+        if (user) {
+          let confirmExist = toUser.pending.addFriend.some(function (list) {
+            return list.from.toString() === user._id.toString()
+          })
+          if (confirmExist) {   // 检查对方列表中是否有自己发送的请求
+            if (user.pending.request.some(function (list) {  // 检查自己待验证请求列表中是否存在已发送的请求
+              return list.to.toString() === toUser._id.toString()
+            })) {
+              res.send({error: false, type: 'DB', message: '请不要重复发送好友请求'})
+            } else {
+              user.update({$push: {'pending.request': {'to': toUser._id, 'date': Date.now()}}})
+                .exec((err2) => {
+                  if (err2) {
+                    res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+                  }
+                  res.send({error: false, message: '好友请求已发送'})
+                })
+            }
+          } else {
+            if (user.pending.request.some(function (list) {  // 检查自己待验证请求列表中是否存在已发送的请求
+              return list.to.toString() === toUser._id.toString()
+            })) {
+              user.update({$pop: {'pending.request': {'to': toUser._id}}})
+                .exec((err) => {
+                  if (err) {
+                    res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+                  }
+                  user.update({$push: {'pending.request': {'to': toUser._id, 'date': Date.now()}}})
+                    .exec((err2) => {
+                      if (err2) {
+                        res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+                      }
+                      toUser.update({$push: {'pending.addFriend': {'from': user._id, 'date': Date.now()}}})
+                        .exec((err3) => {
+                          if (err3) {
+                            res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+                          } else {
+                            res.send({error: false, message: '好友请求已发送'})
+                          }
+                        })
+                    })
+                })
+            } else {    // 正常流程
+              user.update({$push: {'pending.request': {'to': toUser._id, 'date': Date.now()}}})
+                .exec((err2) => {
+                  if (err2) {
+                    res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+                  }
+                  toUser.update({$push: {'pending.addFriend': {'from': user._id, 'date': Date.now()}}})
+                    .exec((err3) => {
+                      if (err3) {
+                        res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+                      } else {
+                        res.send({error: false, message: '好友请求已发送'})
+                      }
+                    })
+                })
+            }
+          }
+        } else {
+          res.send({error: true, type: 'User', message: '用户名错误，请尝试重新登录'})
+        }
+      })
+    } else {
+      res.send({error: true, type: 'url', message: 'url错误'})
+    }
+  })
+})
+router.get('/user/getPendingList', (req, res) => {
+  'use strict'
+  let loginUser
+  const id = req.query.id
+  if (req.session.user) {
+    loginUser = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    loginUser = req.cookies.And.user
+  }
+  let result = {
+    request: [],
+    addFriend: []
+  }
+  User.findOne({id: id})
+    .populate('pending.request.to')
+    .populate('pending.addFriend.from')
+    .exec((err, user) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      }
+      if (user && user.username === loginUser) {
+        user.pending.request.forEach((request) => {
+          result.request.push(
+            {
+              date: moment(request.date).format('lll'),
+              state: request.state,
+              to: request.to.nickname
+            }
+          )
+        })
+        user.pending.addFriend.forEach((addFriend) => {
+          result.addFriend.push({
+            date: moment(addFriend.date).format('lll'),
+            state: addFriend.state,
+            from: addFriend.from.nickname
+          })
+        })
+        res.send({error: false, result: result})
+      } else {
+        res.send({error: true, type: 'auth', message: '没有查看权限'})
+      }
+    })
+})
+router.get('/user/acceptFriend', (req, res) => {
+  'use strict'
+  const id = req.query.id
+  let loginUser
+  if (req.session.user) {
+    loginUser = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    loginUser = req.cookies.And.user
+  }
+  User.findOne({id: id})
+    .exec((err, user) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+      }
+      if (user && user.username === loginUser) {
+        //
+      } else {
+        res.send({error: true, type: 'auth', message: '您没有权限进行操作'})
+      }
+    })
+})
+router.get('/user/getMessageData', (req, res) => {
+  'use strict'
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    user = req.cookies.And.user
+  }
+  User.findOne({username: user})
+    .exec((err, duser) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '查询发生错误，请稍后再试'})
+      }
+      if (duser) {
+        res.send({error: false, user: duser.id})
+      } else {
+        res.send({error: true, type: 'user', message: '查询发生错误，请检查url'})
+      }
+    })
 })
 module.exports = router

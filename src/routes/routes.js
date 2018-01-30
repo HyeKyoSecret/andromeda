@@ -8,15 +8,13 @@ export default [
     redirect: to => {
       return '/discover'
     }
-    // component: resolve => require(['../pages/discover/discover.vue'], resolve)
   },
   {
     path: '/dbTest',
     component: resolve => require(['../pages/dbTest.vue'], resolve)
   },
   {
-    path: '/people/:user?',
-    name: 'me',
+    path: '/people/:user?/',
     component: resolve => require(['../pages/me/me.vue'], resolve),
     children: [
       {
@@ -53,12 +51,14 @@ export default [
       },
       {
         path: 'subscribe',
-        component: resolve => require(['../pages/me/subscribe.vue'], resolve)
+        component: resolve => require(['../pages/me/subscribe.vue'], resolve),
+        meta: { requiresAuth: true }
       },
       {
         path: 'myCreation/:rootName',
         alias: 'creationNode',
-        component: resolve => require(['../pages/me/myCreationNode.vue'], resolve)
+        component: resolve => require(['../pages/me/myCreationNode.vue'], resolve),
+        meta: { requiresAuth: true }
       }
     ]
   },

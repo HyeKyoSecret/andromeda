@@ -108,6 +108,7 @@ router.get('/story/getStory', (req, res) => {
             result.title = story.root.name
             result.content = story.content
             result.author = story.author.nickname
+            result.authorId = story.author.id
             result.date = moment(story.date).format('YYYY年M月D日 HH:mm')
             res.send({permit: true, result: result})
           } else {
@@ -1401,85 +1402,215 @@ router.get('/story/getNextNode', (req, res) => {
 router.get('/story/prepareTraversal', (req, res) => {
   'use strict'
   const fid = req.query.id
-  if (rootReg.test(fid)) {
-    let stack = []
-    let storyList = []
-    let p
-    console.log('fid' + fid)
-    Root.findOne({id: fid}, (err, root) => {
-      if (err) {
-        console.log(err)
+  function expFun (rank) {    // 经验函数
+    return 1 / Math.exp(rank - 1)
+  }
+  function nodeRank (arr) {
+    for (let i = 0; i < arr.length - 1; i++) {
+      for (let j = 0; j < arr.length - i - 1; j++) {
+        if (arr[j].nodeNum < arr[j + 1].nodeNum) {
+          let swap = arr[j]
+          arr[j] = arr[j + 1]
+          arr[j + 1] = swap
+        }
       }
-      const getObj = function (id) {
-        return new Promise((resolve, reject) => {
-          Story.findOne({_id: id})
+    }
+  }
+  function zanRank (arr) {
+    for (let i = 0; i < arr.length - 1; i++) {
+      for (let j = 0; j < arr.length - i - 1; j++) {
+        if (arr[j].zan < arr[j + 1].zan) {
+          let swap = arr[j]
+          arr[j] = arr[j + 1]
+          arr[j + 1] = swap
+        }
+      }
+    }
+  }
+  function nodeRankWeight (weight = 0.1, candidate) {
+    candidate.forEach((c, index) => {
+      c.nodeWeight = weight * expFun(index + 1)
+    })
+  }
+  function zanRankWeight (weight = 0.2, candidate) {
+    candidate.forEach((c, index) => {
+      c.zanWeight = weight * expFun(index + 1)
+    })
+  }
+  const getObj = function (id) {
+    return new Promise((resolve, reject) => {
+      Story.findOne({_id: id})
+        .exec((err, story) => {
+          if (err) {
+            console.log(err)
+          }
+          if (story) {
+            resolve(story)
+          } else {
+            Root.findOne({_id: id}, (err, root) => {
+              if (err) {
+                console.log(err)
+              }
+              if (root) {
+                resolve(root)
+              } else {
+                resolve(null)
+              }
+            })
+          }
+        })
+    })
+  }
+  const getObjById = function (id) {
+    return new Promise((resolve, reject) => {
+      Story.findOne({id: id})
+        .exec((err, story) => {
+          if (err) {
+            console.log(err)
+          }
+          if (story) {
+            resolve(story)
+          } else {
+            Root.findOne({id: id}, (err, root) => {
+              if (err) {
+                console.log(err)
+              }
+              if (root) {
+                resolve(root)
+              } else {
+                resolve(null)
+              }
+            })
+          }
+        })
+    })
+  }
+  let stack = []
+  let storyList = []
+  let p
+  async function exe () {
+    async function traversal (root) { // 先序遍历
+      p = root._id
+      let _temp
+      while (p || stack.length) {
+        if (p) {
+          _temp = await getObj(p)
+          storyList.push({
+            _id: _temp._id,
+            id: _temp.id,
+            content: _temp.content
+          })
+          stack.push({
+            _id: _temp._id,
+            // id: _temp.id,
+            content: _temp.content
+          })
+          p = _temp.lc
+        } else {
+          stack.pop()
+          p = _temp.rb
+          while (!p && stack.length > 1) {
+            _temp = await getObj(stack[stack.length - 1]._id)
+            p = _temp.rb
+            stack.pop()
+          }
+        }
+      }
+      return storyList
+    }
+    async function getRootObj () {
+      return new Promise((resolve, reject) => {
+        if (rootReg.test(fid)) {
+          Root.findOne({id: fid})
+            .exec((err, root) => {
+              if (err) {
+                console.log(err)
+              }
+              if (root) {
+                resolve(root)
+              } else {
+                reject(null)
+              }
+            })
+        } else if (storyReg.test(fid)) {
+          Story.findOne({id: fid})
             .exec((err, story) => {
               if (err) {
                 console.log(err)
               }
               if (story) {
-                resolve(story)
+                Root.findOne({_id: story.root})
+                  .exec((err, root) => {
+                    if (err) {
+                      console.log(err)
+                    }
+                    if (root) {
+                      resolve(root)
+                    } else {
+                      reject(null)
+                    }
+                  })
               } else {
-                Root.findOne({_id: id}, (err, root) => {
-                  if (err) {
-                    console.log(err)
-                  }
-                  if (root) {
-                    resolve(root)
-                  } else {
-                    resolve(null)
-                  }
-                })
+                reject(null)
               }
             })
-        })
-      }
-
-      const exe = async function (root) {
-        p = root._id
-        let _temp
-        while (p || stack.length) {
-          console.log('p' + p)
-          if (p) {
-            _temp = await getObj(p)
-            storyList.push({
-              // _id: _temp._id,
-              // id: _temp.id,
-              content: _temp.content
-            })
-            // console.log('循环体内的storyList' + JSON.stringify(storyList))
-            stack.push({
-              _id: _temp._id,
-              // id: _temp.id,
-              content: _temp.content
-            })
-            p = _temp.lc
-            console.log('stack' + JSON.stringify(stack))
-          } else {
-            stack.pop()
-            console.log('stack' + JSON.stringify(stack))
-            p = _temp.rb
-            if (!p && stack.length > 1) {
-              console.log('原来的temp' + _temp)
-              _temp = await getObj(stack[stack.length - 1]._id)
-              console.log('重写——temp' + _temp)
-              console.log('当前stack' + JSON.stringify(stack))
-              p = _temp.rb
-              console.log('p的新值' + p)
-              stack.pop()
-              console.log('修改p后的stack' + JSON.stringify(stack))
-            }
-          }
+        } else {
+          reject(null)
         }
+      })
+    }
+    async function buildCandidate () {
+      let root = await getRootObj()
+      traversal(root).then((stlist) => {
+        (async function () {
+          let q = await getObjById(fid)
+          if (q && q.lc) {
+            let p = q.lc
+            let candidate = []
+            let _temp
+            while (p) {   // 获取第二层所有节点并推入候选
+              _temp = await getObj(p)
+              candidate.push(
+                {
+                  _id: p,
+                  zan: _temp.zan.length,
+                  index: 0,
+                  nodeNum: 0
+                }
+              )
+              p = _temp.rb
+            }
+            for (let i = 0; i < candidate.length; i++) {   // 获取候选元素的index
+              for (let j = 0; j < stlist.length; j++) {
+                if (candidate[i]._id.toString() === stlist[j]._id.toString()) {
+                  candidate[i].index = j
+                }
+              }
+            }
+            for (let i = candidate.length - 1; i > -1; i--) {   // 计算各节点的下属分支数
+              if (i === candidate.length - 1) {
+                candidate[i].nodeNum = stlist.length - candidate[i].index - 1
+              } else {
+                candidate[i].nodeNum = candidate[i + 1].index - candidate[i].index - 1
+              }
+            }
+            nodeRank(candidate)   // 节点数量排名函数
+            nodeRankWeight(0.1, candidate)    // 节点权重函数
+            zanRank(candidate)
+            zanRankWeight(0.2, candidate)
+            console.log(candidate)
+          } else {
+            // 无后续处理
+          }
+        })()
+      })
+    }
+    buildCandidate().catch(error => {
+      if (error) {
+        console.log(error)
       }
-      exe(root)
     })
-    // 得到storyList
-    // if(root.lc) {
-    //
-    // } else {
-    //   // rootLc不存在
-    // }
   }
+  exe()
 })
 module.exports = router

@@ -18,7 +18,7 @@
       <!--<div class="anchor"><img src="../../img/icon/anchor.png" /></div>-->
       <div class="author-info">
         <div class="like">
-          <span >作者:&nbsp;{{storyInfo.author}}</span>
+          <router-link :to='storyInfo.authorId' tag="span">作者:&nbsp;{{storyInfo.author}}</router-link>
           <span ><img src="../../img/icon/redheart.png" /></span>
         </div>
         <div class="time">{{storyInfo.date}}</div>
@@ -242,6 +242,7 @@
           title: '',
           content: '',
           author: '',
+          authorId: '',
           date: '',
           ftNode: ''
         },
@@ -283,6 +284,7 @@
             this.storyInfo.title = response.data.result.title
             this.storyInfo.content = response.data.result.content
             this.storyInfo.author = response.data.result.author
+            this.storyInfo.authorId = `/people/${response.data.result.authorId}`
             this.storyInfo.date = response.data.result.date
           } else {
             this.$emit('error')
@@ -331,7 +333,9 @@
               message: '现在去登录吗?',
               showCancelButton: true
             }).then(action => {
-              this.$router.push('/login')
+              if (action === 'confirm') {
+                this.$router.push('/login')
+              }
               // 这边欠一个重定向
             })
           }

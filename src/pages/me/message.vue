@@ -10,17 +10,8 @@
     </div>
     <div class="button-bar">
       <div class="button">
-        <div>
-          <router-link tag='span' to='/me/message/words' class="words">留言</router-link>
-        </div>
-        <div>
-          <router-link tag='span' to='/me/message/request' class="request">请求</router-link>
-        </div>
-        <div>
-          <router-link tag='span' to='/me/message/promote' class="promote">提示</router-link>
-        </div>
-        <div>
-          <router-link tag='span' to='/me/message/announcement' class="announcement">公告</router-link>
+        <div v-for="item in btn">
+          <router-link tag='span' :to='item.path' :class="item.className">{{item.name}}</router-link>
         </div>
       </div>
     </div>
@@ -32,15 +23,42 @@
 </template>
 <script>
   import FootMenu from '../../components/foot-menu.vue'
+  import Axios from 'axios'
+  import { Toast } from 'mint-ui'
   export default {
     data () {
       return {
         router: ['message_words', 'message_request', 'message_promote', 'message_announcement'],
+        btn: [
+          {
+            name: '留言',
+            className: 'words',
+            path: '/people/message/words'
+          },
+          {
+            name: '请求',
+            className: 'request',
+            path: '/people/message/request'
+          },
+          {
+            name: '提示',
+            className: 'promote',
+            path: '/people/message/promote'
+          },
+          {
+            name: '公告',
+            className: 'announcement',
+            path: '/people/message/announcement'
+          }
+        ],
         transitionName: 'slide-left'
       }
     },
     components: {
       FootMenu
+    },
+    created: function () {
+      this.getUserData()
     },
     watch: {
       '$route': function (to, from) {
@@ -57,6 +75,25 @@
           }
         }
         this.transitionName = toPageIndex > fromPageIndex ? 'slide-left' : 'slide-right'
+      }
+    },
+    methods: {
+      getUserData () {
+        Axios.get('/user/getMessageData')
+          .then(response => {
+            if (response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            } else {
+              for (let i = 0; i < this.btn.length; i++) { // 修改path
+                let pathArray = this.btn[i].path.split('/people')
+                this.btn[i].path = `/people/${response.data.user}${pathArray[1]}`
+              }
+            }
+          })
       }
     }
   }

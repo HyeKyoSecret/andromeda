@@ -49,7 +49,7 @@ const UserSchema = new Schema({
       ref: 'StoryRoot'
     }
   ],
-  myCreationDraft: {
+  myCreationDraft: {    //  草稿
     root: {
       name: String,
       content: String,
@@ -59,7 +59,38 @@ const UserSchema = new Schema({
       id: String,
       content: String
     }]
-  }
+  },
+  pending: {     //  待处理请求
+    request: [
+      {
+        date: { type: Date, default: Date.now },
+        to: {
+          type: Schema.Types.ObjectId,
+          ref: 'User'
+        },
+        state: { type: String, default: 'pending' }
+      }
+    ],
+    addFriend: [
+      {
+        date: { type: Date, default: Date.now },
+        from: {
+          type: Schema.Types.ObjectId,
+          ref: 'User'
+        },
+        state: { type: String, default: 'pending' }
+      }
+    ]
+  },
+  friendList: [
+    {
+      date: { type: Date, default: Date.now },
+      friend: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    }
+  ]
 })
 UserSchema.pre('save', function (next) {
   'use strict'

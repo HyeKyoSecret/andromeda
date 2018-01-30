@@ -5,7 +5,7 @@
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
-        我
+        {{title}}
       </span>
     </div>
     <div class="me-content">
@@ -15,6 +15,14 @@
         </div>
         <div class="words">
           <div class="name">{{nickName}}</div>
+          <div v-if="isLoginCustomer" class="f-btn">
+            <!--<div class="focus-btn">-->
+              <!--+ 关注-->
+            <!--</div>-->
+            <div class="cancel-focus-btn">
+              取消关注
+            </div>
+          </div>
           <div class="sign">
             在乌云和尘埃之后是真理之光，他最终会投射出来并含笑驱散它们。
           </div>
@@ -46,13 +54,22 @@
             </div>
           </router-link>
         </div>
+        <div v-if="isLoginCustomer">
+          <div class="add-friend" @click="addFriend">
+            添加好友
+          </div>
+          <div class="delete-friend">
+            删除好友
+          </div>
+        </div>
       <router-view></router-view>
     </div>
-    <foot-menu></foot-menu>
+    <foot-menu v-if="!isLoginCustomer"></foot-menu>
   </div>
 </template>
 <style lang='scss' scoped>
   @import "../../scss/config";
+  @import "../../scss/style.css";
   .me {
     height: 100%;
     background: $bg-gray;
@@ -101,7 +118,20 @@
           font-weight: 500;
           padding: 0 20px 0 20px;
           .name {
+            display: inline-block;
             margin-top: 8px;
+            font-size: 15px;
+          }
+          .f-btn {
+            display: inline-block;
+            .focus-btn, .cancel-focus-btn {
+              display: inline-block;
+              margin-left: 20px;
+              color: $main-color;
+              border: 1px solid $main-color;
+              padding: 2px 8px 2px 8px;
+              border-radius: 5px;
+            }
           }
           .sign {
             margin-top: 6px;
@@ -216,8 +246,51 @@
               border: none;
             }
           }
+          .add-friend {
+            height: 42px;
+            line-height: 42px;
+            border-radius: 8px;
+            background: $main-color;
+            font-size: 14px;
+            color: #ffffff;
+            text-align: center;
+            width: 80%;
+            margin: 30px auto 0 auto;
+          }
+          .delete-friend {
+            height: 42px;
+            line-height: 42px;
+            border-radius: 8px;
+            background: $main-red;
+            font-size: 14px;
+            color: #ffffff;
+            text-align: center;
+            width: 80%;
+            margin: 30px auto 0 auto;
+          }
         }
-
+      }
+      .add-friend {
+        height: 42px;
+        line-height: 42px;
+        border-radius: 8px;
+        background: $main-color;
+        font-size: 14px;
+        color: #ffffff;
+        text-align: center;
+        width: 80%;
+        margin: 30px auto 0 auto;
+      }
+      .delete-friend {
+        height: 42px;
+        line-height: 42px;
+        border-radius: 8px;
+        background: $main-red;
+        font-size: 14px;
+        color: #ffffff;
+        text-align: center;
+        width: 80%;
+        margin: 30px auto 0 auto;
       }
     }
   }
@@ -261,6 +334,33 @@
             path: '/people/message/words'
           }
         ],
+        cOperation: [
+          {
+            name: '他的创作',
+            icon: require('../../img/icon/my_creation.png'),
+            path: `/people/creation`
+          },
+          {
+            name: '他的订阅',
+            icon: require('../../img/icon/my_subscription.png'),
+            path: '/people/subscribe'
+          },
+          {
+            name: '他的关注',
+            icon: require('../../img/icon/my_focus.png'),
+            path: '/people/message/words'
+          },
+          {
+            name: '共同好友',
+            icon: require('../../img/icon/my_friend.png'),
+            path: '/people/message/words'
+          },
+          {
+            name: '他的轨迹',
+            icon: require('../../img/icon/my_trail.png'),
+            path: '/people/message/words'
+          }
+        ],
         isUser: false,
         userStatus: '',
         nickName: ''
@@ -269,6 +369,18 @@
     computed: {
       isLogin: function () {
         return this.userStatus !== 'askLogin'
+      },
+      isLoginCustomer: function () {
+        return this.isLogin && this.userStatus === 'isCustomer'
+      },
+      title: function () {
+        if (this.userStatus === 'isUser') {
+          return '我'
+        } else if (this.isLogin && this.userStatus === 'isCustomer') {
+          return 'Ta'
+        } else {
+          return '我'
+        }
       }
     },
     created: function () {
@@ -283,8 +395,8 @@
                 this.nickName = response.data.nickName
                 this.userStatus = 'isUser'
                 for (let i = 0; i < this.operation.length; i++) { // 修改path
-                  let pathArray = this.operation[i].path.split('/')
-                  this.operation[i].path = `/${pathArray[1]}/${response.data.user}/${pathArray[2]}`
+                  let pathArray = this.operation[i].path.split('/people')
+                  this.operation[i].path = `/people/${response.data.user}${pathArray[1]}`
                 }
               } else {
                 this.userStatus = 'askLogin'
@@ -307,14 +419,14 @@
             if (res.data.user) {
               this.nickName = res.data.user.nickName
               if (res.data.customer) {
-                alert('访客模式,url尚未完成')
+                this.operation = this.cOperation     // 修改按钮
                 this.userStatus = 'isCustomer'
               } else {
                 this.userStatus = 'isUser'
-                for (let i = 0; i < this.operation.length; i++) { // 修改path
-                  let pathArray = this.operation[i].path.split('/')
-                  this.operation[i].path = `/${pathArray[1]}/${res.data.user.user}/${pathArray[2]}`
-                }
+              }
+              for (let i = 0; i < this.operation.length; i++) { // 修改path
+                let pathArray = this.operation[i].path.split(`/people`)
+                this.operation[i].path = `/people/${res.data.user.user}${pathArray[1]}`
               }
             } else {
               this.$emit('error')
@@ -323,6 +435,25 @@
             alert('error' + error)
           })
         }
+      },
+      addFriend () {
+        Axios.post('/user/addFriendRequest', {
+          id: this.$route.params.user
+        }).then(response => {
+          if (response.data.error) {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 800
+            })
+          } else {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 800
+            })
+          }
+        })
       }
     },
     components: {

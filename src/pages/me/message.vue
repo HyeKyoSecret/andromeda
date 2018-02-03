@@ -46,7 +46,7 @@
             path: '/people/message/promote'
           },
           {
-            name: '公告',
+            name: '通知',
             className: 'announcement',
             path: '/people/message/announcement'
           }

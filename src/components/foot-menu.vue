@@ -13,6 +13,7 @@
       <div class="f-me pic"></div>
       <div class="words">我</div>
     </router-link>
+    <slot></slot>
   </div>
 </template>
 <style lang="scss" scoped>

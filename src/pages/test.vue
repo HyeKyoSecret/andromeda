@@ -1,11 +1,22 @@
 <template>
-  <div class="finger-demo">
-  <!--<button @click="chenyixun">触发按钮</button>-->
+  <div>
+    <div>
+      helloWorld
+    </div>
+    <footMenu class="hehe">
+      <slot>
+        <div>A</div>
+        <div>b</div>
+        <div>c</div>
+        <div @click="getYou">d</div>
+      </slot>
+    </footMenu>
   </div>
 </template>
 <script>
 //  import debounce from '../js/throttle.js'
 //  import Axios from 'axios'
+  import FootMenu from '../components/foot-menu.vue'
   export default {
     data () {
       return {
@@ -24,45 +35,20 @@
         path: '/me/myCreation'
       }
     },
-    created: function () {
-      this.adder()
+    components: {
+      FootMenu
     },
     methods: {
-//      chenyixun () {
-//        this.$emit('hide')
-//      },
-//      stackTest () {
-//        Axios.get('/story/getStack')
-//          .then(response => {
-//            console.log(response.data)
-//          })
-//      }
-      /* eslint-disable */
-      adder () {
-        const props = {
-          size: 1,
-          src: 'xxxx',
-          mode: 'si'
-        }
-        const { size, ...others } = props;
-        console.log(others)
+      getYou () {
+        alert('ffff')
       }
-      /* eslint-enable */
     }
   }
 </script>
 <style lang="scss" scoped>
-  .img{
-    height: 40%;
-    width: 30%;
-  }
-  .green {
-    width: 100px;
-    height: 100px;
-    color: #000;
-    background: green;
-    &:last-child {
-      color: red;
+  .hehe {
+    div {
+      width: 50px;
     }
   }
 </style>

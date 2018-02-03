@@ -206,7 +206,7 @@
   line-height: 1;
   min-height: inherit;
   overflow: hidden;
-  padding: 0 10px;
+  /*padding: 0 10px;*/
   width: 100%;
 }
 .mint-cell-mask {}

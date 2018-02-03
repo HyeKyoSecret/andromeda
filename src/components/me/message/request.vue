@@ -26,7 +26,7 @@
     </div>
     <div v-if="requestList.addFriend.length">
       <div class="label">待处理请求</div>
-      <div v-for='item in requestList.addFriend' class="request-template" v-swipe="{methods: swipe}">
+      <div v-for='item in requestList.addFriend' :key="item.fromId">
         <div class="rq-content">
           <mt-cell-swipe class='rq'
                          title= ''
@@ -36,15 +36,14 @@
             style: { background: 'red', color: '#fff', width: '50px', textAlign: 'center'}
           }
         ]">
-            <slot>
-              <div class='add-request'>
-                <span class="title">{{item.from}}</span>
-                <span class="info">添加您为好友</span>
-                <div class="date">{{item.date}}</div>
-                <span class='pass-btn' ><span @click="acceptFriend"class="btn">通过</span></span>
-                <!--<span class="confirm">已通过</span>-->
-              </div>
-            </slot>
+          <div class='add-request'>
+            <span class="title">{{item.from}}</span>
+            <span class="info">添加您为好友</span>
+            <div class="date">{{item.date}}</div>
+            <span  class="btn" @click='acceptFriend(item.fromId)'>通过</span>
+            <!--<span class="confirm">已通过</span>-->
+          </div>
+
           </mt-cell-swipe>
         </div>
       </div>
@@ -57,76 +56,77 @@
     margin-top: 5px;
     width: 100%;
     height: 100%;
-    .rq-content {
+  }
+  .rq-content {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid $border-gray;
+    &:last-child {
+      border: none;
+      /*margin-bottom: 70px;*/
+    }
+    .rq {
       width: 100%;
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid $border-gray;
-      &:last-child {
-        border: none;
-        /*margin-bottom: 70px;*/
-      }
-      .rq {
+      height: 50px;
+      background: white;
+      color: $icon-blue;
+      font-weight: 600;
+      font-size: 14px;
+      .add-request {
+        line-height: 50px;
         width: 100%;
-        height: 50px;
-        background: white;
-        color: $icon-blue;
-        font-weight: 600;
-        font-size: 14px;
-        .add-request {
-          line-height: 50px;
-          width: 100%;
-          display: flex;
-          justify-content: center;
-          .pass-btn {
-            flex: 1;
-            text-align: center;
-          }
-          .btn {
-            width: 70px;
-            height: 30px;
-            text-align: center;
-            line-height: 30px;
-            border-radius: 5px;
-            font-size: 14px;
-            letter-spacing: 3px;
-            color: #ffffff;
-            background: $main-color;
-            padding: 5px 9px 5px 9px;
-          }
-          .confirm {
-            width: 60px;
-            height: 30px;
-            text-align: center;
-            line-height: 30px;
-            border-radius: 5px;
-            font-size: 14px;
-            letter-spacing: 3px;
-            color: $w-gray;
-            background: $bg-gray;
-            padding: 5px 9px 5px 9px;
-          }
-          span {
-            margin-left: 5px;
-            font-size: 12px;
-          }
-          .date {
-            display: inline-flex;
-            height: 50px;
-            margin-left: 5px;
-            font-size: 12px;
-            flex: 1;
-          }
-          .title {
-            color: $icon-blue;
-            font-weight: 600;
-            font-size: 14px;
-            flex: 1;
-            text-align: center;
-          }
-          .info {
-            flex: 1;
-          }
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .pass-btn {
+          flex: 1;
+          text-align: center;
+        }
+        .btn {
+          width: 60px;
+          height: 30px;
+          text-align: center;
+          line-height: 30px;
+          border-radius: 5px;
+          font-size: 14px;
+          letter-spacing: 3px;
+          color: #ffffff;
+          background: $main-color;
+          margin-right: 8px;
+        }
+        .confirm {
+          width: 60px;
+          height: 30px;
+          text-align: center;
+          line-height: 30px;
+          border-radius: 5px;
+          font-size: 14px;
+          letter-spacing: 3px;
+          color: $w-gray;
+          background: $bg-gray;
+          padding: 5px 9px 5px 9px;
+        }
+        span {
+          margin-left: 5px;
+          font-size: 12px;
+        }
+        .date {
+          display: inline-flex;
+          height: 50px;
+          margin-left: 5px;
+          font-size: 12px;
+          flex: 1;
+        }
+        .title {
+          color: $icon-blue;
+          font-weight: 600;
+          font-size: 14px;
+          flex: 1;
+          text-align: center;
+        }
+        .info {
+          flex: 1;
         }
       }
     }
@@ -179,12 +179,16 @@
               })
             } else {
               this.requestList = response.data.result
+              console.log(this.requestList)
             }
           })
       },
-      acceptFriend () {
+      acceptFriend (fromId) {
         Axios.get('/user/acceptFriend', {
-          id: this.$route.parmas.user
+          params: {
+            id: this.$route.parmas.user,
+            fromId: fromId
+          }
         })
           .then(response => {
             console.log(response.data)

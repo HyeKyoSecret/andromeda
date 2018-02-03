@@ -406,7 +406,8 @@ router.get('/user/getPendingList', (req, res) => {
             {
               date: moment(request.date).format('lll'),
               state: request.state,
-              to: request.to.nickname
+              to: request.to.nickname,
+              toId: request.to.id
             }
           )
         })
@@ -414,7 +415,8 @@ router.get('/user/getPendingList', (req, res) => {
           result.addFriend.push({
             date: moment(addFriend.date).format('lll'),
             state: addFriend.state,
-            from: addFriend.from.nickname
+            from: addFriend.from.nickname,
+            fromId: addFriend.from.id
           })
         })
         res.send({error: false, result: result})
@@ -426,6 +428,7 @@ router.get('/user/getPendingList', (req, res) => {
 router.get('/user/acceptFriend', (req, res) => {
   'use strict'
   const id = req.query.id
+  const fromId = req.query.fromId
   let loginUser
   if (req.session.user) {
     loginUser = req.session.user
@@ -438,7 +441,14 @@ router.get('/user/acceptFriend', (req, res) => {
         res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
       }
       if (user && user.username === loginUser) {
-        //
+        User.findOne({id: fromId}, (error, fromUser) => {
+          if (error || !fromUser) {
+            res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+          } else {
+            User.updateOne({id: id, })
+
+          }
+        })
       } else {
         res.send({error: true, type: 'auth', message: '您没有权限进行操作'})
       }

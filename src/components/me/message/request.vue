@@ -40,8 +40,8 @@
             <span class="title">{{item.from}}</span>
             <span class="info">添加您为好友</span>
             <div class="date">{{item.date}}</div>
-            <span  class="btn" @click='acceptFriend(item.fromId)'>通过</span>
-            <!--<span class="confirm">已通过</span>-->
+            <span v-if = "item.state == 'pending'" class="btn" @click='acceptFriend(item.fromId)'>通过</span>
+            <span v-else class="confirm">已通过</span>
           </div>
 
           </mt-cell-swipe>
@@ -105,7 +105,7 @@
           letter-spacing: 3px;
           color: $w-gray;
           background: $bg-gray;
-          padding: 5px 9px 5px 9px;
+          margin-right: 8px;
         }
         span {
           margin-left: 5px;
@@ -179,19 +179,30 @@
               })
             } else {
               this.requestList = response.data.result
-              console.log(this.requestList)
             }
           })
       },
       acceptFriend (fromId) {
         Axios.get('/user/acceptFriend', {
           params: {
-            id: this.$route.parmas.user,
+            id: this.$route.params.user,
             fromId: fromId
           }
         })
           .then(response => {
-            console.log(response.data)
+            if (!response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            } else {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            }
           })
       }
     }

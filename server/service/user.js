@@ -435,24 +435,26 @@ router.get('/user/acceptFriend', (req, res) => {
   } else if (req.cookies.And && req.cookies.And.user) {
     loginUser = req.cookies.And.user
   }
-  User.findOne({id: id})
-    .exec((err, user) => {
-      if (err) {
+  User.findOne({id: fromId}, (err, fromUser) => {
+    if (err) {
+      res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+    }
+    // 更新自己的好友列表
+    User.findOneAndUpdate({$and: [{ id: id }, { 'pending.addFriend.from': fromUser._id }]}, {$push: {'friendList': { 'friend': fromUser._id }}, $set: {'pending.addFriend.$.state': 'resolve'}}, {upsert: true}, (error, doc) => {
+      if (error) {
         res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
       }
-      if (user && user.username === loginUser) {
-        User.findOne({id: fromId}, (error, fromUser) => {
-          if (error || !fromUser) {
-            res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
-          } else {
-            User.updateOne({id: id, })
-
-          }
-        })
-      } else {
-        res.send({error: true, type: 'auth', message: '您没有权限进行操作'})
-      }
+      // 更新对方的好友列表
+      User.findOneAndUpdate({$and: [{id: fromId}, {'pending.request.to': doc._id}]}, {$push: {'friendList': { 'friend': doc._id }, 'promote': {'type': 'friendRequest', 'content_2': '接受了您的好友请求'}}, $pull: {'pending.request': {'to': doc._id}}}, {upsert: true}, (error2, doc2) => {
+        if (error2) {
+          console.log(error2)
+          res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+        } else {
+          res.send({error: false, message: '操作成功'})
+        }
+      })
     })
+  })
 })
 router.get('/user/getMessageData', (req, res) => {
   'use strict'

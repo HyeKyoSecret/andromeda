@@ -90,6 +90,15 @@ const UserSchema = new Schema({
         ref: 'User'
       }
     }
+  ],
+  promote: [
+    {
+      date: { type: Date, default: Date.now },
+      type: String,
+      content_1: String,
+      content_2: String,
+      content_3: String
+    }
   ]
 })
 UserSchema.pre('save', function (next) {

@@ -87,7 +87,7 @@
     methods: {
       swipe (e) {
         if (e.direction === 'Right') {
-          this.$router.push({name: 'message_promote'})
+          this.$router.push({name: 'message_promote', params: { user: this.$route.params.user }})
         }
       }
     }

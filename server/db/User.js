@@ -94,7 +94,7 @@ const UserSchema = new Schema({
   promote: [
     {
       date: { type: Date, default: Date.now },
-      type: String,
+      description: String,
       content_1: String,
       content_2: String,
       content_3: String

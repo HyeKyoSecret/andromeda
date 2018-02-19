@@ -89,6 +89,7 @@ router.get('/story/getStory', (req, res) => {
             result.title = root.name
             result.content = root.content
             result.author = root.author.nickname
+            result.authorId = root.author.id
             result.date = moment(root.date).format('YYYY年M月D日 HH:mm')
             res.send({permit: true, result: result})
           } else {

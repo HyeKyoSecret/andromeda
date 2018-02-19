@@ -407,7 +407,8 @@ router.get('/user/getPendingList', (req, res) => {
               date: moment(request.date).format('lll'),
               state: request.state,
               to: request.to.nickname,
-              toId: request.to.id
+              toId: request.to.id,
+              vis: true
             }
           )
         })
@@ -416,7 +417,8 @@ router.get('/user/getPendingList', (req, res) => {
             date: moment(addFriend.date).format('lll'),
             state: addFriend.state,
             from: addFriend.from.nickname,
-            fromId: addFriend.from.id
+            fromId: addFriend.from.id,
+            vis: true
           })
         })
         res.send({error: false, result: result})
@@ -439,22 +441,56 @@ router.get('/user/acceptFriend', (req, res) => {
     if (err) {
       res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
     }
-    // 更新自己的好友列表
-    User.findOneAndUpdate({$and: [{ id: id }, { 'pending.addFriend.from': fromUser._id }]}, {$push: {'friendList': { 'friend': fromUser._id }}, $set: {'pending.addFriend.$.state': 'resolve'}}, {upsert: true}, (error, doc) => {
-      if (error) {
+    User.findOne({id: id}, (err2, user) => {
+      if (err2) {
         res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
       }
-      // 更新对方的好友列表
-      User.findOneAndUpdate({$and: [{id: fromId}, {'pending.request.to': doc._id}]}, {$push: {'friendList': { 'friend': doc._id }, 'promote': {'type': 'friendRequest', 'content_2': '接受了您的好友请求'}}, $pull: {'pending.request': {'to': doc._id}}}, {upsert: true}, (error2, doc2) => {
-        if (error2) {
-          console.log(error2)
-          res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
-        } else {
-          res.send({error: false, message: '操作成功'})
-        }
+      if (!user.friendList.some(function (item) {
+          return item.friend.toString() === fromUser._id.toString()
+        })) {
+        console.log('查询到好友列表不存在')
+        // 更新自己好友列表
+        User.updateOne({$and: [{id: id}, {'pending.addFriend.from': fromUser._id}]}, {
+          $push: {'friendList': {'friend': fromUser._id}},
+          $set: {'pending.addFriend.$.state': 'resolve'}
+        }, {upsert: true}, (error) => {
+          if (error) {
+            res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+          }
+          // 更新对方的好友列表
+          User.updateOne({$and: [{id: fromId}, {'pending.request.to': user._id}]}, {
+            $push: {
+              'friendList': {'friend': user._id},
+              'promote': {'description': 'friendRequest', 'content_1': user.nickname, 'content_2': '接受了您的好友请求'}
+            }, $pull: {'pending.request': {'to': user._id}}
+          }, {upsert: true}, (error2) => {
+            if (error2) {
+              console.log(error2)
+              res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+            } else {
+              res.send({error: false, message: '操作成功'})
+            }
+          })
+        })
+      } else {
+        console.log('存在')
+        // 更新对方的好友列表
+        User.updateOne({$and: [{id: fromId}, {'pending.request.to': user._id}]}, {
+          $push: {
+            'friendList': {'friend': user._id},
+            'promote': {'description': 'friendRequest', 'content_1': user.nickname, 'content_2': '接受了您的好友请求'}
+          }, $pull: {'pending.request': {'to': user._id}}
+        }, {upsert: true}, (error2) => {
+          if (error2) {
+            console.log(error2)
+            res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+          } else {
+            res.send({error: false, message: '操作成功'})
+          }
+        })
+      }
       })
     })
-  })
 })
 router.get('/user/getMessageData', (req, res) => {
   'use strict'
@@ -467,12 +503,143 @@ router.get('/user/getMessageData', (req, res) => {
   User.findOne({username: user})
     .exec((err, duser) => {
       if (err) {
-        res.send({error: true, type: 'DB', message: '查询发生错误，请稍后再试'})
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
       }
       if (duser) {
         res.send({error: false, user: duser.id})
       } else {
-        res.send({error: true, type: 'user', message: '查询发生错误，请检查url'})
+        res.send({error: true, type: 'user', message: '发生错误，请检查url'})
+      }
+    })
+})
+router.post('/user/delPendingAdd', (req, res) => {
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    user = req.cookies.And.user
+  }
+  User.findOne({id: req.body.fromId}, (err, fromUser) => {
+    if (err) {
+      res.send({error: true, type:'DB', message: '发生错误,请稍后再试'})
+    } else {
+      if (fromUser) {
+        User.findOneAndUpdate({$and: [{ username: user }, { 'pending.addFriend.from': fromUser._id }]},  {$pull: {'pending.addFriend': {'from': fromUser._id} }})
+          .exec((err2, doc) => {
+            if (err2) {
+              console.log(err2)
+              res.send({error: true, type:'DB', message: '发生错误，请稍后再试'})
+            } else {
+              res.send({error: false, success: true})
+            }
+          })
+      } else {
+        res.send({error: true, type:'User', message: '查询失败'})
+      }
+    }
+  })
+})
+router.post('/user/delPendingReq', (req, res) => {
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    user = req.cookies.And.user
+  }
+  User.findOne({id: req.body.toId}, (err, toUser) => {
+    if (err) {
+      res.send({error: true, type:'DB', message: '发生错误,请稍后再试'})
+    } else {
+      if (toUser) {
+        User.findOneAndUpdate({$and: [{ username: user }, { 'pending.request.to': toUser._id }]},  {$pull: {'pending.request': {'to': toUser._id} }})
+          .exec((err2) => {
+            if (err2) {
+              console.log(err2)
+              res.send({error: true, type:'DB', message: '发生错误，请稍后再试'})
+            } else {
+              res.send({error: false, success: true})
+            }
+          })
+      } else {
+        res.send({error: true, type:'User', message: '查询失败'})
+      }
+    }
+  })
+})
+router.get('/user/getPromote', (req, res) => {
+  let user
+  let result = []
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    user = req.cookies.And.user
+  }
+  User.findOne({username: user})
+    .exec((err, user) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      } else {
+        if (user) {
+          for (let i = 0; i < user.promote.length; i++) {
+            result.push({
+              id: user.promote[i]._id,
+              content_1: user.promote[i].content_1,
+              content_2: user.promote[i].content_2,
+              description: user.promote[i].description,
+              date: moment(user.promote[i].date).fromNow(),
+              vis: true
+            })
+          }
+          res.send({error: false, result: result})
+        }
+      }
+    })
+})
+router.get('/user/getUserFriendship', (req, res) => {
+  let loginUser
+  if (req.session.user) {
+    loginUser = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    loginUser = req.cookies.And.user
+  }
+  User.findOne({id: req.query.user}, (err, user) => {  // 查询目标
+    if (err) {
+      console.log(err)
+      res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+    } else {
+      if (user && loginUser) {
+        User.findOne({username: loginUser}, (err2, me) => {
+          if (err2) {
+            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            let cond1 = user.friendList.some(function (item) {
+              return item.friend.toString() === me._id.toString()
+            })
+            let cond2 = me.friendList.some(function(item) {
+              return item.friend.toString() === user._id.toString()
+            })
+            res.send({error: false, cond1: cond1, cond2: cond2})
+          }
+        })
+      }
+    }
+  })
+})
+router.post('/user/delPendingPromote', (req, res) => {
+  let id = req.body.id
+  let loginUser
+  if (req.session.user) {
+    loginUser = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    loginUser = req.cookies.And.user
+  }
+  User.updateOne({username: loginUser}, {$pull: {'promote': {'_id': id}}})
+    .exec(err => {
+      if (err) {
+        console.log(err)
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      } else {
+        res.send({error: false})
       }
     })
 })

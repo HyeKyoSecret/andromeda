@@ -55,10 +55,10 @@
           </router-link>
         </div>
         <div v-if="isLoginCustomer">
-          <div class="add-friend" @click="addFriend">
+          <div class="add-friend" @click="addFriend" v-if="!(cond1 && cond2)">
             添加好友
           </div>
-          <div class="delete-friend">
+          <div class="delete-friend" v-if="cond1 && cond2">
             删除好友
           </div>
         </div>
@@ -363,7 +363,9 @@
         ],
         isUser: false,
         userStatus: '',
-        nickName: ''
+        nickName: '',
+        cond1: '',
+        cond2: ''
       }
     },
     computed: {
@@ -421,6 +423,16 @@
               if (res.data.customer) {
                 this.operation = this.cOperation     // 修改按钮
                 this.userStatus = 'isCustomer'
+                Axios.get('/user/getUserFriendship', {  // 查询好友关系（按钮显示）
+                  params: {
+                    user: this.$route.params.user
+                  }
+                }).then(response => {
+                  if (!response.data.error) {
+                    this.cond1 = response.data.cond1
+                    this.cond2 = response.data.cond2
+                  }
+                })
               } else {
                 this.userStatus = 'isUser'
               }

@@ -643,4 +643,50 @@ router.post('/user/delPendingPromote', (req, res) => {
       }
     })
 })
+router.post('/user/deleteFriendRequest', (req, res) => {
+  let id = req.body.id
+  let loginUser
+  if (req.session.user) {
+    loginUser = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    loginUser = req.cookies.And.user
+  }
+  User.findOne({id: id}, (err, user) => {
+    if (err) {
+      res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+    } else {
+      User.updateOne({username: loginUser}, {$pull: {'friendList': {'friend' : user._id}}})
+        .exec(err2 => {
+          if (err2) {
+            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            res.send({error: false, message: '删除成功'})
+          }
+        })
+    }
+  })
+})
+router.get('/user/getFriendList', (req, res) => {
+  let user = req.query.user
+  let result = []
+  User.findOne({id: user})
+    .populate('friendList.friend')
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      } else {
+        if (doc) {
+          doc.friendList.forEach(function (friend) {
+            result.push({
+              name: friend.friend.nickname,
+              id: friend.friend.id
+            })
+          })
+          res.send({error: false, result: result})
+        } else {
+          res.send({error: false, result: result})
+        }
+      }
+    })
+})
 module.exports = router

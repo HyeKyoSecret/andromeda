@@ -58,7 +58,7 @@
           <div class="add-friend" @click="addFriend" v-if="!(cond1 && cond2)">
             添加好友
           </div>
-          <div class="delete-friend" v-if="cond1 && cond2">
+          <div class="delete-friend" @click="deleteFriend" v-if="cond1 && cond2">
             删除好友
           </div>
         </div>
@@ -116,7 +116,7 @@
           height: 100%;
           font-size: 15px;
           font-weight: 500;
-          padding: 0 20px 0 20px;
+          padding: 0 15px 0 15px;
           .name {
             display: inline-block;
             margin-top: 8px;
@@ -326,7 +326,7 @@
           {
             name: '我的好友',
             icon: require('../../img/icon/my_friend.png'),
-            path: '/people/message/words'
+            path: '/people/friendList'
           },
           {
             name: '我的轨迹',
@@ -423,16 +423,7 @@
               if (res.data.customer) {
                 this.operation = this.cOperation     // 修改按钮
                 this.userStatus = 'isCustomer'
-                Axios.get('/user/getUserFriendship', {  // 查询好友关系（按钮显示）
-                  params: {
-                    user: this.$route.params.user
-                  }
-                }).then(response => {
-                  if (!response.data.error) {
-                    this.cond1 = response.data.cond1
-                    this.cond2 = response.data.cond2
-                  }
-                })
+                this.getFriendship()
               } else {
                 this.userStatus = 'isUser'
               }
@@ -464,6 +455,38 @@
               position: 'middle',
               duration: 800
             })
+          }
+        })
+      },
+      deleteFriend () {
+        Axios.post('/user/deleteFriendRequest', {
+          id: this.$route.params.user
+        }).then(response => {
+          if (response.data.error) {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 800
+            })
+          } else {
+            this.getFriendship()
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 800
+            })
+          }
+        })
+      },
+      getFriendship () {
+        Axios.get('/user/getUserFriendship', {  // 查询好友关系（按钮显示）
+          params: {
+            user: this.$route.params.user
+          }
+        }).then(response => {
+          if (!response.data.error) {
+            this.cond1 = response.data.cond1
+            this.cond2 = response.data.cond2
           }
         })
       }

@@ -46,12 +46,17 @@ export default [
       },
       {
         path: 'creation',
-        component: resolve => require(['../pages/me/myCreation.vue'], resolve),
+        component: resolve => require(['../pages/me/creation.vue'], resolve),
         meta: { requiresAuth: true }
       },
       {
         path: 'subscribe',
         component: resolve => require(['../pages/me/subscribe.vue'], resolve),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'friendList',
+        component: resolve => require(['../pages/me/friendList.vue'], resolve),
         meta: { requiresAuth: true }
       },
       {
@@ -65,10 +70,6 @@ export default [
   {
     path: '/change_info',
     component: resolve => require(['../pages/me/change_user_info.vue'], resolve)
-  },
-  {
-    path: '/look_info',
-    component: resolve => require(['../pages/me/look_info.vue'], resolve)
   },
   {
     path: '/register',

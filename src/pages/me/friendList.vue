@@ -1,14 +1,11 @@
 <template>
-  <div class="build-story-recommend">
+  <div class="frienList">
     <div class="notice">
       <span class="icon">
         <img src="../../img/icon/back.png">
       </span>
       <span class="title">
-        选择好友推荐
-      </span>
-      <span class="complete">
-        完成
+        好友列表
       </span>
     </div>
     <div class="search">
@@ -16,39 +13,35 @@
       <span><input type="text" placeholder="搜索"></span>
     </div>
     <!--<div class="star-friend">-->
-      <!--<span><img src="../../img/icon/gray_star.png" /></span>-->
-      <!--<span>星标好友</span>-->
+    <!--<span><img src="../../img/icon/gray_star.png" /></span>-->
+    <!--<span>星标好友</span>-->
     <!--</div>-->
     <!--<div class="friend-list">-->
-      <!--<div class="one-friend">-->
-        <!--<div class="icon"><img src="../../img/icon/greenbingo.png" /></div>-->
-        <!--<div class="head"><img src="../../img/photo/2b_head.png" /></div>-->
-        <!--<div class="name">2B</div>-->
-      <!--</div>-->
-      <!--<div class="one-friend">-->
-        <!--<div class="icon"><img src="../../img/icon/greenbingo.png" /></div>-->
-        <!--<div class="head"><img src="../../img/photo/2b_head.png" /></div>-->
-        <!--<div class="name">2B</div>-->
-      <!--</div>-->
+    <!--<div class="one-friend">-->
+    <!--<div class="icon"><img src="../../img/icon/greenbingo.png" /></div>-->
+    <!--<div class="head"><img src="../../img/photo/2b_head.png" /></div>-->
+    <!--<div class="name">2B</div>-->
+    <!--</div>-->
+    <!--<div class="one-friend">-->
+    <!--<div class="icon"><img src="../../img/icon/greenbingo.png" /></div>-->
+    <!--<div class="head"><img src="../../img/photo/2b_head.png" /></div>-->
+    <!--<div class="name">2B</div>-->
+    <!--</div>-->
     <!--</div>-->
     <div class="friend-list">
-      <div class="one-friend">
-        <div class="icon"><img src="../../img/icon/grennbingo_unselected.png" /></div>
+      <div class="one-friend" v-for='item in friendList'>
         <div class="head"><img src="../../img/photo/2b_head.png" /></div>
-        <div class="name">2B</div>
-      </div>
-      <div class="one-friend">
-        <div class="icon"><img src="../../img/icon/grennbingo_unselected.png" /></div>
-        <div class="head"><img src="../../img/photo/2b_head.png" /></div>
-        <div class="name">2B</div>
+        <div class="name">{{item.name}}</div>
       </div>
     </div>
-
   </div>
 </template>
 <style lang="scss" scoped>
   @import "../../scss/config";
-  .build-story-recommend {
+  .frienList{
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
     width: 100%;
     background: $bg-gray;
@@ -120,6 +113,9 @@
     }
     .friend-list {
       margin-top: 15px;
+      &:last-child {
+        margin-bottom: 100px;
+      }
       .one-friend {
         background: white;
         display: flex;
@@ -127,20 +123,12 @@
         height: 60px;
         width: 100%;
         align-items: center;
-
-        .icon {
-          margin-left: 10px;
-          margin-right: 25px;
-          img {
-            height: 20px;
-            width: 20px
-          }
-        }
         .head {
           margin-right: 25px;
           img {
-            height: 37px;
-            width: 37px;
+            margin-left: 25px;
+            height: 35px;
+            width: 35px;
           }
         }
         .name {
@@ -153,4 +141,28 @@
       }
     }
   }
-  </style>
+</style>
+<script>
+  import Axios from 'axios'
+  export default {
+    data () {
+      return {
+        friendList: []
+      }
+    },
+    created: function () {
+      this.getData()
+    },
+    methods: {
+      getData () {
+        Axios.get('/user/getFriendList', {
+          params: {
+            user: this.$route.params.user
+          }
+        }).then(response => {
+          this.friendList = response.data.result
+        })
+      }
+    }
+  }
+</script>

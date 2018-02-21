@@ -120,6 +120,7 @@
           font-size: 12px;
           flex: 1;
           line-height: 50px;
+          text-align: center;
         }
         .title {
           color: $icon-blue;
@@ -131,6 +132,7 @@
         }
         .info {
           flex: 1;
+          text-align: center;
         }
       }
     }

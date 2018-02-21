@@ -22,10 +22,10 @@
           <span ><img src="../../img/icon/redheart.png" /></span>
         </div>
         <div class="time">{{storyInfo.date}}</div>
-        <div class="follow-number">
-          <span class="tri"><img src="../../img/icon/triangle_downward.png"/></span>
-          <span class="number">1563</span>
-        </div>
+        <!--<div class="follow-number">-->
+          <!--<span class="tri"><img src="../../img/icon/triangle_downward.png"/></span>-->
+          <!--<span class="number">1563</span>-->
+        <!--</div>-->
       </div>
     </div>
     <div class="read-foot-menu">
@@ -103,9 +103,9 @@
       }
     }
     .context {
-      margin: 50px 10px 0 10px;
+      margin: 30px 10px 0 10px;
       font-size: 16px;
-      height: calc(100vh - 250px);
+      height: calc(100vh - 300px);
       color: $font-dark;
     }
     .related-info {

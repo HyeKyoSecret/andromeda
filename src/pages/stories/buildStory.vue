@@ -324,7 +324,7 @@
 </style>
 <script>
   import Axios from 'axios'
-  import Debounce from '../../js/throttle.js'
+  import Debounce from '../../js/debounce.js'
   import { MessageBox, Toast } from 'mint-ui'
   export default {
     data () {

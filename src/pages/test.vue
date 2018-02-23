@@ -14,7 +14,6 @@
   </div>
 </template>
 <script>
-//  import debounce from '../js/throttle.js'
 //  import Axios from 'axios'
   import FootMenu from '../components/foot-menu.vue'
   export default {

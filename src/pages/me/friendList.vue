@@ -10,7 +10,8 @@
     </div>
     <div class="search">
       <span class="magnifier"><img src="../../img/icon/magnifier.png" /></span>
-      <span><input type="text" placeholder="搜索"></span>
+      <span class="searchbar"><input type="text" placeholder="搜索" @focus="startSearch" @input="searchFriend" v-model="search"></span>
+      <span class="delete"><img src="../../img/icon/delete.png"></span>
     </div>
     <!--<div class="star-friend">-->
     <!--<span><img src="../../img/icon/gray_star.png" /></span>-->
@@ -77,11 +78,21 @@
       height: 42px;
       display: flex;
       align-items: center;
+      width: 100%;
       .magnifier {
         margin-left: 10px;
         margin-right: 12px;
         img {
           height: 25px;
+          width: 23px;
+        }
+      }
+      .searchbar {
+        width: 82%;
+      }
+      .delete {
+        img {
+          height: 23px;
           width: 23px;
         }
       }
@@ -93,6 +104,7 @@
         height: 35px;
         font-size: 14px;
         overflow: hidden;
+        width: 95%;
       }
     }
     .star-friend {
@@ -144,9 +156,11 @@
 </style>
 <script>
   import Axios from 'axios'
+  import debounce from '../../js/debounce.js'
   export default {
     data () {
       return {
+        search: '',
         friendList: []
       }
     },
@@ -162,7 +176,17 @@
         }).then(response => {
           this.friendList = response.data.result
         })
-      }
+      },
+      startSearch () {
+        console.log('start')
+      },
+      searchFriend: debounce(function () {
+        Axios.post('/user/searchFriend', {
+          content: this.search
+        }).then(response => {
+          console.log(response.data)
+        })
+      }, 1000)
     }
   }
 </script>

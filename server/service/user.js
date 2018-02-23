@@ -689,4 +689,8 @@ router.get('/user/getFriendList', (req, res) => {
       }
     })
 })
+router.post('/user/searchFriend', (req, res) => {
+  let content = req.body.content
+  console.log(content)
+})
 module.exports = router

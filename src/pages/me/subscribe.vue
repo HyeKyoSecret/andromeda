@@ -1,13 +1,6 @@
 <template>
   <div class="subscribe">
-    <div class="notice">
-      <span class="icon">
-        <img src="../../img/icon/back.png">
-      </span>
-      <span class="title">
-        订阅
-      </span>
-    </div>
+    <notice title="我的订阅"></notice>
     <div class="show-story">
       <div class="background">
         <div class="left-part"><img src="../../img/photo/LegendofZelda.png" /></div>
@@ -53,30 +46,6 @@
     height: 100%;
     width: 100%;
     background: $bg-gray;
-    .notice {
-      background: $main-color;
-      height: 42px;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      span {
-        text-align: center;
-        font-size: 16px;
-      }
-      .icon {
-        position: absolute;
-        left: 8px;
-        display: inline-block;
-        height: 42px;
-        width: 30px;
-        line-height: 50px;
-        img {
-          width: 12px;
-          height: 20px;
-        }
-      }
-    }
     .show-story {
       margin: 20px auto 0 auto;
       width: 90%;
@@ -185,7 +154,11 @@
 </style>
 <script>
   import Axios from 'axios'
+  import notice from '../../components/notice/notice.vue'
   export default {
+    components: {
+      notice
+    },
     data () {
       return {
         subList: [],

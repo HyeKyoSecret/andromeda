@@ -1,17 +1,19 @@
 <template>
-  <div class="frienList">
-    <div class="notice">
-      <span class="icon">
-        <img src="../../img/icon/back.png">
-      </span>
-      <span class="title">
-        好友列表
-      </span>
-    </div>
+  <div class="friendList">
+    <notice title="我的好友"></notice>
     <div class="search">
       <span class="magnifier"><img src="../../img/icon/magnifier.png" /></span>
       <span class="searchbar"><input type="text" placeholder="搜索" @focus="startSearch" @input="searchFriend" v-model="search"></span>
-      <span class="delete"><img src="../../img/icon/delete.png"></span>
+      <span class="delete" v-if="deleteBtn" @click="deleteSearch"><img src="../../img/icon/delete.png"></span>
+      <span class="cancel" v-if="cancelBtn" @click="cancelSearch">取消</span>
+    </div>
+    <div class="search-board" v-if="searchBoard">
+      <div class="friend-list">
+        <div class="one-friend" v-for="item in searchList">
+          <div class="head"><img src="../../img/photo/2b_head.png" /></div>
+          <div class="name">{{item.name}}</div>
+        </div>
+      </div>
     </div>
     <!--<div class="star-friend">-->
     <!--<span><img src="../../img/icon/gray_star.png" /></span>-->
@@ -29,7 +31,7 @@
     <!--<div class="name">2B</div>-->
     <!--</div>-->
     <!--</div>-->
-    <div class="friend-list">
+    <div class="friend-list" v-show="flVis">
       <div class="one-friend" v-for='item in friendList'>
         <div class="head"><img src="../../img/photo/2b_head.png" /></div>
         <div class="name">{{item.name}}</div>
@@ -39,40 +41,13 @@
 </template>
 <style lang="scss" scoped>
   @import "../../scss/config";
-  .frienList{
+  .friendList{
     position: absolute;
     top: 0;
     left: 0;
     height: 100%;
     width: 100%;
     background: $bg-gray;
-    .notice { // 新建notice
-      background: $main-color;
-      height: 42px;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      span {
-        text-align: center;
-      }
-      .title {
-        font-size: 16px;
-      }
-      .complete {
-        position: absolute;
-        top: 10px;
-        right: 11px;
-        font-size: 14px;
-      }
-      img {
-        position: absolute;
-        top: 10px;
-        left: 11px;
-        width: 12px;
-        height: 20px;
-      }
-    }
     .search {
       background-color: white;
       height: 42px;
@@ -83,18 +58,24 @@
         margin-left: 10px;
         margin-right: 12px;
         img {
-          height: 25px;
-          width: 23px;
+          height: 22px;
+          width: 20px;
         }
       }
       .searchbar {
-        width: 82%;
+        width: 68%;
       }
       .delete {
         img {
-          height: 23px;
-          width: 23px;
+          height: 17px;
+          width: 17px;
         }
+      }
+      .cancel {
+        margin-left: 15px;
+        letter-spacing: 1px;
+        font-size: 13px;
+        color: $w-gray;
       }
       input{
         color: #333333;
@@ -106,6 +87,11 @@
         overflow: hidden;
         width: 95%;
       }
+    }
+    .search-board {
+      width: 100%;
+      min-height: calc(100vh - 84px);
+      background: $bg-gray;
     }
     .star-friend {
       display: flex;
@@ -157,15 +143,30 @@
 <script>
   import Axios from 'axios'
   import debounce from '../../js/debounce.js'
+  import notice from '../../components/notice/notice.vue'
+  import { Toast } from 'mint-ui'
   export default {
+    components: {
+      notice
+    },
     data () {
       return {
         search: '',
-        friendList: []
+        deleteBtn: false,  // 删除按钮
+        searchBoard: false,  // 搜索版
+        cancelBtn: false,
+        friendList: [],
+        searchList: [],
+        flVis: true
       }
     },
     created: function () {
       this.getData()
+    },
+    watch: {
+      search: function (val) {
+        val.length > 0 ? this.deleteBtn = true : this.deleteBtn = false
+      }
     },
     methods: {
       getData () {
@@ -178,15 +179,37 @@
         })
       },
       startSearch () {
-        console.log('start')
+        this.searchList = ''
+        this.searchBoard = true
+        this.cancelBtn = true
+        this.flVis = false
       },
       searchFriend: debounce(function () {
         Axios.post('/user/searchFriend', {
+          user: this.$route.params.user,
           content: this.search
         }).then(response => {
-          console.log(response.data)
+          if (!response.data.error) {
+            this.searchList = response.data.result
+          } else {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
+          }
         })
-      }, 1000)
+      }, 1000),
+      cancelSearch () {
+        this.searchBoard = false
+        this.deleteBtn = false
+        this.cancelBtn = false
+        this.search = ''
+        this.flVis = true
+      },
+      deleteSearch () {
+        this.search = ''
+      }
     }
   }
 </script>

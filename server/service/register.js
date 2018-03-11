@@ -114,30 +114,49 @@ router.get('/login/getCaptcha', (req, res) => {
 })
 router.post('/register/login', (req, res) => {
   'use strict'
-  if (req.body.captcha.toLowerCase() === req.session.loginCaptchaText) {
-    let username = req.body.username
-    let password = req.body.password
-    User.findOne({username: username}, (err, user) => {
-      if (err) {
-        res.send({permit: false, message: '服务器忙，请稍后再试'})
-      } else {
-        if (user) {
-          if (user.password === md5(password)) {
-            req.session.user = user.username
-            res.cookie('And', {user: user.username}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 14), httpOnly: true })
-            res.send({permit: true, id: user.id, message: '登录成功'})
-          } else {
-            res.send({permit: false, message: '用户名密码不正确'})
-          }
+  let username = req.body.username
+  let password = req.body.password
+  User.findOne({username: username}, (err, user) => {
+    if (err) {
+      res.send({permit: false, message: '服务器忙，请稍后再试'})
+    } else {
+      if (user) {
+        if (user.password === md5(password)) {
+          req.session.user = user.username
+          res.cookie('And', {user: user.username}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 14), httpOnly: true })
+          res.send({permit: true, id: user.id, message: '登录成功'})
         } else {
-          res.send({permit: false, message: '用户名不存在'})
+          res.send({permit: false, message: '用户名密码不正确'})
         }
+      } else {
+        res.send({permit: false, message: '用户名不存在'})
       }
-    })
-  } else {
-    // 验证码错误
-    res.send({permit: false, message: '验证码错误'})
-  }
+    }
+  })
+  // if (req.body.captcha.toLowerCase() === req.session.loginCaptchaText) {
+  //   let username = req.body.username
+  //   let password = req.body.password
+  //   User.findOne({username: username}, (err, user) => {
+  //     if (err) {
+  //       res.send({permit: false, message: '服务器忙，请稍后再试'})
+  //     } else {
+  //       if (user) {
+  //         if (user.password === md5(password)) {
+  //           req.session.user = user.username
+  //           res.cookie('And', {user: user.username}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 14), httpOnly: true })
+  //           res.send({permit: true, id: user.id, message: '登录成功'})
+  //         } else {
+  //           res.send({permit: false, message: '用户名密码不正确'})
+  //         }
+  //       } else {
+  //         res.send({permit: false, message: '用户名不存在'})
+  //       }
+  //     }
+  //   })
+  // } else {
+  //   // 验证码错误
+  //   res.send({permit: false, message: '验证码错误'})
+  // }
 })
 router.get('/register/checkLogin', (req, res) => {
   'use strict'

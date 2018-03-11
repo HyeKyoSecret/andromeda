@@ -1,13 +1,6 @@
 <template>
   <div class="my-creation-node">
-    <div class="notice">
-      <span class="icon">
-        <img src="../../img/icon/back.png">
-      </span>
-      <span class="title">
-        {{$route.params.rootName}}
-      </span>
-    </div>
+    <notice v-bind:title="$route.params.rootName"></notice>
     <div v-if="result.root">
       <transition
         name="custom-classes-transition"
@@ -56,10 +49,12 @@
 </template>
 <script>
   import FootMenu from '../../components/foot-menu.vue'
+  import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
   import { Toast, MessageBox } from 'mint-ui'
   export default {
     components: {
+      notice,
       FootMenu
     },
     data () {
@@ -164,30 +159,6 @@
     height: 100%;
     width: 100%;
     background: $bg-gray;
-    .notice {
-      background: $main-color;
-      height: 42px;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      span {
-        text-align: center;
-        font-size: 16px;
-      }
-      .icon {
-        position: absolute;
-        left: 8px;
-        display: inline-block;
-        height: 42px;
-        width: 30px;
-        line-height: 50px;
-        img {
-          width: 12px;
-          height: 20px;
-        }
-      }
-    }
     .open-authorized {
       width: 100%;
       border-top: 1px solid $border-gray;

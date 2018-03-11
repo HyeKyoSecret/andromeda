@@ -1,13 +1,6 @@
 <template>
   <div class="my-creation">
-    <div class="notice">
-      <span class="icon">
-        <img src="../../img/icon/back.png">
-      </span>
-      <span class="title">
-        {{title}}
-      </span>
-    </div>
+    <notice v-bind:title="title"></notice>
     <div class="create-new-story" v-if="isUser">
       撰写新的故事
     </div>
@@ -50,12 +43,14 @@
 </template>
 <script>
   import FootMenu from '../../components/foot-menu.vue'
+  import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
   import { Toast, Indicator } from 'mint-ui'
   import moment from 'moment'
   export default {
     components: {
-      FootMenu
+      FootMenu,
+      notice
     },
     data () {
       return {
@@ -142,30 +137,6 @@
     /*height: 100%;*/
     min-height: 100%;
     background: $bg-gray;
-    .notice {
-      background: $main-color;
-      height: 42px;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      span {
-        text-align: center;
-        font-size: 16px;
-      }
-      .icon {
-        position: absolute;
-        left: 8px;
-        display: inline-block;
-        height: 42px;
-        width: 30px;
-        line-height: 50px;
-        img {
-          width: 12px;
-          height: 20px;
-        }
-      }
-    }
     .create-new-story {
       margin: 10px 25% 20px 25%;
       background-color: $icon-red;

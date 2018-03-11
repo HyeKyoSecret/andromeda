@@ -10,7 +10,9 @@
           {
             content: '删除',
             style: { background: 'red', color: '#fff', width: '50px', textAlign: 'center'},
-            handler: () => deleteRequest(index, item.toId)
+            handler: function () {
+              return deleteRequest(index, item.toId)
+            }
           }
         ]">
             <slot>
@@ -35,7 +37,9 @@
           {
             content: '删除',
             style: { background: 'red', color: '#fff', width: '50px', textAlign: 'center'},
-            handler: () => deleteAdd(index, item.fromId)
+            handler: function () {
+              return deleteAdd(index, item.fromId)
+            }
           }
         ]">
           <div class='add-request'>
@@ -58,7 +62,7 @@
   }
   .request-template {
     width: 100%;
-    height: 100%;
+    min-height: calc(100vh - 82px);
   }
   .rq-content {
     width: 100%;

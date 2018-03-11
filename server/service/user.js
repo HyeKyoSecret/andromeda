@@ -431,12 +431,6 @@ router.get('/user/acceptFriend', (req, res) => {
   'use strict'
   const id = req.query.id
   const fromId = req.query.fromId
-  let loginUser
-  if (req.session.user) {
-    loginUser = req.session.user
-  } else if (req.cookies.And && req.cookies.And.user) {
-    loginUser = req.cookies.And.user
-  }
   User.findOne({id: fromId}, (err, fromUser) => {
     if (err) {
       res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
@@ -446,8 +440,8 @@ router.get('/user/acceptFriend', (req, res) => {
         res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
       }
       if (!user.friendList.some(function (item) {
-          return item.friend.toString() === fromUser._id.toString()
-        })) {
+        return item.friend.toString() === fromUser._id.toString()
+      })) {
         console.log('查询到好友列表不存在')
         // 更新自己好友列表
         User.updateOne({$and: [{id: id}, {'pending.addFriend.from': fromUser._id}]}, {
@@ -462,7 +456,8 @@ router.get('/user/acceptFriend', (req, res) => {
             $push: {
               'friendList': {'friend': user._id},
               'promote': {'description': 'friendRequest', 'content_1': user.nickname, 'content_2': '接受了您的好友请求'}
-            }, $pull: {'pending.request': {'to': user._id}}
+            },
+            $pull: {'pending.request': {'to': user._id}}
           }, {upsert: true}, (error2) => {
             if (error2) {
               console.log(error2)
@@ -479,7 +474,8 @@ router.get('/user/acceptFriend', (req, res) => {
           $push: {
             'friendList': {'friend': user._id},
             'promote': {'description': 'friendRequest', 'content_1': user.nickname, 'content_2': '接受了您的好友请求'}
-          }, $pull: {'pending.request': {'to': user._id}}
+          },
+          $pull: {'pending.request': {'to': user._id}}
         }, {upsert: true}, (error2) => {
           if (error2) {
             console.log(error2)
@@ -489,8 +485,8 @@ router.get('/user/acceptFriend', (req, res) => {
           }
         })
       }
-      })
     })
+  })
 })
 router.get('/user/getMessageData', (req, res) => {
   'use strict'
@@ -521,20 +517,20 @@ router.post('/user/delPendingAdd', (req, res) => {
   }
   User.findOne({id: req.body.fromId}, (err, fromUser) => {
     if (err) {
-      res.send({error: true, type:'DB', message: '发生错误,请稍后再试'})
+      res.send({error: true, type: 'DB', message: '发生错误,请稍后再试'})
     } else {
       if (fromUser) {
-        User.findOneAndUpdate({$and: [{ username: user }, { 'pending.addFriend.from': fromUser._id }]},  {$pull: {'pending.addFriend': {'from': fromUser._id} }})
+        User.findOneAndUpdate({$and: [{ username: user }, { 'pending.addFriend.from': fromUser._id }]}, {$pull: { 'pending.addFriend': {'from': fromUser._id} }})
           .exec((err2, doc) => {
             if (err2) {
               console.log(err2)
-              res.send({error: true, type:'DB', message: '发生错误，请稍后再试'})
+              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
             } else {
               res.send({error: false, success: true})
             }
           })
       } else {
-        res.send({error: true, type:'User', message: '查询失败'})
+        res.send({error: true, type: 'User', message: '查询失败'})
       }
     }
   })
@@ -548,20 +544,20 @@ router.post('/user/delPendingReq', (req, res) => {
   }
   User.findOne({id: req.body.toId}, (err, toUser) => {
     if (err) {
-      res.send({error: true, type:'DB', message: '发生错误,请稍后再试'})
+      res.send({error: true, type: 'DB', message: '发生错误,请稍后再试'})
     } else {
       if (toUser) {
-        User.findOneAndUpdate({$and: [{ username: user }, { 'pending.request.to': toUser._id }]},  {$pull: {'pending.request': {'to': toUser._id} }})
+        User.findOneAndUpdate({$and: [{ username: user }, { 'pending.request.to': toUser._id }]}, {$pull: { 'pending.request': {'to': toUser._id} }})
           .exec((err2) => {
             if (err2) {
               console.log(err2)
-              res.send({error: true, type:'DB', message: '发生错误，请稍后再试'})
+              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
             } else {
               res.send({error: false, success: true})
             }
           })
       } else {
-        res.send({error: true, type:'User', message: '查询失败'})
+        res.send({error: true, type: 'User', message: '查询失败'})
       }
     }
   })
@@ -615,7 +611,7 @@ router.get('/user/getUserFriendship', (req, res) => {
             let cond1 = user.friendList.some(function (item) {
               return item.friend.toString() === me._id.toString()
             })
-            let cond2 = me.friendList.some(function(item) {
+            let cond2 = me.friendList.some(function (item) {
               return item.friend.toString() === user._id.toString()
             })
             res.send({error: false, cond1: cond1, cond2: cond2})
@@ -655,7 +651,7 @@ router.post('/user/deleteFriendRequest', (req, res) => {
     if (err) {
       res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
     } else {
-      User.updateOne({username: loginUser}, {$pull: {'friendList': {'friend' : user._id}}})
+      User.updateOne({username: loginUser}, {$pull: {'friendList': {'friend': user._id}}})
         .exec(err2 => {
           if (err2) {
             res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -691,6 +687,30 @@ router.get('/user/getFriendList', (req, res) => {
 })
 router.post('/user/searchFriend', (req, res) => {
   let content = req.body.content
-  console.log(content)
+  let user = req.body.user
+  let result = []
+  User.findOne({id: user})
+    .populate('friendList.friend')
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      } else {
+        if (doc) {
+          doc.friendList.forEach((item) => {
+            'use strict'
+            let reg = new RegExp(content, 'gi')
+            if (reg.test(item.friend.nickname)) {
+              result.push({
+                name: item.friend.nickname,
+                id: item.friend.id
+              })
+            }
+          })
+          res.send({error: false, result: result})
+        } else {
+          res.send({error: true, type: 'user', message: '用户不存在'})
+        }
+      }
+    })
 })
 module.exports = router

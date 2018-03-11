@@ -111,7 +111,7 @@
                     position: 'middle',
                     duration: 1000
                   })
-                  this.$router.push({name: 'me', params: { user: response.data.id }})
+                  this.$router.push({path: '/'})
                 }
               } catch (e) {
                 this.getCaptcha()

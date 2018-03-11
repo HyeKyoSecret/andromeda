@@ -1253,21 +1253,15 @@ router.get('/story/getStack', (req, res) => {
         if (p) {
           count = count + 1
           _temp = await getObj(p)
-          console.log('temp' + _temp)
           stack.push({
             _id: _temp._id,
             id: _temp.id,
             content: _temp.content
           })
           p = _temp.lc
-          console.log('stack' + JSON.stringify(stack))
-          console.log(p)
         } else {
           stack.pop()
-          console.log('stack' + JSON.stringify(stack))
-          console.log('temp' + _temp)
           p = _temp.rb
-          console.log(p)
           if (!p && stack.length > 1) {
             _temp = await getObj(stack[stack.length - 1]._id)
             p = _temp.rb
@@ -1381,7 +1375,6 @@ router.get('/story/getNextNode', (req, res) => {
           } else {
             stack.pop()
             p = _temp.rb
-            console.log('stack' + stack)
             if (!p && stack.length > 1) {
               _temp = await getObj(stack[stack.length - 1]._id)
               p = _temp.rb
@@ -1599,7 +1592,7 @@ router.get('/story/prepareTraversal', (req, res) => {
             nodeRankWeight(0.1, candidate)    // 节点权重函数
             zanRank(candidate)
             zanRankWeight(0.2, candidate)
-            console.log(candidate)
+            // console.log(candidate)
           } else {
             // 无后续处理
           }

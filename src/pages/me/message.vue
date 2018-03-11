@@ -1,13 +1,6 @@
 <template>
   <div class="message">
-    <div class="notice">
-      <span class="icon">
-        <img src="../../img/icon/back.png">
-      </span>
-      <span class="title">
-        我的消息
-      </span>
-    </div>
+    <notice title="我的消息"></notice>
     <div class="button-bar">
       <div class="button">
         <div v-for="item in btn">
@@ -22,6 +15,7 @@
   </div>
 </template>
 <script>
+  import notice from '../../components/notice/notice.vue'
   import FootMenu from '../../components/foot-menu.vue'
   import Axios from 'axios'
   import { Toast } from 'mint-ui'
@@ -55,6 +49,7 @@
       }
     },
     components: {
+      notice,
       FootMenu
     },
     created: function () {
@@ -108,25 +103,6 @@
     height: 100%;
     width: 100%;
     background: $bg-gray;
-    .notice {
-      background: $main-color;
-      height: 42px;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      span{
-        text-align: center;
-        font-size: 16px;
-      }
-      img {
-        position: absolute;
-        top: 10px;
-        left: 11px;
-        width: 12px;
-        height: 20px;
-      }
-    }
     .button-bar {
       width: 100%;
       background: white;

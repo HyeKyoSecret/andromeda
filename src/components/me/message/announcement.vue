@@ -26,7 +26,7 @@
   @import "../../../scss/config";
   .announcement-template {
     width: 100%;
-    height: 100%;
+    min-height: calc(100vh - 82px);
     .content {
       display: flex;
       margin-top: 20px;

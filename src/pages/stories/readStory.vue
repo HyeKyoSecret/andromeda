@@ -1,13 +1,6 @@
 <template>
   <div class="read-story">
-    <div class="notice">
-      <span class="icon">
-        <img src="../../img/icon/back.png" @click="goBack">
-      </span>
-      <span class="title">
-        {{storyInfo.title}}
-      </span>
-    </div>
+    <notice v-bind:title="storyInfo.title"></notice>
     <!--<div class="marker">-->
       <!--<img src="../../img/icon/marker_selected.png" />-->
     <!--</div>-->
@@ -74,25 +67,6 @@
   .read-story {
     height: 100%;
     background: $bg-gray;
-    .notice {
-      background: $main-color;
-      height: 42px;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      span {
-        text-align: center;
-        font-size: 16px;
-      }
-      img {
-        position: absolute;
-        top: 10px;
-        left: 11px;
-        width: 12px;
-        height: 20px;
-      }
-    }
     .marker {
       float: right;
       margin-right: 30px;
@@ -233,9 +207,14 @@
   </style>
 <script>
   import Axios from 'axios'
+  import notice from '../../components/notice/notice.vue'
   import { Toast, MessageBox } from 'mint-ui'
   import writeStory from '../../components/story/writeStory.vue'
   export default {
+    components: {
+      notice,
+      writeStory
+    },
     data () {
       return {
         storyInfo: {
@@ -253,9 +232,6 @@
         },
         writeWindow: false
       }
-    },
-    components: {
-      writeStory
     },
     created: function () {
       this.getData()

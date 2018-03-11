@@ -8,7 +8,9 @@
           {
             content: '删除',
             style: { background: 'red', color: '#fff', width: '50px', textAlign: 'center'},
-            handler: () => deletePromote(index, item.id)
+            handler: function () {
+              return deletePromote(index, item.id)
+            }
           }
         ]">
           <div class='add-request'>
@@ -23,6 +25,11 @@
 </template>
 <style lang='scss' scoped>
   @import "../../../scss/config";
+  .promote-template{
+    margin-top:  10px;
+    width: 100%;
+    min-height: calc(100vh - 82px);
+  }
   .rq-content {
     width: 100%;
     display: flex;
@@ -98,11 +105,7 @@
       }
     }
   }
-  .promote-template{
-    margin-top:  10px;
-    width: 100%;
-    height: 100%;
-  }
+
 </style>
 <script>
   import Axios from 'axios'

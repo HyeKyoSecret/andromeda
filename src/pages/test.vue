@@ -1,15 +1,14 @@
 <template>
   <div>
-    <div>
-      helloWorld
+    <div class="abc">
+      <mt-radio
+        title="选择您的性别"
+        align="right"
+        v-model="value"
+        :options="['男', '女']">
+      </mt-radio>
     </div>
     <footMenu class="hehe">
-      <slot>
-        <div>A</div>
-        <div>b</div>
-        <div>c</div>
-        <div @click="getYou">d</div>
-      </slot>
     </footMenu>
   </div>
 </template>
@@ -45,9 +44,5 @@
   }
 </script>
 <style lang="scss" scoped>
-  .hehe {
-    div {
-      width: 50px;
-    }
-  }
+  @import "../scss/style.css";
 </style>

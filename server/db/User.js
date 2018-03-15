@@ -23,6 +23,10 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
+  birthday: {
+    type: Date
+  },
+  sex: String,
   myCreation: {
     root: [{
       type: Schema.Types.ObjectId,

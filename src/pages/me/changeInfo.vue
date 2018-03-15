@@ -19,47 +19,54 @@
             在乌云和尘埃之后是真理之光，他最终会投射出来并含笑驱散它们。
           </div>
         </div>
-        <div class="icon">
+        <div class="icon" v-if="isUser">
           <img src="../../img/icon/right.png">
         </div>
       </div>
       <div class="user-operation">
-        <div class="line" v-for='item in operation'>
+        <div class="line">
           <div class="left">
-            {{item.title}}
+            性别
           </div>
-          <div class="right">
+          <div class="right" @click="openChangeSex">
             <div class="words">
-              666666
+              {{sex}}
             </div>
-            <div class="icon">
+            <div class="icon" v-if="isUser">
+              <img src="../../img/icon/right.png">
+            </div>
+          </div>
+        </div>
+        <div class="line">
+          <div class="left">
+            生日
+          </div>
+          <div class="right" @click="openDatePicker">
+            <div class="words">
+              {{birthday}}
+            </div>
+            <div class="icon" v-if="isUser">
               <img src="../../img/icon/right.png">
             </div>
           </div>
         </div>
       </div>
-      <div class="quit">
+      <div class="quit" v-if="isUser" @click="quitLogin">
         退出账号
       </div>
-      <div class="foot-menu">
-        <div class="button">
-          <img src="../../img/icon/foot_begin.png">
-          <div>开始</div>
-        </div>
-        <div class="discovery">
-          <img src="../../img/icon/foot_discovery.png">
-        </div>
-        <div class="button">
-          <img src="../../img/icon/foot_me.png">
-          <div>我</div>
-        </div>
-      </div>
+      <foot-menu></foot-menu>
     </div>
+    <date-picker ref="picker" v-bind:id="userId"></date-picker>
+    <mt-radio ref="radio" v-bind:id="userId"></mt-radio>
   </div>
 </template>
 <style lang='scss' scoped>
   @import "../../scss/config";
+  @import "../../scss/style.css";
   .change-user-info {
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
     background: $bg-gray;
   .notice {
@@ -156,7 +163,7 @@
     flex: 7;
     height: 100%;
     margin-left: 15px;
-    line-height: 50px;
+    line-height: 42px;
     text-align: right;
     padding-right: 20px;
     font-size: 14px;
@@ -180,7 +187,6 @@
   }
   }
   }
-
   }
   .quit {
     width: 100%;
@@ -228,28 +234,99 @@
   }
 </style>
 <script>
+  import Axios from 'axios'
+  import { Toast, MessageBox } from 'mint-ui'
+  import FootMenu from '../../components/foot-menu.vue'
+  import DatePicker from '../../components/me/changeInfo/changeBirthday.vue'
+  import MtRadio from '../../components/me/changeInfo/changeSex.vue'
   export default {
     data () {
       return {
-        operation: [
-          {
-            title: '性别',
-            path: ''
-          },
-          {
-            title: '生日&星座',
-            path: ''
-          },
-          {
-            title: '兴趣',
-            path: ''
-          },
-          {
-            title: '手机',
-            path: ''
-          }
-        ]
+        isUser: false,
+        userId: this.$route.params.user,
+        birthday: '',
+        sex: ''
       }
+    },
+    created: function () {
+      this.checkUser()
+      this.getData()
+    },
+    methods: {
+      checkUser () {
+        Axios.get('/register/checkUser', {
+          params: {
+            user: this.$route.params.user
+          }
+        }).then(res => {
+          if (res.data.user) {
+            this.nickName = res.data.user.nickName
+            this.isUser = !res.data.customer  // 是否是访客
+          } else {
+            this.$emit('error')
+          }
+        }).catch(error => {
+          if (error) {
+            this.$emit('error')
+          }
+        })
+      },
+      openDatePicker () {
+        if (this.isUser) {
+          this.$refs.picker.openPicker()
+        }
+      },
+      openChangeSex () {
+        if (this.isUser) {
+          this.$refs.radio.openRadio()
+        }
+      },
+      quitLogin () {
+        MessageBox({
+          title: '提示',
+          message: '确定退出登录吗?',
+          showCancelButton: true
+        }).then(action => {
+          if (action === 'confirm') {
+            Axios.get('/register/quitLogin')
+              .then(response => {
+                if (!response.data.error) {
+                  Toast({
+                    message: '退出成功',
+                    position: 'middle',
+                    duration: 800
+                  })
+                  this.checkUser()
+                } else {
+                  Toast({
+                    message: response.data.message,
+                    position: 'middle',
+                    duration: 800
+                  })
+                  this.checkUser()
+                }
+              })
+          }
+        }).catch(action => {
+        })
+      },
+      getData () {
+        Axios.get('/user/getChangeInfo', {
+          params: {
+            id: this.$route.params.user
+          }
+        }).then(response => {
+          if (!response.data.error) {
+            this.birthday = response.data.birthday || '未设置'
+            this.sex = response.data.sex || '未设置'
+          }
+        })
+      }
+    },
+    components: {
+      FootMenu,
+      DatePicker,
+      MtRadio
     }
   }
 </script>

@@ -64,12 +64,12 @@ export default [
         alias: 'creationNode',
         component: resolve => require(['../pages/me/myCreationNode.vue'], resolve),
         meta: { requiresAuth: true }
+      },
+      {
+        path: 'changeInfo',
+        component: resolve => require(['../pages/me/changeInfo.vue'], resolve)
       }
     ]
-  },
-  {
-    path: '/change_info',
-    component: resolve => require(['../pages/me/change_user_info.vue'], resolve)
   },
   {
     path: '/register',

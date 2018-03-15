@@ -6,7 +6,7 @@
         <div class="head-img">
           <img src="../../img/photo/head.jpg">
         </div>
-        <div class="words">
+        <div class="words" @click="goChangeInfo(userId)">
           <div class="name">{{nickName}}</div>
           <div v-if="isLoginCustomer" class="f-btn">
             <!--<div class="focus-btn">-->
@@ -24,12 +24,12 @@
             <div>4399</div>
           </div>
         </div>
-        <div class="icon">
+        <div class="icon" @click="goChangeInfo(userId)">
           <img src="../../img/icon/right.png">
         </div>
       </div>
       <router-link to='/login' tag="div" class="fake-user-main" v-else>
-        <p>登陆仙女座，</p>
+        <p>登录仙女座，</p>
         <p>链接你与Ta们的故事</p>
       </router-link>
         <div class="user-operation">
@@ -342,6 +342,7 @@
         ],
         isUser: false,
         userStatus: '',
+        userId: '',
         nickName: '',
         cond1: '',
         cond2: ''
@@ -379,6 +380,7 @@
                   let pathArray = this.operation[i].path.split('/people')
                   this.operation[i].path = `/people/${response.data.user}${pathArray[1]}`
                 }
+                this.userId = response.data.user
               } else {
                 this.userStatus = 'askLogin'
               }
@@ -410,13 +412,19 @@
                 let pathArray = this.operation[i].path.split(`/people`)
                 this.operation[i].path = `/people/${res.data.user.user}${pathArray[1]}`
               }
+              this.userId = res.data.user.user
             } else {
               this.$emit('error')
             }
           }).catch(error => {
-            alert('error' + error)
+            if (error) {
+              this.$emit('error')
+            }
           })
         }
+      },
+      goChangeInfo (user) {
+        this.$router.push(`/people/${user}/changeInfo`)
       },
       addFriend () {
         Axios.post('/user/addFriendRequest', {

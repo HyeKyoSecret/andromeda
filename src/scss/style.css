@@ -233,9 +233,9 @@
   margin-top: 6px;
 }
 .mint-cell-title {
-  /*-webkit-box-flex: 1;*/
-  /*-ms-flex: 1;*/
-  /*flex: 1;*/
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
 }
 .mint-cell-value {
   color: #888;
@@ -245,7 +245,7 @@
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
-  width: 100%;
+  /*width: 100%;*/
 }
 .mint-cell-value.is-link {
   margin-right:24px;

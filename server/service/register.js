@@ -49,7 +49,8 @@ router.post('/register', (req, res) => {
                       res.send('注册失败')
                     } else {
                       req.session.user = user.username
-                      res.cookie('And', {user: user.username}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 14), httpOnly: true })
+                      req.session.userId = user.id
+                      res.cookie('And', {user: user.username, userId: user.id}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
                       res.send('注册成功')
                     }
                   })
@@ -123,7 +124,8 @@ router.post('/register/login', (req, res) => {
       if (user) {
         if (user.password === md5(password)) {
           req.session.user = user.username
-          res.cookie('And', {user: user.username}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 14), httpOnly: true })
+          req.session.userId = user.id
+          res.cookie('And', {user: user.username, userId: user.id}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
           res.send({permit: true, id: user.id, message: '登录成功'})
         } else {
           res.send({permit: false, message: '用户名密码不正确'})
@@ -256,9 +258,12 @@ router.get('/register/checkUser', (req, res) => {
 })
 router.get('/register/quitLogin', (req, res) => {
   req.session.destroy(function (err) {
-    if (err) console.log(err)
-    res.cookie('And', {account: null}, {maxAge: 0}) // 删除cookie
-    res.send({login: false})
+    if (err) {
+      res.send({error: true, message: '发生错误，请稍后再试'})
+    } else {
+      res.cookie('And', {user: null, userId: null}, {maxAge: 0}) // 删除cookie
+      res.send({error: false})
+    }
   })
 })
 module.exports = router

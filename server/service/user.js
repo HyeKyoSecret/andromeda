@@ -713,4 +713,50 @@ router.post('/user/searchFriend', (req, res) => {
       }
     })
 })
+router.post('/user/changeBirthday', (req, res) => {
+  'use strict'
+  let id = req.body.id
+  let date = req.body.date
+  if (req.session.userId === id || (req.cookies.And && req.cookies.And.userId === id)) {
+    User.updateOne({id: id}, {$set: {'birthday': date}})
+      .exec((err) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+        } else {
+          res.send({error: false, message: '修改成功'})
+        }
+      })
+  } else {
+    res.send({error: true, type: 'auth', message: '您没有权限操作'})
+  }
+})
+router.post('/user/changeSex', (req, res) => {
+  'use strict'
+  let id = req.body.id
+  let value = req.body.value
+  if (req.session.userId === id || (req.cookies.And && req.cookies.And.userId === id)) {
+    User.updateOne({id: id}, {$set: {'sex': value}})
+      .exec((err) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+        } else {
+          res.send({error: false, message: '修改成功'})
+        }
+      })
+  } else {
+    res.send({error: true, type: 'auth', message: '您没有权限操作'})
+  }
+})
+router.get('/user/getChangeInfo', (req, res) => {
+  'use strict'
+  let id = req.body.id
+  User.findOne({id: id})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误'})
+      } else {
+        res.send({error: false, sex: doc.sex, birthday: moment(doc.birthday).format('L')})
+      }
+    })
+})
 module.exports = router

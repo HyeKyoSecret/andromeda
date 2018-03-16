@@ -176,7 +176,8 @@ router.get('/register/checkLogin', (req, res) => {
             res.send({
               login: true,
               user: user.id,
-              nickName: user.nickname
+              nickName: user.nickname,
+              sign: user.sign
             })
           } else {
             res.send({
@@ -201,7 +202,8 @@ router.get('/register/checkLogin', (req, res) => {
           res.send({
             login: true,
             user: result.id,
-            nickName: result.nickname
+            nickName: result.nickname,
+            sign: result.sign
           })
         } else {
           res.send({
@@ -232,7 +234,9 @@ router.get('/register/checkUser', (req, res) => {
   if (userReg.test(user)) {
     let userInfo = {
       user: '',
-      nickName: ''
+      nickName: '',
+      sign: '',
+      userId: ''
     }
     User.findOne({id: user})
       .exec((err, account) => {
@@ -242,6 +246,8 @@ router.get('/register/checkUser', (req, res) => {
           if (account) {
             userInfo.user = account.id
             userInfo.nickName = account.nickname
+            userInfo.sign = account.sign
+            userInfo.userId = account.id
             if (account.username === loginUser) {
               res.send({user: userInfo, customer: false}) // 是本人，非访客模式
             } else {

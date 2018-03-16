@@ -1,12 +1,14 @@
 <template>
   <div>
     <div class="abc">
-      <mt-radio
-        title="选择您的性别"
-        align="right"
-        v-model="value"
-        :options="['男', '女']">
-      </mt-radio>
+      <button @click="openPicker">打开</button>
+      <mt-datetime-picker
+        ref="picker"
+        type="date"
+        :startDate = startDate
+        :endDate = endDate
+        v-model="pickerValue">
+      </mt-datetime-picker>
     </div>
     <footMenu class="hehe">
     </footMenu>
@@ -18,27 +20,17 @@
   export default {
     data () {
       return {
-        left: 0,
-        top: 0,
-        scale: 1,
-        angle: 0,
-        initScale: 1,
-        message: '真的有错误',
-        details: '',
-        showMe1: false,
-        qwert: [1, 2, 3, 4, 5],
-        searchQuery: '',
-        searchQueryIsDirty: false,
-        isCalculating: false,
-        path: '/me/myCreation'
+        startDate: new Date('1960', '1', '1'),
+        endDate: new Date('2008', '12', '31'),
+        pickerValue: ''
       }
     },
     components: {
       FootMenu
     },
     methods: {
-      getYou () {
-        alert('ffff')
+      openPicker () {
+        this.$refs.picker.open()
       }
     }
   }

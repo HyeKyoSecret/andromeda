@@ -735,7 +735,7 @@ router.post('/user/changeSex', (req, res) => {
   let id = req.body.id
   let value = req.body.value
   if (req.session.userId === id || (req.cookies.And && req.cookies.And.userId === id)) {
-    User.updateOne({id: id}, {$set: {'sex': value}})
+    User.updateOne({id: id}, {$set: {'sex': value}}, {upsert: true})
       .exec((err) => {
         if (err) {
           res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -749,13 +749,46 @@ router.post('/user/changeSex', (req, res) => {
 })
 router.get('/user/getChangeInfo', (req, res) => {
   'use strict'
-  let id = req.body.id
+  let id = req.query.id
   User.findOne({id: id})
     .exec((err, doc) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误'})
       } else {
-        res.send({error: false, sex: doc.sex, birthday: moment(doc.birthday).format('L')})
+        res.send({error: false, nickname: doc.nickname, sex: doc.sex, birthday: moment(doc.birthday).format('L'), sign: doc.sign})
+      }
+    })
+})
+router.post('/user/changeSign', (req, res) => {
+  'use strict'
+  let id = req.body.id
+  let sign = req.body.sign
+  if (sign.length >= 0 && sign.length <= 30) {
+    if (req.session.userId === id || (req.cookies.And && req.cookies.And.userId === id)) {
+      User.updateOne({id: id}, {$set: {'sign': sign}}, {upsert: true})
+        .exec((err) => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            res.send({error: false, message: '修改成功'})
+          }
+        })
+    } else {
+      res.send({error: true, type: 'auth', message: '您没有权限操作'})
+    }
+  } else {
+    res.send({error: true, type: 'word', message: '签名格式有误，请检查后输入'})
+  }
+})
+router.get('/user/getSign', (req, res) => {
+  'use strict'
+  let id = req.query.id
+  User.findOne({id: id})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误'})
+      } else {
+        res.send({error: false, sign: doc.sign})
       }
     })
 })

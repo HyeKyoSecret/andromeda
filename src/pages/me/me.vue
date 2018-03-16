@@ -17,7 +17,7 @@
             </div>
           </div>
           <div class="sign">
-            在乌云和尘埃之后是真理之光，他最终会投射出来并含笑驱散它们。
+            {{sign}}
           </div>
           <div class="info">
             <img src="../../img/icon/zan.png">
@@ -110,6 +110,7 @@
           .sign {
             margin-top: 6px;
             font-size: 13px;
+            min-height: 30px;
             color: $w-gray;
             display: -webkit-box;
             display: -moz-box;
@@ -345,7 +346,13 @@
         userId: '',
         nickName: '',
         cond1: '',
-        cond2: ''
+        cond2: '',
+        sign: ''
+      }
+    },
+    watch: {
+      $route: function () {
+        this.checkUser()  // 重新获取信息，防止组件复用造成的数据不刷新
       }
     },
     computed: {
@@ -375,12 +382,13 @@
             .then((response) => {
               if (response.data.login) {
                 this.nickName = response.data.nickName
+                this.sign = response.data.sign || '这个人很懒，什么也没留下'
+                this.userId = response.data.user
                 this.userStatus = 'isUser'
                 for (let i = 0; i < this.operation.length; i++) { // 修改path
                   let pathArray = this.operation[i].path.split('/people')
                   this.operation[i].path = `/people/${response.data.user}${pathArray[1]}`
                 }
-                this.userId = response.data.user
               } else {
                 this.userStatus = 'askLogin'
               }
@@ -401,6 +409,8 @@
           }).then(res => {
             if (res.data.user) {
               this.nickName = res.data.user.nickName
+              this.sign = res.data.user.sign || '这个人很懒，什么也没留下'
+              this.userId = res.data.user.userId
               if (res.data.customer) {
                 this.operation = this.cOperation     // 修改按钮
                 this.userStatus = 'isCustomer'

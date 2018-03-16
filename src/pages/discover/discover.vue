@@ -104,6 +104,7 @@
     left: 0;
     height: 100%;
     width: 100%;
+    box-sizing: border-box;
     background: $bg-gray;
     .notice {
       background: $main-color;
@@ -194,8 +195,11 @@
       width: 100%;
       background-color: white;
       margin-top: 15px;
-      &:last-child {
-        margin-bottom: 100px;
+      &:last-child:after {
+        content: '';
+        display: block;
+        height: 100px;
+        width: 100%;
       }
       .story-information {
         margin-left: 10px;

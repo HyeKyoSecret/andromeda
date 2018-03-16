@@ -26,7 +26,13 @@ const UserSchema = new Schema({
   birthday: {
     type: Date
   },
-  sex: String,
+  sex: {
+    type: String,
+    default: '未设置'
+  },
+  sign: {
+    type: String
+  },
   myCreation: {
     root: [{
       type: Schema.Types.ObjectId,

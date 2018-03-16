@@ -17,8 +17,8 @@
     props: ['id'],
     data () {
       return {
-        startDate: new Date('1960-1-1'),
-        endDate: new Date('2010-1-1'),
+        startDate: new Date('1960', '1', '1'),
+        endDate: new Date('2008', '12', '31'),
         pickerValue: ''
       }
     },
@@ -32,6 +32,7 @@
           id: this.id
         }).then(response => {
           if (!response.data.error) {
+            this.$emit('refresh')
             Toast({
               message: '修改成功',
               position: 'middle',

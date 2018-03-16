@@ -32,7 +32,7 @@
     <!--</div>-->
     <!--</div>-->
     <div class="friend-list" v-show="flVis">
-      <div class="one-friend" v-for='item in friendList'>
+      <div class="one-friend" v-for='item in friendList' @click="goFriend(item.id)">
         <div class="head"><img src="../../img/photo/2b_head.png" /></div>
         <div class="name">{{item.name}}</div>
       </div>
@@ -209,6 +209,9 @@
       },
       deleteSearch () {
         this.search = ''
+      },
+      goFriend (id) {
+        this.$router.push(`/people/${id}`)
       }
     }
   }

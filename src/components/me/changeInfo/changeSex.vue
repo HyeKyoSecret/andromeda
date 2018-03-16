@@ -19,40 +19,57 @@
         radio: false
       }
     },
+    created: function () {
+      this.getSex()
+    },
     watch: {
-      value: function () {
+      value: function (newVal, oldVal) {
         setTimeout(function () {
           this.radio = false
-          Axios.post('/user/changeSex', {
-            id: this.id,
-            value: this.value
-          }).then(response => {
-            if (!response.data.error) {
-              Toast({
-                message: '修改成功',
-                position: 'middle',
-                duration: 800
-              })
-            } else {
-              Toast({
-                message: response.data.message,
-                position: 'middle',
-                duration: 800
-              })
-            }
-          }).catch(error => {
-            if (error) {
-              Toast({
-                message: '发生错误，请稍后再试',
-                position: 'middle',
-                duration: 800
-              })
-            }
-          })
-        }.bind(this), 500)
+          if (oldVal !== '') {
+            Axios.post('/user/changeSex', {
+              id: this.id,
+              value: this.value
+            }).then(response => {
+              if (!response.data.error) {
+                this.$emit('refresh')
+                Toast({
+                  message: '修改成功',
+                  position: 'middle',
+                  duration: 800
+                })
+              } else {
+                Toast({
+                  message: response.data.message,
+                  position: 'middle',
+                  duration: 800
+                })
+              }
+            }).catch(error => {
+              if (error) {
+                Toast({
+                  message: '发生错误，请稍后再试',
+                  position: 'middle',
+                  duration: 800
+                })
+              }
+            })
+          }
+        }.bind(this), 400)
       }
     },
     methods: {
+      getSex () {
+        Axios.get('/user/getChangeInfo', {
+          params: {
+            id: this.id
+          }
+        }).then(response => {
+          if (!response.data.error) {
+            this.value = response.data.sex
+          }
+        })
+      },
       openRadio () {
         this.radio = true
       },

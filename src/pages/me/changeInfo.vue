@@ -1,26 +1,19 @@
 <template>
   <div class="change-user-info">
-    <div class="notice">
-      <span class="icon">
-        <img src="../../img/icon/back.png">
-      </span>
-      <span class="title">
-        我
-      </span>
-    </div>
+    <notice :title="title"></notice>
     <div class="me-content">
       <div class="user-main">
         <div class="head-img">
           <img src="../../img/photo/head.jpg">
         </div>
         <div class="words">
-          <div class="name">沈皓清</div>
-          <div class="sign">
-            在乌云和尘埃之后是真理之光，他最终会投射出来并含笑驱散它们。
+          <div class="name">{{nickname}}</div>
+          <div class="sign"  @click="openTextArea">
+            {{sign}}
           </div>
         </div>
         <div class="icon" v-if="isUser">
-          <img src="../../img/icon/right.png">
+          <img src="../../img/icon/right.png" @click="openTextArea">
         </div>
       </div>
       <div class="user-operation">
@@ -56,8 +49,9 @@
       </div>
       <foot-menu></foot-menu>
     </div>
-    <date-picker ref="picker" v-bind:id="userId"></date-picker>
-    <mt-radio ref="radio" v-bind:id="userId"></mt-radio>
+    <date-picker ref="picker" v-on:refresh="getData" v-bind:id="userId"></date-picker>
+    <mt-radio ref="radio" v-on:refresh="getData" v-bind:id="userId"></mt-radio>
+    <sign-text-area ref="text" v-on:refresh="getData" v-bind:id="userId"></sign-text-area>
   </div>
 </template>
 <style lang='scss' scoped>
@@ -68,6 +62,7 @@
     top: 0;
     left: 0;
     height: 100%;
+    width: 100%;
     background: $bg-gray;
   .notice {
     background: $main-color;
@@ -239,18 +234,37 @@
   import FootMenu from '../../components/foot-menu.vue'
   import DatePicker from '../../components/me/changeInfo/changeBirthday.vue'
   import MtRadio from '../../components/me/changeInfo/changeSex.vue'
+  import notice from '../../components/notice/notice.vue'
+  import SignTextArea from '../../components/me/changeInfo/changeSign.vue'
   export default {
     data () {
       return {
         isUser: false,
         userId: this.$route.params.user,
         birthday: '',
-        sex: ''
+        sex: '',
+        nickname: '',
+        sign: ''
       }
     },
     created: function () {
       this.checkUser()
       this.getData()
+    },
+    computed: {
+      title: function () {
+        if (this.isUser) {
+          return '我的资料'
+        } else {
+          if (this.sex === '男') {
+            return '他的资料'
+          } else if (this.sex === '女') {
+            return '她的资料'
+          } else {
+            return 'Ta的资料'
+          }
+        }
+      }
     },
     methods: {
       checkUser () {
@@ -279,6 +293,11 @@
       openChangeSex () {
         if (this.isUser) {
           this.$refs.radio.openRadio()
+        }
+      },
+      openTextArea () {
+        if (this.isUser) {
+          this.$refs.text.openSignView()
         }
       },
       quitLogin () {
@@ -319,6 +338,8 @@
           if (!response.data.error) {
             this.birthday = response.data.birthday || '未设置'
             this.sex = response.data.sex || '未设置'
+            this.nickname = response.data.nickname
+            this.sign = response.data.sign || '这个人很懒，什么都没留下'
           }
         })
       }
@@ -326,7 +347,9 @@
     components: {
       FootMenu,
       DatePicker,
-      MtRadio
+      MtRadio,
+      notice,
+      SignTextArea
     }
   }
 </script>

@@ -5,7 +5,7 @@
       <div v-for='(item, index) in requestList.request' class="request-template">
         <div class="rq-content" v-if='item.vis'>
           <mt-cell-swipe class='rq'
-                         title=""
+                         :title= item.to
                          :right="[
           {
             content: '删除',
@@ -17,7 +17,6 @@
         ]">
             <slot>
               <div class='add-request'>
-                <span class="title">{{item.to}}</span>
                 <span class="info">请求已发送</span>
                 <span class="date">{{item.date}}</span>
                 <span class="date">验证中···</span>
@@ -32,7 +31,7 @@
       <div v-for='(item, index) in requestList.addFriend' :key="item.fromId">
         <div class="rq-content" v-if='item.vis'>
           <mt-cell-swipe class='rq'
-                         title= ''
+                         :title= item.from
                          :right="[
           {
             content: '删除',
@@ -43,7 +42,6 @@
           }
         ]">
           <div class='add-request'>
-            <span class="title">{{item.from}}</span>
             <span class="info">添加您为好友</span>
             <div class="date">{{item.date}}</div>
             <span v-if = "item.state == 'pending'" class="btn" @click="acceptFriend(item.fromId)">通过</span>
@@ -55,96 +53,100 @@
     </div>
   </div>
 </template>
-<style lang='scss' scoped>
+<style lang='scss'>
   @import "../../../scss/config";
-  .label {
-    margin-bottom: 5px;
+  .rq-content .mint-cell-title {
+    flex: 1;
+    text-align: center;
   }
   .request-template {
     width: 100%;
     min-height: calc(100vh - 82px);
-  }
-  .rq-content {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid $border-gray;
-    &:last-child {
-      border: none;
-      /*margin-bottom: 70px;*/
+    .label {
+      margin-bottom: 5px;
     }
-    .rq {
+    .rq-content {
       width: 100%;
-      height: 50px;
-      background: white;
-      color: $icon-blue;
-      font-weight: 600;
-      font-size: 14px;
-      .add-request {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid $border-gray;
+      &:last-child {
+        border: none;
+        /*margin-bottom: 70px;*/
+      }
+      .rq {
         width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        .pass-btn {
-          flex: 1;
-          text-align: center;
-        }
-        .btn {
-          width: 60px;
-          height: 30px;
-          text-align: center;
-          line-height: 30px;
-          border-radius: 5px;
-          font-size: 14px;
-          letter-spacing: 2px;
-          color: #ffffff;
-          background: $main-color;
-          margin-right: 8px;
-        }
-        .confirm {
-          width: 60px;
-          height: 30px;
-          text-align: center;
-          line-height: 30px;
-          border-radius: 5px;
-          font-size: 14px;
-          letter-spacing: 3px;
-          color: $w-gray;
-          background: $bg-gray;
-          margin-right: 8px;
-        }
-        span {
-          margin-left: 5px;
-          font-size: 12px;
-        }
-        .date {
-          /*display: inline-flex;*/
-          height: 50px;
-          margin-left: 3px;
-          font-size: 12px;
-          flex: 1;
-          line-height: 50px;
-          text-align: center;
-        }
-        .title {
-          color: $icon-blue;
-          font-weight: 600;
-          font-size: 14px;
-          flex: 1;
-          text-align: center;
-          overflow: hidden;
-        }
-        .info {
-          flex: 1;
-          text-align: center;
+        height: 50px;
+        background: white;
+        color: $icon-blue;
+        font-weight: 600;
+        font-size: 14px;
+        .add-request {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          .pass-btn {
+            flex: 1;
+            text-align: center;
+          }
+          .btn {
+            width: 60px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 5px;
+            font-size: 14px;
+            letter-spacing: 2px;
+            color: #ffffff;
+            background: $main-color;
+            margin-right: 8px;
+          }
+          .confirm {
+            width: 60px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 5px;
+            font-size: 14px;
+            letter-spacing: 3px;
+            color: $w-gray;
+            background: $bg-gray;
+            margin-right: 8px;
+          }
+          span {
+            margin-left: 5px;
+            font-size: 12px;
+          }
+          .date {
+            /*display: inline-flex;*/
+            height: 50px;
+            margin-left: 3px;
+            font-size: 12px;
+            flex: 1;
+            line-height: 50px;
+            text-align: center;
+          }
+          .title {
+            color: $icon-blue;
+            font-weight: 600;
+            font-size: 14px;
+            flex: 1;
+            text-align: center;
+            overflow: hidden;
+          }
+          .info {
+            flex: 1;
+            text-align: center;
+          }
         }
       }
     }
-  }
-  .label {
-    margin-top: 15px;
-    margin-left: 5px;
-    color: $w-gray;
+    .label {
+      margin-top: 15px;
+      margin-left: 5px;
+      color: $w-gray;
+    }
   }
 </style>
 <script>
@@ -158,7 +160,8 @@
           request: [],
           addFriend: []
         },
-        count: 0
+        count: 0,
+        qwert: '333333'
       }
     },
     created: function () {

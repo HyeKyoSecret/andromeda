@@ -94,7 +94,6 @@
   }
 </script>
 <style lang='scss' scoped>
-  @import "../../scss/style.css";
   @import "../../scss/config";
   .message {
     position: absolute;

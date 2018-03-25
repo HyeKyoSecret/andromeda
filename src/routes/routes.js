@@ -94,7 +94,7 @@ export default [
   },
   {
     path: '/buildStoryRecommend',         // 阅读
-    component: resolve => require(['../pages/stories/buildStoryRecommend.vue'], resolve)
+    component: resolve => require(['../components/story/buildStoryRecommend.vue'], resolve)
   },
   {
     path: '/discover',

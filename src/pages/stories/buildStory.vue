@@ -54,8 +54,8 @@
       <span class="title">
         {{rootName}}
       </span>
-      <span class="fake-commit" v-if='!buildCheck'>发布</span>
-      <span class="commit" @click="buildRoot" v-else="">发布</span>
+      <span class="fake-commit" v-if='!buildCheck'>下一步</span>
+      <span class="commit" @click="openRecommend" v-else>下一步</span>
       </div>
       <div class="context">
         <textarea  name="context" placeholder="在这里书写您的故事" v-model="rootContent"></textarea>
@@ -67,6 +67,9 @@
         </div>
         <div class="tip">关闭将导致其他人不能续写你的故事</div>
       </div>
+    </div>
+    <div class="fourth-step" v-show="fourthStep">
+      <story-recommend ref="recommend" v-on:build="buildRoot"></story-recommend>
     </div>
   </div>
 </template>
@@ -326,12 +329,17 @@
   import Axios from 'axios'
   import Debounce from '../../js/debounce.js'
   import { MessageBox, Toast } from 'mint-ui'
+  import StoryRecommend from '../../components/story/buildStoryRecommend.vue'
   export default {
+    components: {
+      StoryRecommend
+    },
     data () {
       return {
         firstStep: true,
         secondStep: false,
         thirdStep: false,
+        fourthStep: true,
         rootName: '',
         rootNameError: '',
         rootNameCheck: false,
@@ -420,6 +428,9 @@
             break
         }
       },
+      openRecommend () {
+        this.$refs.recommend.openRecommend()
+      },
       rootRepeatCheck: Debounce(function () {
         Axios.get('/checkRootName', {
           params: {
@@ -439,11 +450,12 @@
           this.rootNameCheck = false
         })
       }, 500),
-      buildRoot () {
+      buildRoot (recommend) {
         this.buildCheck = false
         Axios.post('/story/buildRoot', {
           rootName: this.rootName,
           rootContent: this.rootContent,
+          recommend: recommend,
           writePermit: this.writePermit
         }).then((response) => {
           if (response.data.permit === true) {

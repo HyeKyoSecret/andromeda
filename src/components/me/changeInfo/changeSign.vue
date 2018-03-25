@@ -31,6 +31,9 @@
         signView: false
       }
     },
+    created: function () {
+      this.getData()
+    },
     computed: {
       count: function () {
         if ((30 - this.sign.length) >= 0) {

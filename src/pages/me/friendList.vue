@@ -63,7 +63,7 @@
         }
       }
       .searchbar {
-        width: 68%;
+        width: 70%;
       }
       .delete {
         img {
@@ -72,7 +72,7 @@
         }
       }
       .cancel {
-        margin-left: 15px;
+        margin-left: 8px;
         letter-spacing: 1px;
         font-size: 13px;
         color: $w-gray;

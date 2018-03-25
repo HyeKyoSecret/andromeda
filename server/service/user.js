@@ -675,7 +675,8 @@ router.get('/user/getFriendList', (req, res) => {
           doc.friendList.forEach(function (friend) {
             result.push({
               name: friend.friend.nickname,
-              id: friend.friend.id
+              id: friend.friend.id,
+              active: false
             })
           })
           res.send({error: false, result: result})
@@ -702,13 +703,14 @@ router.post('/user/searchFriend', (req, res) => {
             if (reg.test(item.friend.nickname)) {
               result.push({
                 name: item.friend.nickname,
-                id: item.friend.id
+                id: item.friend.id,
+                active: false
               })
             }
           })
           res.send({error: false, result: result})
         } else {
-          res.send({error: true, type: 'user', message: '用户不存在'})
+          res.send({error: false, result: result})
         }
       }
     })

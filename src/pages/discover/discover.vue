@@ -1,13 +1,6 @@
 <template>
   <div class="discover">
-    <div class="notice">
-      <span class="icon">
-        <img src="../../img/icon/back.png">
-      </span>
-      <span class="title">
-        发现
-      </span>
-    </div>
+    <notice title='发现'></notice>
     <div class="button-bar">
       <div class="button">
         <div>
@@ -55,11 +48,13 @@
 </template>
 <script>
   import FootMenu from '../../components/foot-menu.vue'
+  import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
   import { Toast } from 'mint-ui'
   export default {
     components: {
-      FootMenu
+      FootMenu,
+      notice
     },
     data () {
       return {

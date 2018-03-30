@@ -270,8 +270,11 @@
       margin-top: 10px;
       width: 100%;
       background: white;
-      &:last-child {
-        margin-bottom: 200px;
+      &:last-child:after {
+        content: '';
+        display: block;
+        height: 100px;
+        width: 100%;
       }
       .content {
         width: 95%;

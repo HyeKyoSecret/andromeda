@@ -27,7 +27,6 @@ router.post('/register', (req, res) => {
         } else {
           if (doc) {
             res.send('该用户名已经存在')
-            return {}
           } else {
             User.findOne({nickname: nickname}, (error2, nick) => {
               if (error2) {
@@ -35,7 +34,6 @@ router.post('/register', (req, res) => {
               } else {
                 if (nick) {
                   res.send('该昵称已经存在')
-                  return {}
                 } else {
                   let user = {
                     username: username,
@@ -43,14 +41,14 @@ router.post('/register', (req, res) => {
                     password: md5(password)
                   }
                   let newUser = new User(user)
-                  newUser.save((err) => {
+                  newUser.save((err, doc) => {
                     if (err) {
                       console.log(err)
                       res.send('注册失败')
                     } else {
-                      req.session.user = user.username
-                      req.session.userId = user.id
-                      res.cookie('And', {user: user.username, userId: user.id}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
+                      req.session.user = doc.username
+                      req.session.userId = doc.id
+                      res.cookie('And', {user: doc.username, userId: doc.id}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
                       res.send('注册成功')
                     }
                   })

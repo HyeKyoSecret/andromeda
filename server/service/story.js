@@ -1299,37 +1299,41 @@ router.get('/story/getDefaultDiscovery', (req, res) => {
         res.send({error: true, type: 'database', message: '发生错误请稍后再试'})
       }
       if (root) {
-        root.forEach((sRoot) => {
-          result.push({
-            storyName: sRoot.name,
-            content: sRoot.content,
-            author: sRoot.author.nickname,
-            date: moment(sRoot.date).format('YYYY.MM.DD HH:mm'),
-            path: sRoot.id
+        if (root.length > 0) {
+          root.forEach((sRoot) => {
+            result.push({
+              storyName: sRoot.name,
+              content: sRoot.content,
+              author: sRoot.author ? sRoot.author.nickname : '',
+              date: moment(sRoot.date).format('YYYY.MM.DD HH:mm'),
+              path: sRoot.id
+            })
           })
-        })
-        Story.find({})
-          .populate('root')
-          .populate('author')
-          .exec((error, story) => {
-            if (error) {
-              res.send({error: true, type: 'database', message: '发生错误请稍后再试'})
-            }
-            if (story) {
-              story.forEach((sStory) => {
-                result.push({
-                  storyName: sStory.root.name,
-                  content: sStory.content,
-                  author: sStory.author.nickname,
-                  date: moment(sStory.date).format('YYYY.MM.DD HH:mm'),
-                  path: sStory.id
+          Story.find({})
+            .populate('root')
+            .populate('author')
+            .exec((error, story) => {
+              if (error) {
+                res.send({error: true, type: 'database', message: '发生错误请稍后再试'})
+              }
+              if (story) {
+                story.forEach((sStory) => {
+                  result.push({
+                    storyName: sStory.root.name,
+                    content: sStory.content,
+                    author: sStory.author.nickname,
+                    date: moment(sStory.date).format('YYYY.MM.DD HH:mm'),
+                    path: sStory.id
+                  })
                 })
-              })
-              res.send({result: result})
-            } else {
-              res.send({result: result})
-            }
-          })
+                res.send({result: result})
+              } else {
+                res.send({result: result})
+              }
+            })
+        } else {
+          res.send({result: result})
+        }
       } else {
         res.send({result: result})
       }

@@ -180,6 +180,7 @@
         this.cover.id = obj.id
         this.cover.name = obj.name
         this.cover.follower = obj.follower
+        console.log(obj.id + this.cover.id)
         Axios.all([Axios.get('/user/getSubStack', {params: {id: obj.id}}), Axios.get('/user/getContribute', {params: {id: this.cover.id}})])
           .then(Axios.spread((stack, contr) => {
             this.cover.nodeNum = stack.data.count
@@ -217,6 +218,7 @@
               }
             }
           }
+          console.log('contentList' + JSON.stringify(this.contentList))
           this.changeCover(this.cover)
         })
       }

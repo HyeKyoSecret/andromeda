@@ -36,7 +36,9 @@
     },
     computed: {
       count: function () {
-        if ((30 - this.sign.length) >= 0) {
+        if (!this.sign) {
+          return 30
+        } else if ((30 - this.sign.length) >= 0) {
           return 30 - this.sign.length
         } else {
           return '您已超出最大字数'

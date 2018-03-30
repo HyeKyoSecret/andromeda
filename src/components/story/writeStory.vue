@@ -63,6 +63,7 @@
             position: 'middle',
             duration: 1000
           })
+          this.$router.go(-1)
         })
       },
       closeWindow () {
@@ -92,8 +93,9 @@
               }
             })
           }).catch(error => {
-            console.log(error)
-            // 离开的路由跳转
+            if (error) {
+              this.$router.go(-1) // 离开的路由跳转
+            }
           })
         } else {
           this.$emit('close')

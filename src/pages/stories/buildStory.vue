@@ -69,7 +69,7 @@
       </div>
     </div>
     <div class="fourth-step" v-show="fourthStep">
-      <story-recommend ref="recommend" v-on:build="buildRoot"></story-recommend>
+      <story-recommend ref="recommend" v-on:build="buildRoot" v-on:back="storyRoute(3)"></story-recommend>
     </div>
   </div>
 </template>
@@ -455,7 +455,7 @@
         Axios.post('/story/buildRoot', {
           rootName: this.rootName,
           rootContent: this.rootContent,
-          recommend: recommend,
+          recommend: recommend,  // 推荐列表
           writePermit: this.writePermit
         }).then((response) => {
           if (response.data.permit === true) {
@@ -464,6 +464,7 @@
               position: 'middle',
               duration: 1000
             })
+            this.$router.go(-2)
             // 发布成功的处理
           } else {
             this.buildCheck = true

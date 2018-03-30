@@ -14,7 +14,7 @@
           }
         ]">
           <div class='add-request'>
-            <span class="info">{{item.content_2}}</span>
+            <span class="info">{{item.content_2}} <label class='novel-name' v-if="item.description === 'recommend'" @click="goStory(item.content_4)">《{{item.content_3}}》</label></span>
             <span class="date">{{item.date}}</span>
           </div>
         </mt-cell-swipe>
@@ -86,8 +86,9 @@
             height: 50px;
             margin-left: 3px;
             font-size: 12px;
-            flex: 1.3;
+            flex: 1;
             line-height: 50px;
+            margin-right: 8px;
           }
           .title {
             color: $icon-blue;
@@ -98,7 +99,13 @@
             overflow: hidden;
           }
           .info {
-            flex: 3;
+            flex: 4.5;
+            text-align: center;
+            .novel-name {
+              color: $icon-blue;
+              font-weight: 600;
+              font-size: 14px;
+            }
           }
         }
       }
@@ -106,9 +113,10 @@
     .mint-cell-title {
       flex: 0.7;
       text-align: center;
+      margin-left: 5px;
     }
     .mint-cell-value {
-      width: 68%;
+      flex: 5;
     }
   }
 
@@ -164,6 +172,9 @@
         }).catch(cancel => {
           return
         })
+      },
+      goStory (id) {
+        this.$router.push(`/story/${id}`)
       }
     }
   }

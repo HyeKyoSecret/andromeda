@@ -1,14 +1,15 @@
 <template>
   <div class="build-story-recommend" v-if="storyRecommendVis">
     <div class="notice">
-      <span class="cancel">
+      <span class="cancel" :class="{extend: recommendList.length}" @click="back">
         上一步
       </span>
       <span class="title">
           选择好友推荐
       </span>
-        <span class="finish" @click="buildStory">
+        <span class="finish" :class="{extend: recommendList.length}" @click="buildStory">
         发布
+          <label v-if="recommendList.length">({{recommendList.length}}/10)</label>
       </span>
     </div>
     <div class="search">
@@ -87,14 +88,17 @@
       }
       .cancel {
         margin-left: 5px;
-        flex: 1.3;
+        flex: 1.6;
       }
       .title {
         flex: 6.8;
       }
       .finish {
         margin-right: 5px;
-        flex: 1.3;
+        flex: 1.6;
+      }
+      .finish.extend, .cancel.extend {
+        flex: 2.5;
       }
       .finish.fake {
         color: $font-color;
@@ -295,15 +299,23 @@
         this.$router.push(`/people/${id}`)
       },
       activeFriend (index) {
-        this.friendList[index].active = !this.friendList[index].active
-        if (this.friendList[index].active) {
-          this.recommendList.push(this.friendList[index])
-        } else {
-          for (let i = 0; i < this.recommendList.length; i++) {
-            if (this.recommendList[i].id === this.friendList[index].id) {
-              this.recommendList.splice(i, 1)
+        if (this.recommendList.length <= 10) {
+          this.friendList[index].active = !this.friendList[index].active
+          if (this.friendList[index].active) {
+            this.recommendList.push(this.friendList[index])
+          } else {
+            for (let i = 0; i < this.recommendList.length; i++) {
+              if (this.recommendList[i].id === this.friendList[index].id) {
+                this.recommendList.splice(i, 1)
+              }
             }
           }
+        } else {
+          Toast({
+            message: '推荐好友不得超过10人',
+            position: 'middle',
+            duration: 1000
+          })
         }
       },
       recommendFriend (index) {
@@ -315,24 +327,35 @@
         this.recommendList.splice(index, 1)
       },
       addSearchFriend (index) {
-        this.searchList[index].active = !this.searchList[index].active
-        if (this.searchList[index].active) {
-          this.recommendList.push(this.searchList[index])
-        } else {
-          for (let i = 0; i < this.recommendList.length; i++) {
-            if (this.recommendList[i].id === this.searchList[index].id) {
-              this.recommendList.splice(i, 1)
+        if (this.recommendList.length <= 10) {
+          this.searchList[index].active = !this.searchList[index].active
+          if (this.searchList[index].active) {
+            this.recommendList.push(this.searchList[index])
+          } else {
+            for (let i = 0; i < this.recommendList.length; i++) {
+              if (this.recommendList[i].id === this.searchList[index].id) {
+                this.recommendList.splice(i, 1)
+              }
             }
           }
-        }
-        for (let i = 0; i < this.friendList.length; i++) {    // 通知friendList 改变
-          if (this.searchList[index].id === this.friendList[i].id) {
-            this.friendList[i].active = this.searchList[index].active
+          for (let i = 0; i < this.friendList.length; i++) {    // 通知friendList 改变
+            if (this.searchList[index].id === this.friendList[i].id) {
+              this.friendList[i].active = this.searchList[index].active
+            }
           }
+        } else {
+          Toast({
+            message: '推荐好友不得超过10人',
+            position: 'middle',
+            duration: 1000
+          })
         }
       },
       buildStory () {
         this.$emit('build', {recommend: this.recommendList})
+      },
+      back () {
+        this.storyRecommendVis = false
       }
     }
   }

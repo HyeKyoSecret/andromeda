@@ -581,6 +581,8 @@ router.get('/user/getPromote', (req, res) => {
               id: user.promote[i]._id,
               content_1: user.promote[i].content_1,
               content_2: user.promote[i].content_2,
+              content_3: user.promote[i].content_3,
+              content_4: user.promote[i].content_4,
               description: user.promote[i].description,
               date: moment(user.promote[i].date).fromNow(),
               vis: true

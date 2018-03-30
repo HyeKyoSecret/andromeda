@@ -107,7 +107,8 @@ const UserSchema = new Schema({
       description: String,
       content_1: String,
       content_2: String,
-      content_3: String
+      content_3: String,
+      content_4: String
     }
   ]
 })

@@ -14,6 +14,7 @@ router.post('/story/buildRoot', (req, res) => {
   let rootName = req.body.rootName
   let rootContent = req.body.rootContent
   let writePermit = req.body.writePermit
+  let recommend = req.body.recommend
   let author = req.session.user || (req.cookies.And && req.cookies.And.user)
   if (author) {
     let rootStory = {
@@ -53,7 +54,22 @@ router.post('/story/buildRoot', (req, res) => {
                             if (saveError) {
                               res.send({permit: false, message: '发生错误，请稍后再试'})
                             } else {
-                              res.send({permit: true, message: '发布成功'})
+                              if (recommend.recommend.length > 0) {
+                                for (let i = 0; i < recommend.recommend.length; i++) {
+                                  User.update({id: recommend.recommend[i].id}, {$push:
+                                      {'promote': {'description': 'recommend', 'content_1': author, 'content_2': '向您推荐了', 'content_3': root.name, 'content_4': root.id}}
+                                  }).exec((err) => {
+                                    if (err) {
+                                      res.send({permit: false, message: '服务器忙，请稍后再试'})
+                                    }
+                                    if (i === recommend.recommend.length - 1) {
+                                      res.send({permit: true, message: '发布成功'})
+                                    }
+                                  })
+                                }
+                              } else {
+                                res.send({permit: true, message: '发布成功'})
+                              }
                             }
                           })
                       })

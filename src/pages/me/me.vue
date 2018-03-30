@@ -385,9 +385,13 @@
                 this.sign = response.data.sign || '这个人很懒，什么也没留下'
                 this.userId = response.data.user
                 this.userStatus = 'isUser'
+                let reg = new RegExp('^U')
                 for (let i = 0; i < this.operation.length; i++) { // 修改path
-                  let pathArray = this.operation[i].path.split('/people')
-                  this.operation[i].path = `/people/${response.data.user}${pathArray[1]}`
+                  let splitPath = this.operation[i].path.split('/')
+                  if (!reg.test(splitPath[2])) {
+                    let pathArray = this.operation[i].path.split('/people')
+                    this.operation[i].path = `/people/${response.data.user}${pathArray[1]}`
+                  }
                 }
               } else {
                 this.userStatus = 'askLogin'
@@ -411,16 +415,27 @@
               this.nickName = res.data.user.nickName
               this.sign = res.data.user.sign || '这个人很懒，什么也没留下'
               this.userId = res.data.user.userId
+              let reg = new RegExp('^U')
+              for (let i = 0; i < this.operation.length; i++) { // 修改path
+                let splitPath = this.operation[i].path.split('/')
+                if (!reg.test(splitPath[2])) {
+                  let pathArray = this.operation[i].path.split('/people')
+                  this.operation[i].path = `/people/${res.data.user.user}${pathArray[1]}`
+                }
+              }
               if (res.data.customer) {
                 this.operation = this.cOperation     // 修改按钮
                 this.userStatus = 'isCustomer'
+                for (let i = 0; i < this.operation.length; i++) { // 修改path
+                  let splitPath = this.operation[i].path.split('/')
+                  if (!reg.test(splitPath[2])) {
+                    let pathArray = this.operation[i].path.split('/people')
+                    this.operation[i].path = `/people/${this.$route.params.user}${pathArray[1]}`
+                  }
+                }
                 this.getFriendship()
               } else {
                 this.userStatus = 'isUser'
-              }
-              for (let i = 0; i < this.operation.length; i++) { // 修改path
-                let pathArray = this.operation[i].path.split(`/people`)
-                this.operation[i].path = `/people/${res.data.user.user}${pathArray[1]}`
               }
               this.userId = res.data.user.user
             } else {

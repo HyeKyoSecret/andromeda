@@ -147,7 +147,7 @@ router.get('/user/getMySubscription', (req, res) => {
     .populate('subscribe')
     .exec((err, user) => {
       if (err) {
-        console.log(err)
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
       }
       if (user) {
         for (let i = 0; i < user.subscribe.length; i++) {
@@ -158,9 +158,9 @@ router.get('/user/getMySubscription', (req, res) => {
             follower: sub[i].subscribe.length
           })
         }
-        res.send(result)
+        res.send({error: false, result: result})
       } else {
-        // error
+        res.send({error: true, type: 'user', message: '用户不存在'})
       }
     })
 })

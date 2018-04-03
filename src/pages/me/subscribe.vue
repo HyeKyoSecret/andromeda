@@ -1,7 +1,7 @@
 <template>
   <div class="subscribe">
     <notice title="我的订阅"></notice>
-    <div class="show-story">
+    <div class="show-story" v-if="cover">
       <div class="background">
         <div class="left-part"><img src="../../img/photo/LegendofZelda.png" /></div>
         <div class="right-part">
@@ -28,7 +28,7 @@
         </div>
       </div>
     </div>
-    <div class="shelf" v-for="item in contentList" >
+    <div class="shelf" v-for="item in contentList" v-if="contentList.length">
       <div class="book" v-for="q in item" @click="changeCover(q)">
         <div class="cover"><img src="../../img/photo/LegendofZelda.png" /></div>
         <div class="progress-bar"></div>
@@ -154,6 +154,7 @@
 </style>
 <script>
   import Axios from 'axios'
+  import {Toast} from 'mint-ui'
   import notice from '../../components/notice/notice.vue'
   export default {
     components: {
@@ -176,7 +177,7 @@
       this.getData()
     },
     methods: {
-      changeCover: function (obj) {
+      changeCover (obj) {
         this.cover.id = obj.id
         this.cover.name = obj.name
         this.cover.follower = obj.follower
@@ -193,33 +194,43 @@
             user: this.$route.params.user
           }
         }).then(response => {
-          response.data.forEach(data => {
-            this.subList.push({
-              id: data.id,
-              name: data.name,
-              follower: data.follower
-            })
-          })
-          if (this.subList.length) {
-            this.cover.id = this.subList[0].id
-            this.cover.name = this.subList[0].name
-            this.cover.follower = this.subList[0].follower
-          }
-          let temp = parseInt(this.subList.length / 3)
-          for (let i = 0; i <= temp; i++) {
-            this.contentList[i] = []
-          }
-          for (let i = 0; i <= temp; i++) {
-            for (let j = 0; j < 3; j++) {
-              if (this.subList[i * 3 + j]) {
-                this.contentList[i][j] = this.subList[i * 3 + j]
-              } else {
-                break
+          if (!response.data.error) {
+            if (response.data.result) {
+              console.log('路由进来了')
+              response.data.result.forEach(data => {
+                this.subList.push({
+                  id: data.id,
+                  name: data.name,
+                  follower: data.follower
+                })
+              })
+              if (this.subList.length) {
+                this.cover.id = this.subList[0].id
+                this.cover.name = this.subList[0].name
+                this.cover.follower = this.subList[0].follower
               }
+              let temp = parseInt(this.subList.length / 3)
+              for (let i = 0; i <= temp; i++) {
+                this.contentList[i] = []
+              }
+              for (let i = 0; i <= temp; i++) {
+                for (let j = 0; j < 3; j++) {
+                  if (this.subList[i * 3 + j]) {
+                    this.contentList[i][j] = this.subList[i * 3 + j]
+                  } else {
+                    break
+                  }
+                }
+              }
+              this.changeCover(this.cover)
             }
+          } else {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
           }
-          console.log('contentList' + JSON.stringify(this.contentList))
-          this.changeCover(this.cover)
         })
       }
     }

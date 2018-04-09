@@ -270,4 +270,7 @@ router.get('/register/quitLogin', (req, res) => {
     }
   })
 })
+router.get('/register/test', (req, res) => {
+  res.send({host:req.ip: req.ip})
+})
 module.exports = router

@@ -11,6 +11,7 @@ import VueFinger from './js/vueFinger'
 if (process.env.NODE_ENV !== 'production') {
   Axios.defaults.baseURL = 'http://localhost:8080/api'
 }
+Axios.defaults.withCredentials = true
 Vue.use(MintUI)
 Vue.use(VueRouter)
 Vue.use(VueFinger)

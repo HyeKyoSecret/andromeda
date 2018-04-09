@@ -15,6 +15,7 @@ router.post('/story/buildRoot', (req, res) => {
   let rootContent = req.body.rootContent
   let writePermit = req.body.writePermit
   let recommend = req.body.recommend
+  console.log('后台' + 'rootName' + rootName + 'rootContent' + rootContent)
   let author = req.session.user || (req.cookies.And && req.cookies.And.user)
   if (author) {
     let rootStory = {
@@ -38,12 +39,14 @@ router.post('/story/buildRoot', (req, res) => {
               if (oldRoot) {
                 res.send({permit: false, message: '故事名重复'})
               } else {
+                console.log('故事名查重检查完毕')
                 let newRoot = new Root(rootStory)
                 newRoot.save((err3, root) => {
                   if (err3) {
                     console.log(err3)
                     res.send({permit: false, message: '服务器忙，请稍后再试'})
                   } else {
+                    console.log('保存完毕，进入我的创作更新')
                     user.update({$push: {'myCreation.root': root._id}})
                       .exec(err => {
                         if (err) {
@@ -54,6 +57,7 @@ router.post('/story/buildRoot', (req, res) => {
                             if (saveError) {
                               res.send({permit: false, message: '发生错误，请稍后再试'})
                             } else {
+                              console.log('我的创作更新完毕，进入推荐人流程')
                               if (recommend.recommend.length > 0) {
                                 for (let i = 0; i < recommend.recommend.length; i++) {
                                   User.update({id: recommend.recommend[i].id}, {$push:
@@ -63,11 +67,13 @@ router.post('/story/buildRoot', (req, res) => {
                                       res.send({permit: false, message: '服务器忙，请稍后再试'})
                                     }
                                     if (i === recommend.recommend.length - 1) {
+                                      console.log('有推荐人的')
                                       res.send({permit: true, message: '发布成功'})
                                     }
                                   })
                                 }
                               } else {
+                                console.log('无推荐人的发布成功前')
                                 res.send({permit: true, message: '发布成功'})
                               }
                             }

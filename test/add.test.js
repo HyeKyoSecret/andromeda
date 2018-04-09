@@ -10,6 +10,7 @@ var expect = chai.expect
 // chai.use(chaiSubset)
 // chai.use(chaiAsPromised)
 var axios = require('axios')
+let value = ''
 /* eslint-disable no-undef */
 describe('加法函数的测试', function () {
   it('1 加 1 应该等于 2', function () {
@@ -26,6 +27,8 @@ describe('异步测试', function () {
       username: 'swallow',
       password: 'swallow940416'
     }).then(response => {
+      value = response.headers['set-cookie']
+      console.log(value)
       return expect(response.data.message).to.equal('登录成功')
     })
   })
@@ -35,6 +38,23 @@ describe('异步测试', function () {
   //     password: 'swallow940416'
   //   })).to.eventually.containSubset({data: { message: '登录成功' }})
   // })
+})
+// describe('身份测试', function () {
+//   it('身份应该正常', function () {
+//     return axios.get('http://localhost:8088/register/checkLogin')
+//       .then(response => {
+//         console.log(response.headers['set-cookie'])
+//         return expect(response.data.login).to.be.true
+//       })
+//   })
+// })
+describe('测试ip', function () {
+  it('ip应该正确', function () {
+    return axios.get('http://localhost:8088/register/test')
+      .then(response => {
+        console.log(response.data)
+      })
+  })
 })
 /* eslint-enable no-undef */
 

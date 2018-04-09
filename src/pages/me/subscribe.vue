@@ -1,7 +1,7 @@
 <template>
   <div class="subscribe">
     <notice title="我的订阅"></notice>
-    <div class="show-story" v-if="cover">
+    <div class="show-story" v-if="contentList">
       <div class="background">
         <div class="left-part"><img src="../../img/photo/LegendofZelda.png" /></div>
         <div class="right-part">
@@ -182,11 +182,13 @@
         this.cover.name = obj.name
         this.cover.follower = obj.follower
         console.log(obj.id + this.cover.id)
-        Axios.all([Axios.get('/user/getSubStack', {params: {id: obj.id}}), Axios.get('/user/getContribute', {params: {id: this.cover.id}})])
-          .then(Axios.spread((stack, contr) => {
-            this.cover.nodeNum = stack.data.count
-            this.cover.myCreation = contr.data.count
-          }))
+        if (obj.id && this.cover.id) {
+          Axios.all([Axios.get('/user/getSubStack', {params: {id: obj.id}}), Axios.get('/user/getContribute', {params: {id: this.cover.id}})])
+            .then(Axios.spread((stack, contr) => {
+              this.cover.nodeNum = stack.data.count
+              this.cover.myCreation = contr.data.count
+            }))
+        }
       },
       getData () {
         Axios.get('/user/getMySubscription', {
@@ -196,7 +198,6 @@
         }).then(response => {
           if (!response.data.error) {
             if (response.data.result) {
-              console.log('路由进来了')
               response.data.result.forEach(data => {
                 this.subList.push({
                   id: data.id,

@@ -49,10 +49,18 @@ describe('异步测试', function () {
 //   })
 // })
 describe('测试ip', function () {
-  it('ip应该正确', function () {
-    return axios.get('http://localhost:8088/register/test')
+  it('添加cookie', function () {
+    return axios.get('http://localhost:8088/register/get-cookie')
       .then(response => {
         console.log(response.data)
+        return expect(response.data.result).to.equal('ok')
+      })
+  })
+  it('检查cookie', function () {
+    return axios.get('http://localhost:8088/register/test-cookie')
+      .then(response => {
+        console.log('检查' + response.data)
+        return expect(response.data.result).to.equal('ok')
       })
   })
 })

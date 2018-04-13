@@ -270,7 +270,20 @@ router.get('/register/quitLogin', (req, res) => {
     }
   })
 })
-router.get('/register/test', (req, res) => {
-  res.send({host:req.ip: req.ip})
+
+router.get('/register/get-cookie', (req, res) => {
+  req.session.time = Date.now()
+  res.header('Access-Control-Allow-Origin', 'http://localhost:80')
+  res.json({ result: 'ok' })
+})
+router.get('/register/test-cookie', (req, res) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:80')
+  if (req.session.time) {
+    console.log('session.time: ' + req.session.time)
+    console.log(req.cookies)
+    res.json({ result: 'ok' })
+  } else {
+    res.json({ result: 'error' })
+  }
 })
 module.exports = router

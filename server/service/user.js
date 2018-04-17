@@ -665,9 +665,14 @@ router.post('/user/deleteFriendRequest', (req, res) => {
   })
 })
 router.get('/user/getFriendList', (req, res) => {
-  let user = req.query.user
   let result = []
-  User.findOne({id: user})
+  let loginUser
+  if (req.session.user) {
+    loginUser = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    loginUser = req.cookies.And.user
+  }
+  User.findOne({username: loginUser})
     .populate('friendList.friend')
     .exec((err, doc) => {
       if (err) {
@@ -683,7 +688,7 @@ router.get('/user/getFriendList', (req, res) => {
           })
           res.send({error: false, result: result})
         } else {
-          res.send({error: false, result: result})
+          res.send({error: true, type: 'user', message: '发生错误，请重新登录'})
         }
       }
     })

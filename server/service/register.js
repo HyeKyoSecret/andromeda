@@ -115,6 +115,7 @@ router.post('/register/login', (req, res) => {
   'use strict'
   let username = req.body.username
   let password = req.body.password
+  console.log('接受' + username + password)
   User.findOne({username: username}, (err, user) => {
     if (err) {
       res.send({permit: false, message: '服务器忙，请稍后再试'})
@@ -222,6 +223,7 @@ router.get('/register/checkUser', (req, res) => {
   let user = req.query.user
   let userReg = /^U([0-9]){7}$/
   let loginUser
+  let sex   // 性别
   if (req.session.user) {        // 获取当前登录信息
     loginUser = req.session.user
   } else if (req.cookies.And && req.cookies.And.user) {
@@ -249,7 +251,14 @@ router.get('/register/checkUser', (req, res) => {
             if (account.username === loginUser) {
               res.send({user: userInfo, customer: false}) // 是本人，非访客模式
             } else {
-              res.send({user: userInfo, customer: true}) // 访客模式
+              if (account.sex === '女') {
+                sex = '她'
+              } else if (account.sex === '男') {
+                sex = '他'
+              } else {
+                sex = 'Ta'
+              }
+              res.send({user: userInfo, customer: true, sex: sex}) // 访客模式
             }
           } else {
             res.send({user: null}) // 不存在的用户名
@@ -270,7 +279,10 @@ router.get('/register/quitLogin', (req, res) => {
     }
   })
 })
-
+router.get('/register/test', (req, res) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3000')
+  res.send({result: 555})
+})
 router.get('/register/get-cookie', (req, res) => {
   req.session.time = Date.now()
   res.header('Access-Control-Allow-Origin', 'http://localhost:80')
@@ -286,4 +298,18 @@ router.get('/register/test-cookie', (req, res) => {
     res.json({ result: 'error' })
   }
 })
+router.get('/register/a', function (req, res) {
+  res.send({result: 666})
+})
+
+router.get('/register/b', function (req, res) {
+  console.log('req.cookies.And' + req.cookies.And)
+  if (req.cookies.And) {
+    console.log('后台判断cookies存在' + req.cookies.And.user)
+    res.send('yes')
+  } else {
+    res.send('no')
+  }
+})
+
 module.exports = router

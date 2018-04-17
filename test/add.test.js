@@ -2,67 +2,54 @@
  * Created by swallow on 2018/3/5.
  */
 
-var add = require('../src/js/add.js')
-var chai = require('chai')
-var expect = chai.expect
-// var chaiAsPromised = require('chai-as-promised')
+// var chai = require('chai')
+// var expect = chai.expect
+
 // var chaiSubset = require('chai-subset')
 // chai.use(chaiSubset)
 // chai.use(chaiAsPromised)
-var axios = require('axios')
-let value = ''
-/* eslint-disable no-undef */
-describe('加法函数的测试', function () {
-  it('1 加 1 应该等于 2', function () {
-    expect(add(1, 1)).equal(2)
-  })
-  it('结果应该为数字', function () {
-    expect(add(2, 4)).to.be.a('number')
-  })
-})
-describe('异步测试', function () {
-  'use strict'
-  it('登录应该成功', function () {
-    return axios.post('http://localhost:8088/register/login', {
-      username: 'swallow',
-      password: 'swallow940416'
-    }).then(response => {
-      value = response.headers['set-cookie']
-      console.log(value)
-      return expect(response.data.message).to.equal('登录成功')
-    })
-  })
-  // it('登录应该成功', function () {
-  //   return expect(axios.post('http://localhost:8088/register/login', {
-  //     username: 'swallow',
-  //     password: 'swallow940416'
-  //   })).to.eventually.containSubset({data: { message: '登录成功' }})
-  // })
-})
-// describe('身份测试', function () {
-//   it('身份应该正常', function () {
-//     return axios.get('http://localhost:8088/register/checkLogin')
-//       .then(response => {
-//         console.log(response.headers['set-cookie'])
-//         return expect(response.data.login).to.be.true
-//       })
-//   })
-// })
-describe('测试ip', function () {
-  it('添加cookie', function () {
-    return axios.get('http://localhost:8088/register/get-cookie')
-      .then(response => {
-        console.log(response.data)
-        return expect(response.data.result).to.equal('ok')
+// var axios = require('axios')
+// let value = ''
+/* eslint-disable */
+const supertest = require('supertest')
+const api = supertest.agent('http://localhost:8088')
+const should = require('should')
+const express = require('express')
+describe('登录测试', function () {
+  it('登录应该成功', function (done) {
+    api
+      .post('/register/login')
+      .send({
+        username: 'swallow',
+        password: 'swallow940416'
       })
-  })
-  it('检查cookie', function () {
-    return axios.get('http://localhost:8088/register/test-cookie')
-      .then(response => {
-        console.log('检查' + response.data)
-        return expect(response.data.result).to.equal('ok')
+      .expect(200, function (err, res) {
+        (JSON.parse(res.text).message).should.equal('登录成功')
+        done()
       })
   })
 })
-/* eslint-enable no-undef */
+describe('根故事写入测试', function () {
+  it('根故事写入应该成功', function (done) {
+    for (let i = 0; i < 1000; i++) {
+      api
+        .post('/story/buildRoot')
+        .send({
+          rootName: `5 狗贼 ${i}`,
+          rootContent: `我是故事${i}`,
+          writePermit: true,
+          recommend: []
+        })
+        .expect(200, function (err, res) {
+          if (!err && i) {
+            (JSON.parse(res.text).message).should.equal('发布成功')
+            if (i === 9) {
+              done()
+            }
+          }
+        })
+    }
+  })
+})
+/* eslint-enable */
 

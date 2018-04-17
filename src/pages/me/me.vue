@@ -39,7 +39,8 @@
             </div>
             <div class="right">
               <div class="words">
-                {{item.name}}
+                <span class="sex" v-if="operation.length === 5 && item.name !== '共同好友'">{{sex}}</span>
+                <span class="name">{{item.name}}</span>
               </div>
               <div class="icon">
                 <img src="../../img/icon/right.png">
@@ -202,6 +203,10 @@
               height: 100%;
               margin-left: 15px;
               line-height: 50px;
+              font-size: 0;
+              span {
+                font-size: 14px;
+              }
             }
             .icon {
               flex: 1;
@@ -316,17 +321,17 @@
         ],
         cOperation: [
           {
-            name: '他的创作',
+            name: '的创作',
             icon: require('../../img/icon/my_creation.png'),
             path: `/people/creation`
           },
           {
-            name: '他的订阅',
+            name: '的订阅',
             icon: require('../../img/icon/my_subscription.png'),
             path: '/people/subscribe'
           },
           {
-            name: '他的关注',
+            name: '的关注',
             icon: require('../../img/icon/my_focus.png'),
             path: '/people/message/words'
           },
@@ -336,11 +341,13 @@
             path: '/people/message/words'
           },
           {
-            name: '他的轨迹',
+            name: '的轨迹',
             icon: require('../../img/icon/my_trail.png'),
             path: '/people/message/words'
           }
         ],
+        sex: '',
+        tempOperation: [],
         isUser: false,
         userStatus: '',
         userId: '',
@@ -366,7 +373,7 @@
         if (this.userStatus === 'isUser') {
           return '我'
         } else if (this.isLogin && this.userStatus === 'isCustomer') {
-          return 'Ta'
+          return this.sex
         } else {
           return '我'
         }
@@ -381,6 +388,12 @@
           Axios.get('/register/checkLogin')
             .then((response) => {
               if (response.data.login) {
+                if (this.operation.length < 6) {
+                  this.tempOperation = this.operation     // 修改按钮
+                  this.operation = this.cOperation
+                  this.cOperation = this.tempOperation
+                }
+                this.sex = ''   // 置空sex
                 this.nickName = response.data.nickName
                 this.sign = response.data.sign || '这个人很懒，什么也没留下'
                 this.userId = response.data.user
@@ -412,6 +425,12 @@
             }
           }).then(res => {
             if (res.data.user) {
+              if (this.operation.length < 6) {
+                this.tempOperation = this.operation     // 修改按钮
+                this.operation = this.cOperation
+                this.cOperation = this.tempOperation
+              }
+              this.sex = ''   // 置空sex
               this.nickName = res.data.user.nickName
               this.sign = res.data.user.sign || '这个人很懒，什么也没留下'
               this.userId = res.data.user.userId
@@ -424,7 +443,12 @@
                 }
               }
               if (res.data.customer) {
-                this.operation = this.cOperation     // 修改按钮
+                if (this.operation.length > 5) {
+                  this.tempOperation = this.operation     // 修改按钮
+                  this.operation = this.cOperation
+                  this.cOperation = this.tempOperation
+                }
+                this.sex = res.data.sex   // 设置性别
                 this.userStatus = 'isCustomer'
                 for (let i = 0; i < this.operation.length; i++) { // 修改path
                   let splitPath = this.operation[i].path.split('/')

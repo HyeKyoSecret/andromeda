@@ -244,12 +244,16 @@
         this.storyRecommendVis = true
       },
       getData () {
-        Axios.get('/user/getFriendList', {
-          params: {
-            user: 'U1000001'
+        Axios.get('/user/getFriendList').then(response => {
+          if (!response.data.error) {
+            this.friendList = response.data.result
+          } else {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
           }
-        }).then(response => {
-          this.friendList = response.data.result
         })
       },
       startSearch () {
@@ -352,7 +356,7 @@
         }
       },
       buildStory () {
-        this.$emit('build', {recommend: this.recommendList})
+        this.$emit('build', this.recommendList)
       },
       back () {
         this.storyRecommendVis = false

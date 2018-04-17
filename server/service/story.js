@@ -15,7 +15,7 @@ router.post('/story/buildRoot', (req, res) => {
   let rootContent = req.body.rootContent
   let writePermit = req.body.writePermit
   let recommend = req.body.recommend
-  console.log('后台' + 'rootName' + rootName + 'rootContent' + rootContent)
+  console.log('后台' + 'rootName' + rootName + 'rootContent' + rootContent + '推荐列表' + recommend)
   let author = req.session.user || (req.cookies.And && req.cookies.And.user)
   if (author) {
     let rootStory = {
@@ -58,15 +58,15 @@ router.post('/story/buildRoot', (req, res) => {
                               res.send({permit: false, message: '发生错误，请稍后再试'})
                             } else {
                               console.log('我的创作更新完毕，进入推荐人流程')
-                              if (recommend.recommend.length > 0) {
-                                for (let i = 0; i < recommend.recommend.length; i++) {
-                                  User.update({id: recommend.recommend[i].id}, {$push:
+                              if (recommend.length > 0) {
+                                for (let i = 0; i < recommend.length; i++) {
+                                  User.update({id: recommend[i].id}, {$push:
                                       {'promote': {'description': 'recommend', 'content_1': author, 'content_2': '向您推荐了', 'content_3': root.name, 'content_4': root.id}}
                                   }).exec((err) => {
                                     if (err) {
                                       res.send({permit: false, message: '服务器忙，请稍后再试'})
                                     }
-                                    if (i === recommend.recommend.length - 1) {
+                                    if (i === recommend.length - 1) {
                                       console.log('有推荐人的')
                                       res.send({permit: true, message: '发布成功'})
                                     }
@@ -297,7 +297,14 @@ router.post('/story/saveStoryDraft', (req, res) => {
 })
 router.get('/story/getRootDraft', (req, res) => {
   'use strict'
-  let author = req.session.user || req.cookies.And.user
+  let author
+  if (req.session.user) {
+    author = req.session.user
+  } else if (req.cookies.And) {
+    author = req.cookies.And.user
+  } else {
+    return
+  }
   User.findOne({username: author}, (err, user) => {
     if (err) {
       res.send({draft: false})
@@ -309,6 +316,8 @@ router.get('/story/getRootDraft', (req, res) => {
           content: user.myCreationDraft.root.content,
           writePermit: user.myCreationDraft.root.writePermit
         })
+      } else {
+        res.send({draft: false})
       }
     }
   })

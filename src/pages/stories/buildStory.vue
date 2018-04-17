@@ -342,8 +342,7 @@
         fourthStep: true,
         rootName: '',
         rootNameError: '',
-        // rootNameCheck: false,
-        rootNameCheck: true,
+        rootNameCheck: false,
         rootContent: '',
         writePermit: true, // 允许续写
         buildCheck: false  // 允许发布
@@ -381,7 +380,7 @@
             this.rootNameCheck = false
           } else {
             this.rootNameError = ''
-            // this.rootRepeatCheck()
+            this.rootRepeatCheck()
           }
         }
       }

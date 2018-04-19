@@ -24,7 +24,7 @@
           <div class="icon">
             <img src="../../img/icon/greenbingo_unselected.png" v-if="!item.active"/>
             <img src="../../img/icon/greenbingo.png" v-else/></div>
-          <div class="head"><img src="../../img/photo/2b_head.png" /></div>
+          <div class="head"><img src="../../../server/picture/head/2b.png" /></div>
           <div class="name">{{item.name}}</div>
         </div>
       </div>
@@ -36,12 +36,12 @@
     <!--<div class="friend-list">-->
       <!--<div class="one-friend">-->
         <!--<div class="icon"><img src="../../img/icon/greenbingo.png" /></div>-->
-        <!--<div class="head"><img src="../../img/photo/2b_head.png" /></div>-->
+        <!--<div class="head"><img src="../../img/photo/2b.png" /></div>-->
         <!--<div class="name">2B</div>-->
       <!--</div>-->
       <!--<div class="one-friend">-->
         <!--<div class="icon"><img src="../../img/icon/greenbingo.png" /></div>-->
-        <!--<div class="head"><img src="../../img/photo/2b_head.png" /></div>-->
+        <!--<div class="head"><img src="../../img/photo/2b.png" /></div>-->
         <!--<div class="name">2B</div>-->
       <!--</div>-->
     <!--</div>-->
@@ -50,7 +50,7 @@
         <div class="icon">
           <img src="../../img/icon/greenbingo_unselected.png" v-if="!item.active"/>
           <img src="../../img/icon/greenbingo.png" v-else/></div>
-        <div class="head"><img src="../../img/photo/2b_head.png" /></div>
+        <div class="head"><img src="../../../server/picture/head/2b.png" /></div>
         <div class="name">{{item.name}}</div>
       </div>
     </div>
@@ -60,7 +60,7 @@
         <div class="icon">
           <img src="../../img/icon/greenbingo.png" />
         </div>
-        <div class="head"><img src="../../img/photo/2b_head.png" /></div>
+        <div class="head"><img src="../../../server/picture/head/2b.png" /></div>
         <div class="name">{{item.name}}</div>
       </div>
     </div>

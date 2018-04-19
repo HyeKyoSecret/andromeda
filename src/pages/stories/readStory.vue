@@ -1,9 +1,9 @@
 <template>
   <div class="read-story">
     <notice v-bind:title="storyInfo.title"></notice>
-    <!--<div class="marker">-->
-      <!--<img src="../../img/icon/marker_selected.png" />-->
-    <!--</div>-->
+    <div class="marker">
+      <img src="../../img/icon/marker_selected.png" />
+    </div>
     <div class="context">
       {{storyInfo.content}}
     </div>

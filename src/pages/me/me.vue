@@ -4,7 +4,9 @@
     <div class="me-content">
       <div class="user-main" v-if="isLogin">
         <div class="head-img">
-          <img src="../../img/photo/head.jpg">
+          <imgCut   @callback="callback" :width="200" :height="200">
+            <img :src="imgsrc">
+          </imgCut>
         </div>
         <div class="words" @click="goChangeInfo(userId)">
           <div class="name">{{nickName}}</div>
@@ -56,6 +58,9 @@
             删除好友
           </div>
         </div>
+      <div class="ggg">
+        <img src=imgsrc alt="">
+      </div>
       <router-view></router-view>
     </div>
     <foot-menu v-if="!isLoginCustomer"></foot-menu>
@@ -64,6 +69,10 @@
 <style lang='scss' scoped>
   @import "../../scss/config";
   @import "../../scss/style.css";
+  .ggg {
+    width: 100%;
+    height: 250px;
+  }
   .me {
     height: 100%;
     background: $bg-gray;
@@ -278,10 +287,12 @@
 <script>
   import FootMenu from '../../components/foot-menu.vue'
   import notice from '../../components/notice/notice.vue'
+  import {imgCut} from 'vue-imgcut'
   import { Toast } from 'mint-ui'
   import Axios from 'axios'
   export default {
     components: {
+      imgCut,
       FootMenu,
       notice
     },
@@ -354,7 +365,9 @@
         nickName: '',
         cond1: '',
         cond2: '',
-        sign: ''
+        sign: '',
+        imgsrc: '', //  头像，
+        fpath: ''
       }
     },
     watch: {
@@ -396,6 +409,7 @@
                 this.sex = ''   // 置空sex
                 this.nickName = response.data.nickName
                 this.sign = response.data.sign || '这个人很懒，什么也没留下'
+                this.imgsrc = response.data.headImg
                 this.userId = response.data.user
                 this.userStatus = 'isUser'
                 let reg = new RegExp('^U')
@@ -525,6 +539,34 @@
             this.cond2 = response.data.cond2
           }
         })
+      },
+      callback (img) {    // 头像处理
+        this.imgsrc = img
+        let file = this.change(img, 'a.jpg')
+        console.log(file)
+        let config = {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+        let formData = new FormData()
+        formData.append('file', file)
+        formData.append('id', this.userId)
+        Axios.post('/test/upload', formData, config)
+          .then(response => {
+            console.log(response.data)
+          })
+      },
+      change (dataurl, filename) {
+        var arr = dataurl.split(',')
+        let mime = arr[0].match(/:(.*?);/)[1]
+        let bstr = atob(arr[1])
+        let n = bstr.length
+        let u8arr = new Uint8Array(n)
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n)
+        }
+        return new File([u8arr], filename, {type: mime})
       }
     }
   }

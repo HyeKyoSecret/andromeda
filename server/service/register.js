@@ -6,7 +6,10 @@ const User = require('../db/User')
 const router = express.Router()
 const md5 = require('md5')
 const svgCaptcha = require('svg-captcha')
-
+const formidable = require('formidable')
+const path = require('path')
+const util = require('util')
+const fs = require('fs')
 router.post('/register', (req, res) => {
   let username = req.body.username
   let nickname = req.body.nickname
@@ -115,7 +118,6 @@ router.post('/register/login', (req, res) => {
   'use strict'
   let username = req.body.username
   let password = req.body.password
-  console.log('接受' + username + password)
   User.findOne({username: username}, (err, user) => {
     if (err) {
       res.send({permit: false, message: '服务器忙，请稍后再试'})
@@ -198,11 +200,16 @@ router.get('/register/checkLogin', (req, res) => {
       } else {
         if (result) {
           req.session.user = req.cookies.And.user
+          // let img = result.headImg.split('/')
+          // img.splice(0, 5)
+          // let headImg = img.join('/')
+          // console.log(headImg)
           res.send({
             login: true,
             user: result.id,
             nickName: result.nickname,
-            sign: result.sign
+            sign: result.sign,
+            headImg: `../../../server/picture/head/2b.png`
           })
         } else {
           res.send({
@@ -311,5 +318,46 @@ router.get('/register/b', function (req, res) {
     res.send('no')
   }
 })
-
+router.post('/test/upload', function (req, res) {
+  const form = new formidable.IncomingForm()
+  const imgPath = path.join(__dirname, './../picture/head/')
+  const targetPath = path.join(__dirname, './../tempPic/')
+  if (!fs.existsSync(imgPath)) {
+    fs.mkdirSync(imgPath)
+  }
+  if (!fs.existsSync(targetPath)) {
+    fs.mkdirSync(targetPath)
+  }
+  form.uploadDir = targetPath
+  form.keepExtensions = true    // 保存扩展名
+  form.maxFieldsSize = 20 * 1024 * 1024   // 上传文件的最大大小
+  form.parse(req, function (err, fields, files) {
+    if (err) {
+      console.log(err)
+    }
+    let fileName = files.file.path.split('/')[files.file.path.split('/').length - 1]
+    let savePath = path.join(imgPath, fileName)
+    User.updateOne({id: fields.id}, {$set: {'headImg': savePath}})
+      .exec((err, user) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，上传失败'})
+        } else {
+          let oldPic = `${targetPath}/${fileName}`
+          fs.renameSync(files.file.path, savePath)
+          if (fs.existsSync(oldPic)) {
+            fs.unlink((oldPic), (err) => {
+              if (err) {
+                console.log(err)
+                res.send({error: true, type: 'fs', message: '发生错误'})
+              } else {
+                res.send({error: false, message: '上传成功'})
+              }
+            })
+          } else {
+            res.send({error: false, message: '上传成功'})
+          }
+        }
+      })
+  })
+})
 module.exports = router

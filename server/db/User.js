@@ -110,7 +110,8 @@ const UserSchema = new Schema({
       content_3: String,
       content_4: String
     }
-  ]
+  ],
+  headImg: String
 })
 UserSchema.pre('save', function (next) {
   'use strict'

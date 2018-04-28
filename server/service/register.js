@@ -8,8 +8,13 @@ const md5 = require('md5')
 const svgCaptcha = require('svg-captcha')
 const formidable = require('formidable')
 const path = require('path')
-const util = require('util')
 const fs = require('fs')
+const formImg = function (imgPath) {
+  let img = imgPath.split('/')
+  img.splice(0, 5)
+  let headImg = img.join('/')
+  return headImg
+}
 router.post('/register', (req, res) => {
   let username = req.body.username
   let nickname = req.body.nickname
@@ -178,7 +183,8 @@ router.get('/register/checkLogin', (req, res) => {
               login: true,
               user: user.id,
               nickName: user.nickname,
-              sign: user.sign
+              sign: user.sign,
+              headImg: formImg(user.headImg)
             })
           } else {
             res.send({
@@ -200,16 +206,12 @@ router.get('/register/checkLogin', (req, res) => {
       } else {
         if (result) {
           req.session.user = req.cookies.And.user
-          // let img = result.headImg.split('/')
-          // img.splice(0, 5)
-          // let headImg = img.join('/')
-          // console.log(headImg)
           res.send({
             login: true,
             user: result.id,
             nickName: result.nickname,
             sign: result.sign,
-            headImg: `../../../server/picture/head/2b.png`
+            headImg: formImg(result.headImg)
           })
         } else {
           res.send({
@@ -243,7 +245,8 @@ router.get('/register/checkUser', (req, res) => {
       user: '',
       nickName: '',
       sign: '',
-      userId: ''
+      userId: '',
+      headImg: ''
     }
     User.findOne({id: user})
       .exec((err, account) => {
@@ -255,6 +258,11 @@ router.get('/register/checkUser', (req, res) => {
             userInfo.nickName = account.nickname
             userInfo.sign = account.sign
             userInfo.userId = account.id
+            if (account.headImg) {
+              userInfo.headImg = formImg(account.headImg)
+            } else {
+              userInfo.headImg = ''
+            }
             if (account.username === loginUser) {
               res.send({user: userInfo, customer: false}) // 是本人，非访客模式
             } else {
@@ -320,8 +328,13 @@ router.get('/register/b', function (req, res) {
 })
 router.post('/test/upload', function (req, res) {
   const form = new formidable.IncomingForm()
-  const imgPath = path.join(__dirname, './../picture/head/')
-  const targetPath = path.join(__dirname, './../tempPic/')
+  const imgPath = path.resolve(__dirname, '../../static/picture/head/')
+  const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径
+  const proPath = path.join(__dirname, '../../dist/static/picture/head/')    // 生产环境图片路径
+  function copyIt (from, to) {    // 复制文件
+    fs.writeFileSync(to, fs.readFileSync(from))
+    // fs.createReadStream(src).pipe(fs.createWriteStream(dst))  大文件复制
+  }
   if (!fs.existsSync(imgPath)) {
     fs.mkdirSync(imgPath)
   }
@@ -337,6 +350,7 @@ router.post('/test/upload', function (req, res) {
     }
     let fileName = files.file.path.split('/')[files.file.path.split('/').length - 1]
     let savePath = path.join(imgPath, fileName)
+    let usePath = path.join(proPath, fileName)
     User.updateOne({id: fields.id}, {$set: {'headImg': savePath}})
       .exec((err, user) => {
         if (err) {
@@ -344,6 +358,7 @@ router.post('/test/upload', function (req, res) {
         } else {
           let oldPic = `${targetPath}/${fileName}`
           fs.renameSync(files.file.path, savePath)
+          copyIt(savePath, usePath)     // 拷贝文件
           if (fs.existsSync(oldPic)) {
             fs.unlink((oldPic), (err) => {
               if (err) {
@@ -354,10 +369,27 @@ router.post('/test/upload', function (req, res) {
               }
             })
           } else {
-            res.send({error: false, message: '上传成功'})
+            let img = savePath.split('/')
+            img.splice(0, 5)
+            let headImg = img.join('/')
+            res.send({error: false, message: '上传成功', result: headImg})
           }
         }
       })
   })
+})
+router.get('/test/getPic', (req, res) => {
+  let user = req.cookies.And.user
+  User.findOne({username: user}, (err, result) => {
+    if (err) {
+      console.log(err)
+    } else {
+      let img = result.headImg.split('/')
+      img.splice(0, 5)
+      let headImg = img.join('/')
+      res.send({result: headImg})
+    }
+  })
+  // res.send({result: 'static/img/images/yuner.jpg'})
 })
 module.exports = router

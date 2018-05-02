@@ -4,7 +4,7 @@
     <!--头像裁剪遮罩-->
     <div class="container" v-show="panel">
       <div>
-        <img id="image" :src="url" alt="Picture">
+        <img id="image" class="img-item" :src="url" alt="Picture">
       </div>
       <button type="button" class="button confirm" @click="crop">确定</button>
       <button type="button" class="button cancel" @click="cancelCrop">取消</button>
@@ -21,7 +21,7 @@
     <div class="me-content">
       <div class="user-main" v-if="isLogin">
         <div class="head-img">
-          <img :src="imgSrc" alt="" @click="simulateClick" @error="setErrorImg">
+          <img :src="headImage" alt="" @click="simulateClick" @error="setErrorImg">
         </div>
         <div class="words" @click="goChangeInfo(userId)">
           <div class="name">{{nickName}}</div>
@@ -45,7 +45,7 @@
           <img src="../../img/icon/right.png">
         </div>
       </div>
-      <router-link to='/login' tag="div" class="fake-user-main" v-else>
+      <router-link to="/login" tag="div" class="fake-user-main" v-else>
         <p>登录仙女座，</p>
         <p>链接你与Ta们的故事</p>
       </router-link>
@@ -296,13 +296,11 @@
 <script>
   import FootMenu from '../../components/foot-menu.vue'
   import notice from '../../components/notice/notice.vue'
-  import {imgCut} from 'vue-imgcut'
   import { Toast } from 'mint-ui'
   import Axios from 'axios'
   import Cropper from 'cropperjs'
   export default {
     components: {
-      imgCut,
       FootMenu,
       notice
     },
@@ -315,6 +313,7 @@
         panel: false,
         url: '',  // 以上为头像输入所需数据
         imgSrc: '',    // 头像
+        headImg: '',
         operation: [
           {
             name: '我的消息',
@@ -383,7 +382,9 @@
         cond1: '',
         cond2: '',
         sign: '',
-        fpath: ''
+        fpath: '',
+        fileName: '', // 文件名
+        fileExt: ''  // 文件后缀名
       }
     },
     watch: {
@@ -406,12 +407,19 @@
         } else {
           return '我'
         }
+      },
+      headImage: function () {
+        if (this.imgSrc === 'default') {
+          return require('../../img/images/defaultHeadImg.png')
+        } else {
+          return this.imgSrc
+        }
       }
     },
     mounted () {
       // 初始化这个裁剪框
-      var self = this
-      var image = document.getElementById('image')
+      let self = this
+      let image = document.getElementById('image')
       this.cropper = new Cropper(image, {
         aspectRatio: 1,
         viewMode: 1,
@@ -430,10 +438,10 @@
         this.$refs.input.click()
       },
       setErrorImg () {
-        this.imgSrc = require('../../img/images/2b.png')
+        this.imgSrc = require('../../img/images/defaultHeadImg.png')
       },
       getObjectURL (file) {
-        var url = null
+        let url = null
         if (window.createObjectURL !== undefined) { //  basic
           url = window.createObjectURL(file)
         } else if (window.URL !== undefined) { //  mozilla(firefox)
@@ -445,6 +453,8 @@
       },
       change (e) {
         let files = e.target.files || e.dataTransfer.files
+        this.fileName = files[0].name
+        this.fileExt = files[0].name.split('.')[1]
         if (!files.length) return
         this.panel = true
         this.picValue = files[0]
@@ -456,7 +466,7 @@
         this.panel = true
       },
       changeToFile (dataurl) {
-        var arr = dataurl.split(',')
+        let arr = dataurl.split(',')
         let mime = arr[0].match(/:(.*?);/)[1]
         let bstr = atob(arr[1])
         let n = bstr.length
@@ -468,17 +478,13 @@
       },
       crop () {
         this.panel = false
-        var croppedCanvas
+        let croppedCanvas
         // var roundedCanvas
         if (!this.croppable) {
           return
         }
         //  Crop
         croppedCanvas = this.cropper.getCroppedCanvas()
-        console.log(this.cropper)
-        // //  Round
-        // roundedCanvas = this.getRoundedCanvas(croppedCanvas)
-
         this.headerImage = croppedCanvas.toDataURL()
         this.postImg()
       },
@@ -493,9 +499,9 @@
           }
         }
         let formData = new FormData()
-        formData.append('file', file, '123.png')
+        formData.append('file', file, this.fileName)
         formData.append('id', this.userId)
-        Axios.post('/test/upload', formData, config).then(response => {
+        Axios.post('/user/uploadHeadImg', formData, config).then(response => {
           Toast({
             message: response.data.message,
             position: 'middle',
@@ -556,7 +562,7 @@
               this.nickName = res.data.user.nickName
               this.sign = res.data.user.sign || '这个人很懒，什么也没留下'
               this.userId = res.data.user.userId
-              this.imgSrc = res.data.headImg
+              this.imgSrc = res.data.user.headImg
               let reg = new RegExp('^U')
               for (let i = 0; i < this.operation.length; i++) { // 修改path
                 let splitPath = this.operation[i].path.split('/')
@@ -649,32 +655,6 @@
           }
         })
       }
-      // callback (img) {    // 头像处理
-      //   let file = this.change(img, 'a.jpg')
-      //   let config = {
-      //     headers: {
-      //       'Content-Type': 'multipart/form-data'
-      //     }
-      //   }
-      //   let formData = new FormData()
-      //   formData.append('file', file)
-      //   formData.append('id', this.userId)
-      //   Axios.post('/test/upload', formData, config)
-      //     .then(response => {
-      //       console.log(response.data)
-      //     })
-      // },
-      // change (dataurl, filename) {
-      //   var arr = dataurl.split(',')
-      //   let mime = arr[0].match(/:(.*?);/)[1]
-      //   let bstr = atob(arr[1])
-      //   let n = bstr.length
-      //   let u8arr = new Uint8Array(n)
-      //   while (n--) {
-      //     u8arr[n] = bstr.charCodeAt(n)
-      //   }
-      //   return new File([u8arr], filename, {type: mime})
-      // }
     }
   }
 </script>

@@ -5,10 +5,10 @@
       撰写新的故事
     </div>
     <div>
-      <router-link :to="item.path" tag='div' class="one-story" v-for="item in story" :key="item.name" v-bind:zty="12345">
+      <router-link :to="item.path" tag='div' class="one-story" v-for="(item, index) in story" :key="item.name" v-bind:zty="12345">
         <div class="story-information">
           <div class="cover">
-            <div><img src="../../img/photo/LegendofZelda.png" /></div>
+            <div><img :src="item.cover" @error="setErrorImg(index)"/></div>
             <div class="story-quantity">
               <span><img src="../../img/icon/graybook.png" /></span>
               <span class="number">4399</span>
@@ -83,7 +83,8 @@
                 latestDate: moment(response.data.result[i].timeStamp).format('YYYY年M月D日'),
                 isRoot: response.data.result[i].label,
                 path: this.getPath(response.data.result[i]),
-                data: response.data.data
+                data: response.data.data,
+                cover: response.data.result[i].cover
               })
             }
           } else {
@@ -122,6 +123,9 @@
           path = `myCreation/${val.root}`
         }
         return path
+      },
+      setErrorImg (x) {
+        this.story[x].cover = require('../../img/photo/defaultPic.png')
       }
     }
   }

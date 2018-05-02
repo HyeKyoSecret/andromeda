@@ -13,6 +13,7 @@ const StoryRootSchema = new Schema({
   date: { type: Date, default: Date.now },
   name: String,
   content: String,
+  coverImg: String,
   zan: [{
     type: Schema.Types.ObjectId, ref: 'User'
   }],

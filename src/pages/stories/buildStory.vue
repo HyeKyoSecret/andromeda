@@ -29,21 +29,36 @@
       <span class="title">
         添加封面图片
       </span>
-      <span class="next-step" @click="storyRoute(3)">
+      <span class="fake-next-step" v-if='!coverCheck'>
+        下一步
+      </span>
+      <span class="next-step" @click="storyRoute(3)" v-else>
         下一步
       </span>
       </div>
       <div class="story-name">
         塞尔达传说
       </div>
-      <div class="story-pic">
+      <div class="container" v-show="panel">
+        <div>
+          <img id="image" :src="url" class="img-item" alt="Picture">
+        </div>
+        <button type="button" class="button confirm" @click="crop">确定</button>
+        <button type="button" class="button cancel" @click="cancelCrop">取消</button>
+      </div>
+      <div>
+        <div class="story-pic" v-if="url" @click="choosePic">
+          <div class="picture" :style="'backgroundImage:url('+coverImage+')'"></div>
+        </div>
+        <label id="input">
+          <input type="file" ref="input" id="change" accept="image" @change="change">
+        </label>
+      </div>
+      <div class="story-pic" @click="choosePic" v-if="!url">
         <img src="../../img/photo/defaultPic.png"/>
       </div>
       <div class="error-info">
-        上传的图片大小过大
-      </div>
-      <div class="recommend">
-        *建议上传3:4 比例的图片
+        {{coverErrorMessage}}
       </div>
     </div>
     <div class="third-step" v-show="thirdStep">
@@ -76,6 +91,7 @@
 <style lang="scss" scoped>
   @import "../../scss/config";
   @import "../../scss/style.css";
+  @import "../../scss/cropper.css";
     .first-step {
       height: 100%;
       width: 100%;
@@ -183,6 +199,16 @@
         .title {
           font-size: 16px;
         }
+        .fake-next-step {
+          color: $font-color;
+          position: absolute;
+          right: 11px;
+          font-size: 14px;
+          display: inline-block;
+          height: 42px;
+          width: 50px;
+          line-height: 42px;
+        }
         .next-step {
           position: absolute;
           right: 11px;
@@ -205,11 +231,10 @@
       }
       .story-pic {
         margin-top: 30px;
-
         display: flex;
         align-items: center;
         justify-content: center;
-        img{
+        img, .picture{
           height:160px;
           width: 170px;
           padding: 107px 55px 107px 55px;
@@ -327,6 +352,7 @@
 </style>
 <script>
   import Axios from 'axios'
+  import Cropper from 'cropperjs'
   import Debounce from '../../js/debounce.js'
   import { MessageBox, Toast } from 'mint-ui'
   import StoryRecommend from '../../components/story/buildStoryRecommend.vue'
@@ -345,7 +371,37 @@
         rootNameCheck: false,
         rootContent: '',
         writePermit: true, // 允许续写
-        buildCheck: false  // 允许发布
+        buildCheck: false,  // 允许发布
+        coverImage: '',      // 以下直到url为上传图片所需数据
+        picValue: '',
+        cropper: '',
+        croppable: false,
+        panel: false,
+        url: '',
+        file: '',          // 封面图片文件
+        fileName: '',
+        fileExt: '',      // 封面图片后缀名
+        coverErrorMessage: ''
+      }
+    },
+    computed: {
+      coverCheck: function () {
+        let ext = ['jpg', 'gif', 'jpeg', 'gif', 'bmp', 'png']
+        let flag = ext.some(function (val) {
+          if (this.fileExt) {
+            return val === this.fileExt.toLocaleLowerCase()
+          } else {
+            return false
+          }
+        }.bind(this))
+        if (this.file && flag) {
+          this.coverErrorMessage = ''
+        } else if (this.file && !flag) {
+          this.coverErrorMessage = '请上传图片格式的文件'
+        } else if (!this.file) {
+          this.coverErrorMessage = '点击选框上传封面图片'
+        }
+        return this.file && flag
       }
     },
     watch: {
@@ -385,10 +441,83 @@
         }
       }
     },
+    mounted () {
+      // 初始化这个裁剪框
+      var self = this
+      var image = document.getElementById('image')
+      this.cropper = new Cropper(image, {
+        dragMode: 'move',
+        aspectRatio: 3 / 4,
+        viewMode: 1,
+        highlight: false,
+        cropBoxMovable: false,
+        cropBoxResizable: false,
+        toggleDragModeOnDblclick: false,
+        background: false,
+        zoomable: false,
+        ready: function () {
+          self.croppable = true
+        }
+      })
+    },
     created: function () {
       this.loadDraft()
     },
     methods: {
+      choosePic () {
+        this.$refs.input.click()
+      },
+      getObjectURL (file) {
+        let url = null
+        if (window.createObjectURL !== undefined) { //  basic
+          url = window.createObjectURL(file)
+        } else if (window.URL !== undefined) { //  mozilla(firefox)
+          url = window.URL.createObjectURL(file)
+        } else if (window.webkitURL !== undefined) { //  webkit or chrome
+          url = window.webkitURL.createObjectURL(file)
+        }
+        return url
+      },
+      change (e) {
+        let files = e.target.files || e.dataTransfer.files
+        this.fileName = files[0].name
+        this.fileExt = files[0].name.split('.')[1]
+        if (!files.length) return
+        this.panel = true
+        this.picValue = files[0]
+        this.url = this.getObjectURL(this.picValue)
+        // 每次替换图片要重新得到新的url
+        if (this.cropper) {
+          this.cropper.replace(this.url)
+        }
+        this.panel = true
+      },
+      changeToFile (dataurl) {
+        let arr = dataurl.split(',')
+        let mime = arr[0].match(/:(.*?);/)[1]
+        let bstr = atob(arr[1])
+        let n = bstr.length
+        let u8arr = new Uint8Array(n)
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n)
+        }
+        return new Blob([u8arr], {type: mime})
+      },
+      crop () {
+        this.panel = false
+        let croppedCanvas
+        // var roundedCanvas
+        if (!this.croppable) {
+          return
+        }
+        //  Crop
+        croppedCanvas = this.cropper.getCroppedCanvas()
+        this.coverImage = croppedCanvas.toDataURL()
+        this.file = this.changeToFile(this.coverImage)
+      },
+      cancelCrop () {
+        this.panel = false
+      },
       loadDraft () {
         Axios.get('/story/getRootDraft')
           .then(response => {
@@ -452,12 +581,18 @@
       }, 500),
       buildRoot (recommend) {
         this.buildCheck = false
-        Axios.post('/story/buildRoot', {
-          rootName: this.rootName,
-          rootContent: this.rootContent,
-          recommend: recommend,  // 推荐列表
-          writePermit: this.writePermit
-        }).then((response) => {
+        let config = {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+        let formData = new FormData()
+        formData.append('file', this.file, this.fileName)
+        formData.append('name', this.rootName)
+        formData.append('content', this.rootContent)
+        formData.append('recommend', recommend)
+        formData.append('writePermit', this.writePermit)
+        Axios.post('/story/buildRoot', formData, config).then((response) => {
           if (response.data.permit === true) {
             Toast({
               message: response.data.message,
@@ -477,7 +612,7 @@
         })
         setTimeout(function () {      // 超时处理
           this.buildCheck = true
-        }.bind(this), 3000)
+        }.bind(this), 4000)
       },
       leaveBuild () {
         if (this.rootName || this.rootContent) {

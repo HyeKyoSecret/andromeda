@@ -1,17 +1,10 @@
+
   *{
     margin:  0;
     padding:  0;
   }
-  /*
-    label#input  {
-      position: absolute;
-      top: 70px;
-      display: inline-block;
-      height: 80px;
-      width: 80px;
-    }
-  */
-  input {
+
+  #input input {
     display:none;
   }
   .button.confirm {
@@ -65,7 +58,7 @@
     background: rgba(0,0,0,1);
   }
 
-  #image {
+  .img-item {
     max-width:  100%;
   }
 

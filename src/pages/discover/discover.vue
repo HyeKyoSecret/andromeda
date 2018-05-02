@@ -18,10 +18,10 @@
       </div>
     </div>
     <div>
-      <router-link tag="div" v-for="item in storyList" :to="item.path" :key='item.path' class="one-recommendation" >
+      <router-link tag="div" v-for="(item, index) in storyList" :to="item.path" :key='item.path' class="one-recommendation" >
         <div class="story-information">
           <div class="cover">
-            <div><img src="../../img/photo/LegendofZelda.png" /></div>
+            <div><img :src='item.cover' @error="setErrorImg(index)"/></div>
             <div class="book-number">
               <span><img src="../../img/icon/graybook.png" /></span>
               <span class="number">4399</span>
@@ -81,11 +81,15 @@
                   content: o.content,
                   author: o.author,
                   date: o.date,
-                  path: `/story/${o.path}`
+                  path: `/story/${o.path}`,
+                  cover: o.cover
                 })
               })
             }
           })
+      },
+      setErrorImg (x) {
+        this.storyList[x].cover = require('../../img/photo/defaultPic.png')
       }
     }
   }

@@ -7,6 +7,17 @@ const Root = require('../db/StoryRoot')
 const Story = require('../db/Story')
 const moment = require('moment')
 const router = express.Router()
+const formidable = require('formidable')
+const path = require('path')
+const fs = require('fs')
+const formImg = function (imgPath) {
+  if (imgPath) {
+    let img = imgPath.split('/andromeda')
+    return img[1]
+  } else {
+    return 'default'
+  }
+}
 router.get('/user/getMyCreation', (req, res) => {
   'use strict'
   let user = req.query.user
@@ -53,6 +64,7 @@ router.get('/user/getMyCreation', (req, res) => {
                     root: root.name,
                     timeStamp: root.date.getTime(),
                     data: [root.id],
+                    cover: formImg(root.coverImg),
                     label: 'root'
                   })
                 })
@@ -63,6 +75,7 @@ router.get('/user/getMyCreation', (req, res) => {
                     root: story.root.name,
                     id: story.id,
                     timeStamp: story.date.getTime(),
+                    cover: formImg(story.root.coverImg),
                     label: 'story'
                   })
                 })
@@ -74,6 +87,7 @@ router.get('/user/getMyCreation', (req, res) => {
                     dest.push({
                       root: ai.root,
                       data: [ai.id],
+                      cover: ai.cover,
                       timeStamp: ai.timeStamp
                     })
                     map[ai.root] = ai
@@ -90,6 +104,7 @@ router.get('/user/getMyCreation', (req, res) => {
                 for (let i = 0; i < dest.length; i++) {
                   rootList.push({
                     root: dest[i].root,
+                    cover: dest[i].cover,
                     data: dest[i].data,
                     timeStamp: dest[i].timeStamp
                   })
@@ -103,7 +118,8 @@ router.get('/user/getMyCreation', (req, res) => {
                       data: ai.data,
                       label: ai.label,
                       date: ai.date,
-                      timeStamp: ai.timeStamp
+                      timeStamp: ai.timeStamp,
+                      cover: ai.cover
                     })
                     temp[ai.root] = ai
                   } else {
@@ -789,7 +805,7 @@ router.post('/user/changeSign', (req, res) => {
     res.send({error: true, type: 'word', message: '签名格式有误，请检查后输入'})
   }
 })
-router.get('/user/getSign', (req, res) => {
+router.get('/user/getSign', (req, res) => { // 获得签名
   'use strict'
   let id = req.query.id
   User.findOne({id: id})
@@ -800,5 +816,72 @@ router.get('/user/getSign', (req, res) => {
         res.send({error: false, sign: doc.sign})
       }
     })
+})
+router.post('/user/uploadHeadImg', function (req, res) {
+  const form = new formidable.IncomingForm()
+  const imgPath = path.resolve(__dirname, '../../static/picture/head/')
+  const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径
+  const proPath = path.join(__dirname, '../../dist/static/picture/head/')    // 生产环境图片路径
+  function copyIt (from, to) {    // 复制文件
+    fs.writeFileSync(to, fs.readFileSync(from))
+    // fs.createReadStream(src).pipe(fs.createWriteStream(dst))  大文件复制
+  }
+  if (!fs.existsSync(imgPath)) {
+    fs.mkdirSync(imgPath)
+  }
+  if (!fs.existsSync(targetPath)) {
+    fs.mkdirSync(targetPath)
+  }
+  if (!fs.existsSync(proPath)) {
+    fs.mkdirSync(proPath)
+  }
+  form.uploadDir = targetPath
+  form.keepExtensions = true    // 保存扩展名
+  form.maxFieldsSize = 20 * 1024 * 1024   // 上传文件的最大大小
+  form.parse(req, function (err, fields, files) {
+    if (err) {
+      console.log(err)
+    }
+    let fileName = files.file.path.split('/')[files.file.path.split('/').length - 1]
+    let savePath = path.join(imgPath, fileName)
+    let usePath = path.join(proPath, fileName)
+    User.updateOne({id: fields.id}, {$set: {'headImg': savePath}})
+      .exec((err, user) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，上传失败'})
+        } else {
+          let oldPic = `${targetPath}/${fileName}`
+          fs.renameSync(files.file.path, savePath)
+          copyIt(savePath, usePath)     // 拷贝文件
+          if (fs.existsSync(oldPic)) {
+            fs.unlink((oldPic), (err) => {
+              if (err) {
+                console.log(err)
+                res.send({error: true, type: 'fs', message: '发生错误'})
+              } else {
+                res.send({error: false, message: '上传成功'})
+              }
+            })
+          } else {
+            let img = savePath.split('/andromeda/')
+            res.send({error: false, message: '上传成功', result: img[1]})
+          }
+        }
+      })
+  })
+})
+router.get('/user/getHeadImg', (req, res) => {
+  let user = req.cookies.And.user
+  User.findOne({username: user}, (err, result) => {
+    if (err) {
+      console.log(err)
+    } else {
+      let img = result.headImg.split('/')
+      img.splice(0, 5)
+      let headImg = img.join('/')
+      res.send({result: headImg})
+    }
+  })
+  // res.send({result: 'static/img/images/yuner.jpg'})
 })
 module.exports = router

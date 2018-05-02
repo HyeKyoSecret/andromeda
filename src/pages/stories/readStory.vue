@@ -262,7 +262,6 @@
             this.storyInfo.author = response.data.result.author
             this.storyInfo.authorId = `/people/${response.data.result.authorId}`
             this.storyInfo.date = response.data.result.date
-            console.log('aID' + this.storyInfo.authorId)
           } else {
             this.$emit('error')
           }

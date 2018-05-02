@@ -129,6 +129,14 @@
                 duration: 1000
               })
             }
+          }).catch(error => {
+            if (error) {
+              Toast({
+                message: '登录失败',
+                position: 'middle',
+                duration: 1000
+              })
+            }
           })
         } else {
           this.getCaptcha()
@@ -194,11 +202,12 @@
           height: 42px;
           font-size: 14px;
           overflow: hidden;
+          width: 100%;
         }
         &:last-child {
           border: none;
           input{
-            flex: 1;
+            flex: 2;
           }
           .error-icon {
             flex: 1;

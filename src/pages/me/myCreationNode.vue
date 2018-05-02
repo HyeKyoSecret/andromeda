@@ -1,11 +1,20 @@
 <template>
   <div class="my-creation-node">
     <notice v-bind:title="$route.params.rootName"></notice>
+    <div class="container" v-show="panel">
+      <div>
+        <img id="cover" class="image-item" :src="url" alt="Picture">
+      </div>
+      <button type="button" class="button confirm" @click="crop">确定</button>
+      <button type="button" class="button cancel" @click="cancelCrop">取消</button>
+    </div>
+    <label id="input">
+      <input type="file" ref="input" accept="image" @change="change">
+    </label>
     <div v-if="result.root">
       <transition
         name="custom-classes-transition"
-        leave-active-class="animated bounceOutUp"
-      >
+        leave-active-class="animated bounceOutUp">
       <div class="open-authorized" v-if="!writeAuthorized">
         <div class="line">
           <div class="name">开放自由续写</div>
@@ -16,8 +25,8 @@
       <div class="one-node" @click="goStory(result.root.id)">
         <div class="story-information">
           <div class="cover">
-            <div><img src="../../img/photo/LegendofZelda.png" /></div>
-            <div class="change-cover">更换封面</div>
+            <div><img :src="imgSrc" @error="setErrorImg" @click.stop="choosePic"/></div>
+            <div class="change-cover" @click.stop="choosePic">更换封面</div>
           </div>
           <div class="right-part">
             <div class="story-name">
@@ -35,7 +44,7 @@
       </div>
     </div>
     <div v-if="result.story">
-      <div class="story-preview"  v-for="item in result.story" :key="item.id" @click="goStory(item.id)">
+      <div class="story-preview"  v-for="(item, index) in result.story" :key="item.id" @click="goStory(item.id)">
         <div class="content">{{item.content}}</div>
         <div class="info">
           <span><img src="../../img/icon/gray_thumb.png" /></span>
@@ -49,6 +58,7 @@
 </template>
 <script>
   import FootMenu from '../../components/foot-menu.vue'
+  import Cropper from 'cropperjs'
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
   import { Toast, MessageBox } from 'mint-ui'
@@ -67,7 +77,18 @@
         temp: {},
         result: {},
         writePermit: true,
-        writeAuthorized: true
+        writeAuthorized: true,
+        coverImage: '',      // 以下直到url为上传图片所需数据
+        picValue: '',
+        cropper: '',
+        croppable: false,
+        panel: false,
+        imgSrc: '',
+        url: '',
+        file: '',          // 封面图片文件
+        fileName: '',
+        fileExt: '',      // 封面图片后缀名
+        coverErrorMessage: ''
       }
     },
     watch: {
@@ -97,7 +118,119 @@
     created: function () {
       this.checkUser()
     },
+    mounted () {
+      // 初始化这个裁剪框
+      var self = this
+      var cover = document.getElementById('cover')
+      this.cropper = new Cropper(cover, {
+        dragMode: 'move',
+        aspectRatio: 3 / 4,
+        highlight: false,
+        cropBoxMovable: false,
+        cropBoxResizable: true,
+        toggleDragModeOnDblclick: false,
+        background: false,
+        zoomable: false,
+        ready: function () {
+          self.croppable = true
+        }
+      })
+    },
     methods: {
+      choosePic () {
+        this.$refs.input.click()
+      },
+      getObjectURL (file) {
+        let url = null
+        if (window.createObjectURL !== undefined) { //  basic
+          url = window.createObjectURL(file)
+        } else if (window.URL !== undefined) { //  mozilla(firefox)
+          url = window.URL.createObjectURL(file)
+        } else if (window.webkitURL !== undefined) { //  webkit or chrome
+          url = window.webkitURL.createObjectURL(file)
+        }
+        return url
+      },
+      change (e) {
+        let files = e.target.files || e.dataTransfer.files
+        this.fileName = files[0].name
+        this.fileExt = files[0].name.split('.')[1]
+        if (!files.length) return
+        this.panel = true
+        this.picValue = files[0]
+        this.url = this.getObjectURL(this.picValue)
+        // 每次替换图片要重新得到新的url
+        if (this.cropper) {
+          this.cropper.replace(this.url)
+        }
+        this.panel = true
+      },
+      changeToFile (dataurl) {
+        let arr = dataurl.split(',')
+        let mime = arr[0].match(/:(.*?);/)[1]
+        let bstr = atob(arr[1])
+        let n = bstr.length
+        let u8arr = new Uint8Array(n)
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n)
+        }
+        return new Blob([u8arr], {type: mime})
+      },
+      crop () {
+        this.panel = false
+        let croppedCanvas
+        // var roundedCanvas
+        if (!this.croppable) {
+          return
+        }
+        //  Crop
+        croppedCanvas = this.cropper.getCroppedCanvas()
+        this.coverImage = croppedCanvas.toDataURL()
+        this.file = this.changeToFile(this.coverImage)
+        let ext = ['jpg', 'gif', 'jpeg', 'gif', 'bmp', 'png']
+        let flag = ext.some(function (val) {
+          if (this.fileExt) {
+            return val === this.fileExt.toLocaleLowerCase()
+          } else {
+            return false
+          }
+        }.bind(this))
+        if (this.file && flag) {
+          this.postImg()
+        } else if (this.file && !flag) {
+          Toast({
+            message: '请选择图片上传',
+            position: 'middle',
+            duration: 1000
+          })
+        }
+      },
+      cancelCrop () {
+        this.panel = false
+      },
+      postImg () {
+        let config = {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+        let formData = new FormData()
+        formData.append('file', this.file, this.fileName)
+        formData.append('rootName', this.temp.root)
+        formData.append('id', this.$route.params.user)
+        Axios.post('/story/updateCover', formData, config).then(response => {
+          Toast({
+            message: response.data.message,
+            position: 'middle',
+            duration: 1000
+          })
+          this.imgSrc = response.data.result
+          console.log(this.imgSrc)
+        })
+      },
+      setErrorImg: function () {
+        this.imgSrc = require('../../img/photo/defaultPic.png')
+      },
       checkUser: function () {
         Axios.get('/register/checkUser', {
           params: {
@@ -118,6 +251,7 @@
                     this.temp = arr[i]
                   }
                 }
+                this.imgSrc = this.temp.cover
                 Axios.post('/story/getMyCreationPreview', {
                   data: this.temp
                 }).then(response => {
@@ -152,6 +286,7 @@
   @import "../../scss/style.css";
   @import "../../scss/animate.min.css";
   @import "../../scss/config";
+  /*@import "../../scss/cropper.css";*/
   .my-creation-node {
     position: absolute;
     top: 0;
@@ -159,6 +294,9 @@
     height: 100%;
     width: 100%;
     background: $bg-gray;
+    .image-item {
+      max-width: 100%;
+    }
     .open-authorized {
       width: 100%;
       border-top: 1px solid $border-gray;
@@ -200,8 +338,8 @@
           }
           .change-cover {
             height: 20px;
-            width: 75px;
-            margin: 10px 5px 0 -4px;
+            width: 70px;
+            margin: 10px 5px 0 -1px;
             background-color: $main-color;
             border-radius: 5px;
             color: white;

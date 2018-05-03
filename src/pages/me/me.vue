@@ -18,7 +18,6 @@
         <input type="file" ref="input" id="change" accept="image" @change="change">
       </label>
     </div>
-    {{imgSrc}}
     <div class="me-content">
       <div class="user-main" v-if="isLogin">
         <div class="head-img">
@@ -500,8 +499,7 @@
             position: 'middle',
             duration: 1000
           })
-          console.log(response.data.result)
-          this.imgSrc = response.data.result
+          this.checkUser()
         })
       },
       checkUser () {

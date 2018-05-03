@@ -10,7 +10,7 @@
     <div class="search-board" v-if="searchBoard">
       <div class="friend-list">
         <div class="one-friend" v-for="item in searchList">
-          <div class="head"><img src="../../../server/picture/head/2b.png" /></div>
+          <div class="head"><img/></div>
           <div class="name">{{item.name}}</div>
         </div>
       </div>
@@ -33,7 +33,7 @@
     <!--</div>-->
     <div class="friend-list" v-show="flVis">
       <div class="one-friend" v-for='item in friendList' @click="goFriend(item.id)">
-        <div class="head"><img src="../../../server/picture/head/2b.png" /></div>
+        <div class="head"><img /></div>
         <div class="name">{{item.name}}</div>
       </div>
     </div>

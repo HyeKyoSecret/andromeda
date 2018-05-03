@@ -820,7 +820,7 @@ router.get('/user/getSign', (req, res) => { // 获得签名
 })
 router.post('/user/uploadHeadImg', function (req, res) {
   const form = new formidable.IncomingForm()
-  const imgPath = path.resolve(__dirname, '../../static/picture/head/')
+  const imgPath = path.resolve(__dirname, '../picture/head/')
   const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径
   const proPath = path.join(__dirname, '../../dist/static/picture/head/')    // 生产环境图片路径
   const thumbPath = path.join(__dirname, '../../static/thumb/head/')
@@ -863,8 +863,7 @@ router.post('/user/uploadHeadImg', function (req, res) {
                 res.send({error: false, type: 'gm', message: '发生错误'})
               } else {
                 copyIt(thumbSavePath, usePath)     // 拷贝文件
-                console.log(formImg(thumbSavePath))
-                res.send({error: false, message: '上传成功', result: formImg(thumbSavePath)})
+                res.send({error: false, message: '上传成功'})
               }
             })
         }

@@ -18,10 +18,11 @@
         <input type="file" ref="input" id="change" accept="image" @change="change">
       </label>
     </div>
+    {{imgSrc}}
     <div class="me-content">
       <div class="user-main" v-if="isLogin">
         <div class="head-img">
-          <img :src="headImage" alt="" @click="simulateClick" @error="setErrorImg">
+          <img :src="imgSrc" alt="" @click="simulateClick" @error="setErrorImg">
         </div>
         <div class="words" @click="goChangeInfo(userId)">
           <div class="name">{{nickName}}</div>
@@ -306,7 +307,6 @@
     },
     data () {
       return {
-        headerImage: '',
         picValue: '',
         cropper: '',
         croppable: false,
@@ -407,13 +407,6 @@
         } else {
           return '我'
         }
-      },
-      headImage: function () {
-        if (this.imgSrc === 'default') {
-          return require('../../img/images/defaultHeadImg.png')
-        } else {
-          return this.imgSrc
-        }
       }
     },
     mounted () {
@@ -507,6 +500,7 @@
             position: 'middle',
             duration: 1000
           })
+          console.log(response.data.result)
           this.imgSrc = response.data.result
         })
       },

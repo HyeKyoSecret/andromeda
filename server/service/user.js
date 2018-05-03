@@ -10,6 +10,7 @@ const router = express.Router()
 const formidable = require('formidable')
 const path = require('path')
 const fs = require('fs')
+const gm = require('gm').subClass({imageMagick: true})
 const formImg = function (imgPath) {
   if (imgPath) {
     let img = imgPath.split('/andromeda')
@@ -69,10 +70,10 @@ router.get('/user/getMyCreation', (req, res) => {
                   })
                 })
               }
-              if (user.myCreation.story) {   // 存在普通故事节点
+              if (user.myCreation && user.myCreation.story) {   // 存在普通故事节点
                 user.myCreation.story.forEach((story) => {
                   storyList.push({
-                    root: story.root.name,
+                    root: story.root ? story.root.name : '',
                     id: story.id,
                     timeStamp: story.date.getTime(),
                     cover: formImg(story.root.coverImg),
@@ -822,6 +823,7 @@ router.post('/user/uploadHeadImg', function (req, res) {
   const imgPath = path.resolve(__dirname, '../../static/picture/head/')
   const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径
   const proPath = path.join(__dirname, '../../dist/static/picture/head/')    // 生产环境图片路径
+  const thumbPath = path.join(__dirname, '../../static/thumb/head/')
   function copyIt (from, to) {    // 复制文件
     fs.writeFileSync(to, fs.readFileSync(from))
     // fs.createReadStream(src).pipe(fs.createWriteStream(dst))  大文件复制
@@ -835,6 +837,9 @@ router.post('/user/uploadHeadImg', function (req, res) {
   if (!fs.existsSync(proPath)) {
     fs.mkdirSync(proPath)
   }
+  if (!fs.existsSync(thumbPath)) {
+    fs.mkdirSync(thumbPath)
+  }
   form.uploadDir = targetPath
   form.keepExtensions = true    // 保存扩展名
   form.maxFieldsSize = 20 * 1024 * 1024   // 上传文件的最大大小
@@ -845,27 +850,23 @@ router.post('/user/uploadHeadImg', function (req, res) {
     let fileName = files.file.path.split('/')[files.file.path.split('/').length - 1]
     let savePath = path.join(imgPath, fileName)
     let usePath = path.join(proPath, fileName)
+    let thumbSavePath = path.join(thumbPath, fileName)
     User.updateOne({id: fields.id}, {$set: {'headImg': savePath}})
       .exec((err, user) => {
         if (err) {
           res.send({error: true, type: 'DB', message: '发生错误，上传失败'})
         } else {
-          let oldPic = `${targetPath}/${fileName}`
           fs.renameSync(files.file.path, savePath)
-          copyIt(savePath, usePath)     // 拷贝文件
-          if (fs.existsSync(oldPic)) {
-            fs.unlink((oldPic), (err) => {
+          gm(savePath)
+            .thumb(160, 160, thumbSavePath, 100, function (err) {
               if (err) {
-                console.log(err)
-                res.send({error: true, type: 'fs', message: '发生错误'})
+                res.send({error: false, type: 'gm', message: '发生错误'})
               } else {
-                res.send({error: false, message: '上传成功'})
+                copyIt(thumbSavePath, usePath)     // 拷贝文件
+                console.log(formImg(thumbSavePath))
+                res.send({error: false, message: '上传成功', result: formImg(thumbSavePath)})
               }
             })
-          } else {
-            let img = savePath.split('/andromeda/')
-            res.send({error: false, message: '上传成功', result: img[1]})
-          }
         }
       })
   })
@@ -882,6 +883,5 @@ router.get('/user/getHeadImg', (req, res) => {
       res.send({result: headImg})
     }
   })
-  // res.send({result: 'static/img/images/yuner.jpg'})
 })
 module.exports = router

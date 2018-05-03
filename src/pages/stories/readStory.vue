@@ -8,7 +8,7 @@
       {{storyInfo.content}}
     </div>
     <div class="related-info">
-      <!--<div class="anchor"><img src="../../img/icon/anchor.png" /></div>-->
+      <!--<div class="anchor"><thumb src="../../thumb/icon/anchor.png" /></div>-->
       <div class="author-info">
         <div class="like">
           <router-link :to='storyInfo.authorId' tag="span">作者:&nbsp;{{storyInfo.author}}</router-link>
@@ -16,7 +16,7 @@
         </div>
         <div class="time">{{storyInfo.date}}</div>
         <!--<div class="follow-number">-->
-          <!--<span class="tri"><img src="../../img/icon/triangle_downward.png"/></span>-->
+          <!--<span class="tri"><thumb src="../../thumb/icon/triangle_downward.png"/></span>-->
           <!--<span class="number">1563</span>-->
         <!--</div>-->
       </div>

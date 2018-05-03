@@ -6,6 +6,8 @@ const User = require('../db/User')
 const router = express.Router()
 const md5 = require('md5')
 const svgCaptcha = require('svg-captcha')
+const path = require('path')
+const gm = require('gm').subClass({imageMagick: true})
 const formImg = function (imgPath) {
   if (imgPath) {
     let img = imgPath.split('/andromeda')
@@ -302,5 +304,19 @@ router.get('/register/b', function (req, res) {
   } else {
     res.send('no')
   }
+})
+router.get('/register/testGm', function (req, res) {
+  let filePath = path.resolve('__dirname', '../static/picture/head/upload_04d8686d819e61f9ab33a798893ce72a.JPG')
+  let savePath = path.resolve('__dirname', '../static/thumb/images/hua.jpg')
+  console.log(filePath)
+  gm(filePath)
+    .thumb(180, 240, savePath, 80, function (err) {
+      if (err) {
+        console.log(err)
+      } else {
+        console.log('success')
+        res.send('ok')
+      }
+    })
 })
 module.exports = router

@@ -1714,22 +1714,9 @@ router.post('/story/updateCover', function (req, res) {
         if (err) {
           res.send({error: true, type: 'DB', message: '发生错误，上传失败'})
         } else {
-          let oldPic = `${targetPath}/${fileName}`
           fs.renameSync(files.file.path, savePath)
           copyIt(savePath, usePath)     // 拷贝文件
-          if (fs.existsSync(oldPic)) {
-            fs.unlink((oldPic), (err) => {
-              if (err) {
-                console.log(err)
-                res.send({error: true, type: 'fs', message: '发生错误'})
-              } else {
-                res.send({error: false, message: '修改成功', result: formImg(savePath)})
-              }
-            })
-          } else {
-            let img = savePath.split('/andromeda')
-            res.send({error: false, message: '修改成功', result: img[1]})
-          }
+          res.send({error: false, message: '修改成功', result: formImg(savePath)})
         }
       })
   })

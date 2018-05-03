@@ -4,7 +4,7 @@
     <div class="create-new-story" v-if="isUser">
       撰写新的故事
     </div>
-    <div>
+    <div class="my-creation-content">
       <router-link :to="item.path" tag='div' class="one-story" v-for="(item, index) in story" :key="item.name" v-bind:zty="12345">
         <div class="story-information">
           <div class="cover">
@@ -141,6 +141,9 @@
     /*height: 100%;*/
     min-height: 100%;
     background: $bg-gray;
+    .my-creation-content {
+      margin-top: 25px;
+    }
     .create-new-story {
       margin: 10px 25% 20px 25%;
       background-color: $icon-red;

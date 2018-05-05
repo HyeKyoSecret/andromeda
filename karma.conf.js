@@ -1,6 +1,6 @@
 // Karma configuration
-// Generated on Tue Mar 06 2018 16:35:53 GMT+0800 (CST)
-/* eslint-disable */
+// Generated on Tue Mar 13 2018 19:03:41 GMT+0800 (中国标准时间)
+
 module.exports = function(config) {
   config.set({
 
@@ -22,23 +22,21 @@ module.exports = function(config) {
     // list of files / patterns to exclude
     exclude: [
     ],
-
-
+    //
+    // browserify: {
+    //   debug: true
+    // },
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'test/*.js': ['browserify', 'coverage']
+      'test/*.js': [ 'browserify' ]
     },
-
-    browserify: {
-      debug: true
-    },
-
+    plugins: ['karma-mocha',  'karma-opera-launcher', 'karma-browserify' ],
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress', 'coverage'],
+    reporters: ['progress'],
 
 
     // web server port
@@ -66,16 +64,9 @@ module.exports = function(config) {
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
     singleRun: false,
-
+    captureTimeout: 60000,
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity,
-
-
-    coverageReporter: {
-      type: 'html',
-      dir: 'coverage/'
-    }
+    concurrency: 1
   })
 }
-/* eslint-enable */

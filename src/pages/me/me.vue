@@ -374,7 +374,6 @@
         ],
         sex: '',
         tempOperation: [],
-        isUser: false,
         userStatus: '',
         userId: '',
         nickName: '',
@@ -427,7 +426,9 @@
     },
     methods: {
       simulateClick () {
-        this.$refs.input.click()
+        if (this.userStatus === 'isUser') {
+          this.$refs.input.click()
+        }
       },
       setErrorImg () {
         this.imgSrc = require('../../img/images/defaultHeadImg.png')

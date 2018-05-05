@@ -9,8 +9,8 @@
     </div>
     <div class="search-board" v-if="searchBoard">
       <div class="friend-list">
-        <div class="one-friend" v-for="item in searchList">
-          <div class="head"><img/></div>
+        <div class="one-friend" v-for="(item, index) in searchList" @click='goPeoplePage(item.id)'>
+          <div class="head"><img :src="item.headImg" @error="setErrorImg(index, 'search')"/></div>
           <div class="name">{{item.name}}</div>
         </div>
       </div>
@@ -32,8 +32,8 @@
     <!--</div>-->
     <!--</div>-->
     <div class="friend-list" v-show="flVis">
-      <div class="one-friend" v-for='item in friendList' @click="goFriend(item.id)">
-        <div class="head"><img /></div>
+      <div class="one-friend" v-for='(item, index) in friendList' @click='goPeoplePage(item.id)'>
+        <div class="head"><img :src="item.headImg" @error="setErrorImg(index, 'friend')"/></div>
         <div class="name">{{item.name}}</div>
       </div>
     </div>
@@ -63,19 +63,25 @@
         }
       }
       .searchbar {
-        width: 70%;
+        min-width: 70%;
       }
       .delete {
+        position: absolute;
+        right: 50px;
         img {
           height: 17px;
           width: 17px;
         }
       }
       .cancel {
-        margin-left: 8px;
+        position: absolute;
+        right: 10px;
+        margin-left: 10px;
         letter-spacing: 1px;
         font-size: 13px;
         color: $w-gray;
+        display: inline-block;
+        margin-top: -3px;
       }
       input{
         color: #333333;
@@ -210,8 +216,15 @@
       deleteSearch () {
         this.search = ''
       },
-      goFriend (id) {
+      goPeoplePage (id) {
         this.$router.push(`/people/${id}`)
+      },
+      setErrorImg (index, val) {
+        if (val === 'friend') {
+          this.friendList[index].headImg = require('../../img/images/defaultHeadImg.png')
+        } else if (val === 'search') {
+          this.searchList[index].headImg = require('../../img/images/defaultHeadImg.png')
+        }
       }
     }
   }

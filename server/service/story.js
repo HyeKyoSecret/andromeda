@@ -12,20 +12,15 @@ const storyReg = /^S([0-9]){7}$/
 const formidable = require('formidable')
 const path = require('path')
 const fs = require('fs')
-const formImg = function (imgPath) {
-  if (imgPath) {
-    let img = imgPath.split('/andromeda')
-    return img[1]
-  } else {
-    return 'default'
-  }
-}
+const tool = require('../tool')
+const gm = require('gm').subClass({imageMagick: true})
 moment.locale('zh-cn')
 router.post('/story/buildRoot', (req, res) => {
   const form = new formidable.IncomingForm()
-  const imgPath = path.resolve(__dirname, '../../static/picture/cover/')
-  const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径
-  const proPath = path.join(__dirname, '../../dist/static/picture/cover/')    // 生产环境图片路径
+  const imgPath = path.resolve(__dirname, '../picture/cover/')   // 图片保存路径
+  // const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径/
+  const proPath = path.join(__dirname, '../../dist/static/thumb/cover/')    // 生产环境图片路径
+  const thumbPath = path.join(__dirname, '../../static/thumb/cover/')
   function copyIt (from, to) {    // 复制文件
     fs.writeFileSync(to, fs.readFileSync(from))
     // fs.createReadStream(src).pipe(fs.createWriteStream(dst))  大文件复制
@@ -33,13 +28,13 @@ router.post('/story/buildRoot', (req, res) => {
   if (!fs.existsSync(imgPath)) {
     fs.mkdirSync(imgPath)
   }
-  if (!fs.existsSync(targetPath)) {
-    fs.mkdirSync(targetPath)
-  }
   if (!fs.existsSync(proPath)) {
     fs.mkdirSync(proPath)
   }
-  form.uploadDir = targetPath
+  if (!fs.existsSync(thumbPath)) {
+    fs.mkdirSync(thumbPath)
+  }
+  form.uploadDir = imgPath
   form.keepExtensions = true    // 保存扩展名
   form.maxFieldsSize = 20 * 1024 * 1024   // 上传文件的最大大小
   let author = req.session.user || (req.cookies.And && req.cookies.And.user)
@@ -48,9 +43,10 @@ router.post('/story/buildRoot', (req, res) => {
       if (err) {
         console.log(err)
       } else {
-        let fileName = files.file.path.split('/')[files.file.path.split('/').length - 1]
+        let fileName = tool.getFileName(files.file.path)
         let savePath = path.join(imgPath, fileName)
         let usePath = path.join(proPath, fileName)
+        let thumbSavePath = path.join(thumbPath, fileName)
         let rootStory = {
           // name: rootName.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),     // 过滤大于小于美元符号
           name: fields.name,
@@ -99,16 +95,26 @@ router.post('/story/buildRoot', (req, res) => {
                                           res.send({permit: false, message: '服务器忙，请稍后再试'})
                                         }
                                         if (i === rootStory.recommend.length - 1) {
-                                          fs.renameSync(files.file.path, savePath)
-                                          copyIt(savePath, usePath)     // 拷贝文件
-                                          res.send({permit: true, message: '发布成功'})
+                                          gm(savePath)
+                                            .thumb(300, 400, thumbSavePath, 100, function (err) {
+                                              if (err) {
+                                                res.send({permit: false, type: 'gm', message: '发生错误'})
+                                              } else {
+                                                copyIt(thumbSavePath, usePath)     // 拷贝文件
+                                                res.send({permit: true, message: '发布成功'})                                              }
+                                            })
                                         }
                                       })
                                     }
                                   } else {
-                                    fs.renameSync(files.file.path, savePath)
-                                    copyIt(savePath, usePath)     // 拷贝文件
-                                    res.send({permit: true, message: '发布成功'})
+                                    gm(savePath)
+                                      .thumb(300, 400, thumbSavePath, 100, function (err) {
+                                        if (err) {
+                                          res.send({permit: false, type: 'gm', message: '发生错误'})
+                                        } else {
+                                          copyIt(thumbSavePath, usePath)     // 拷贝文件
+                                          res.send({permit: true, message: '发布成功'})                                              }
+                                      })
                                   }
                                 }
                               })
@@ -1358,7 +1364,7 @@ router.get('/story/getDefaultDiscovery', (req, res) => {
               author: sRoot.author ? sRoot.author.nickname : '',
               date: moment(sRoot.date).format('YYYY.MM.DD HH:mm'),
               path: sRoot.id,
-              cover: formImg(sRoot.coverImg)
+              cover: tool.formImg(sRoot.coverImg)
             })
           })
           Story.find({})
@@ -1376,7 +1382,7 @@ router.get('/story/getDefaultDiscovery', (req, res) => {
                     author: sStory.author.nickname,
                     date: moment(sStory.date).format('YYYY.MM.DD HH:mm'),
                     path: sStory.id,
-                    cover: formImg(sStory.root.coverImg)
+                    cover: tool.formImg(sStory.root.coverImg)
                   })
                 })
                 res.send({result: result})
@@ -1682,9 +1688,10 @@ router.get('/story/prepareTraversal', (req, res) => {
 })
 router.post('/story/updateCover', function (req, res) {
   const form = new formidable.IncomingForm()
-  const imgPath = path.resolve(__dirname, '../../static/picture/cover/')
-  const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径
-  const proPath = path.join(__dirname, '../../dist/static/picture/cover/')    // 生产环境图片路径
+  const imgPath = path.resolve(__dirname, '../picture/cover/')   // 图片保存路径
+  // const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径/
+  const proPath = path.join(__dirname, '../../dist/static/thumb/cover/')    // 生产环境图片路径
+  const thumbPath = path.join(__dirname, '../../static/thumb/cover/')
   function copyIt (from, to) {    // 复制文件
     fs.writeFileSync(to, fs.readFileSync(from))
     // fs.createReadStream(src).pipe(fs.createWriteStream(dst))  大文件复制
@@ -1692,31 +1699,39 @@ router.post('/story/updateCover', function (req, res) {
   if (!fs.existsSync(imgPath)) {
     fs.mkdirSync(imgPath)
   }
-  if (!fs.existsSync(targetPath)) {
-    fs.mkdirSync(targetPath)
-  }
   if (!fs.existsSync(proPath)) {
     fs.mkdirSync(proPath)
   }
+  if (!fs.existsSync(thumbPath)) {
+    fs.mkdirSync(thumbPath)
+  }
   console.log(req.session.userId)
-  form.uploadDir = targetPath
+  form.uploadDir = imgPath
   form.keepExtensions = true    // 保存扩展名
   form.maxFieldsSize = 20 * 1024 * 1024   // 上传文件的最大大小
   form.parse(req, function (err, fields, files) {
     if (err) {
       res.send({error: true, type: 'db', message: '发生错误，修改失败'})
     }
-    let fileName = files.file.path.split('/')[files.file.path.split('/').length - 1]
+    let fileName = tool.getFileName(files.file.path)
     let savePath = path.join(imgPath, fileName)
     let usePath = path.join(proPath, fileName)
-    Root.updateOne({name: fields.rootName}, {$set: {'coverImg': savePath}})
+    let thumbSavePath = path.join(thumbPath, fileName)
+    Root.findOneAndUpdate({name: fields.rootName}, {$set: {'coverImg': savePath}})
       .exec((err, root) => {
         if (err) {
           res.send({error: true, type: 'DB', message: '发生错误，上传失败'})
         } else {
-          fs.renameSync(files.file.path, savePath)
-          copyIt(savePath, usePath)     // 拷贝文件
-          res.send({error: false, message: '修改成功', result: formImg(savePath)})
+          gm(savePath)
+            .thumb(300, 400, thumbSavePath, 100, function (err) {
+              if (err) {
+                res.send({error: false, type: 'gm', message: '发生错误'})
+              } else {
+                copyIt(thumbSavePath, usePath)     // 拷贝文件
+                tool.clearFiles(root.coverImg)
+                res.send({error: false, message: '修改成功', result: tool.formImg(savePath)})
+              }
+            })
         }
       })
   })

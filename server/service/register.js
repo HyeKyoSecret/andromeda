@@ -8,14 +8,7 @@ const md5 = require('md5')
 const svgCaptcha = require('svg-captcha')
 const path = require('path')
 const gm = require('gm').subClass({imageMagick: true})
-const formImg = function (imgPath) {
-  if (imgPath) {
-    let img = imgPath.split('/andromeda')
-    return img[1]
-  } else {
-    return 'default'
-  }
-}
+const tool = require('../tool')
 router.post('/register', (req, res) => {
   let username = req.body.username
   let nickname = req.body.nickname
@@ -183,7 +176,7 @@ router.get('/register/checkLogin', (req, res) => {
               user: user.id,
               nickName: user.nickname,
               sign: user.sign,
-              headImg: formImg(user.headImg)
+              headImg: tool.formImg(user.headImg)
             })
           } else {
             res.send({
@@ -210,7 +203,7 @@ router.get('/register/checkLogin', (req, res) => {
             user: result.id,
             nickName: result.nickname,
             sign: result.sign,
-            headImg: formImg(result.headImg)
+            headImg: tool.formImg(result.headImg)
           })
         } else {
           res.send({
@@ -257,7 +250,7 @@ router.get('/register/checkUser', (req, res) => {
             userInfo.nickName = account.nickname
             userInfo.sign = account.sign
             userInfo.userId = account.id
-            userInfo.headImg = formImg(account.headImg)
+            userInfo.headImg = tool.formImg(account.headImg)
             if (account.username === loginUser) {
               res.send({user: userInfo, customer: false}) // 是本人，非访客模式
             } else {

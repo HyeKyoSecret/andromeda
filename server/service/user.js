@@ -10,15 +10,8 @@ const router = express.Router()
 const formidable = require('formidable')
 const path = require('path')
 const fs = require('fs')
+const tool = require('../tool')
 const gm = require('gm').subClass({imageMagick: true})
-const formImg = function (imgPath) {
-  if (imgPath) {
-    let img = imgPath.split('/andromeda')
-    return img[1]
-  } else {
-    return 'default'
-  }
-}
 router.get('/user/getMyCreation', (req, res) => {
   'use strict'
   let user = req.query.user
@@ -59,13 +52,13 @@ router.get('/user/getMyCreation', (req, res) => {
             res.send({permit: false})
           } else {
             if (user) {
-              if (user.myCreation.root) {   // 存在根节点
+              if (user.myCreation && user.myCreation.root) {   // 存在根节点
                 user.myCreation.root.forEach((root) => {
                   rootList.push({
                     root: root.name,
                     timeStamp: root.date.getTime(),
                     data: [root.id],
-                    cover: formImg(root.coverImg),
+                    cover: tool.formImg(root.coverImg),
                     label: 'root'
                   })
                 })
@@ -76,7 +69,7 @@ router.get('/user/getMyCreation', (req, res) => {
                     root: story.root ? story.root.name : '',
                     id: story.id,
                     timeStamp: story.date.getTime(),
-                    cover: formImg(story.root.coverImg),
+                    cover: tool.formImg(story.root.coverImg),
                     label: 'story'
                   })
                 })
@@ -691,6 +684,7 @@ router.get('/user/getFriendList', (req, res) => {
   }
   User.findOne({username: loginUser})
     .populate('friendList.friend')
+    .populate()
     .exec((err, doc) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -700,9 +694,12 @@ router.get('/user/getFriendList', (req, res) => {
             result.push({
               name: friend.friend.nickname,
               id: friend.friend.id,
-              active: false
+              active: false,
+              headImg: tool.formImg(friend.friend.headImg)
             })
           })
+          let hello = ['阿北山', '龙儿', 'h', 'a', 6, '牛', 'd', 'f']
+          console.log(hello.sort())
           res.send({error: false, result: result})
         } else {
           res.send({error: true, type: 'user', message: '发生错误，请重新登录'})
@@ -716,6 +713,7 @@ router.post('/user/searchFriend', (req, res) => {
   let result = []
   User.findOne({id: user})
     .populate('friendList.friend')
+    .sort({'username': 1})
     .exec((err, doc) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -728,7 +726,8 @@ router.post('/user/searchFriend', (req, res) => {
               result.push({
                 name: item.friend.nickname,
                 id: item.friend.id,
-                active: false
+                active: false,
+                headImg: tool.formImg(item.friend.headImg)
               })
             }
           })
@@ -820,9 +819,9 @@ router.get('/user/getSign', (req, res) => { // 获得签名
 })
 router.post('/user/uploadHeadImg', function (req, res) {
   const form = new formidable.IncomingForm()
-  const imgPath = path.resolve(__dirname, '../picture/head/')
-  const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径
-  const proPath = path.join(__dirname, '../../dist/static/picture/head/')    // 生产环境图片路径
+  const imgPath = path.resolve(__dirname, '../picture/head/')   // 图片保存路径
+  // const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径/
+  const proPath = path.join(__dirname, '../../dist/static/thumb/head/')    // 生产环境图片路径
   const thumbPath = path.join(__dirname, '../../static/thumb/head/')
   function copyIt (from, to) {    // 复制文件
     fs.writeFileSync(to, fs.readFileSync(from))
@@ -831,38 +830,37 @@ router.post('/user/uploadHeadImg', function (req, res) {
   if (!fs.existsSync(imgPath)) {
     fs.mkdirSync(imgPath)
   }
-  if (!fs.existsSync(targetPath)) {
-    fs.mkdirSync(targetPath)
-  }
   if (!fs.existsSync(proPath)) {
     fs.mkdirSync(proPath)
   }
   if (!fs.existsSync(thumbPath)) {
     fs.mkdirSync(thumbPath)
   }
-  form.uploadDir = targetPath
+  form.uploadDir = imgPath
   form.keepExtensions = true    // 保存扩展名
   form.maxFieldsSize = 20 * 1024 * 1024   // 上传文件的最大大小
   form.parse(req, function (err, fields, files) {
     if (err) {
       console.log(err)
     }
-    let fileName = files.file.path.split('/')[files.file.path.split('/').length - 1]
+    let fileName = tool.getFileName(files.file.path)
     let savePath = path.join(imgPath, fileName)
     let usePath = path.join(proPath, fileName)
     let thumbSavePath = path.join(thumbPath, fileName)
-    User.updateOne({id: fields.id}, {$set: {'headImg': savePath}})
+    User.findOneAndUpdate
+    ({id: fields.id}, {$set: {'headImg': savePath}})
       .exec((err, user) => {
         if (err) {
           res.send({error: true, type: 'DB', message: '发生错误，上传失败'})
         } else {
-          fs.renameSync(files.file.path, savePath)
+          // fs.renameSync(files.file.path, savePath)
           gm(savePath)
             .thumb(160, 160, thumbSavePath, 100, function (err) {
               if (err) {
                 res.send({error: false, type: 'gm', message: '发生错误'})
               } else {
                 copyIt(thumbSavePath, usePath)     // 拷贝文件
+                tool.clearFiles(user.headImg)
                 res.send({error: false, message: '上传成功'})
               }
             })

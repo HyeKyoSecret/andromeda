@@ -236,21 +236,21 @@
           params: {
             user: this.$route.params.user
           }
-        }).then(response => {
-          if (response.data.user) {
-            if (!response.data.customer) {
-              // 本人
-              Axios.get('/user/getMyCreation', {
-                params: {
-                  user: this.$route.params.user
+        }).then(res => {
+          if (res.data.user) {
+            // 本人
+            Axios.get('/user/getMyCreation', {
+              params: {
+                user: this.$route.params.user
+              }
+            }).then(response => {
+              let arr = response.data.result
+              for (let i = 0; i < arr.length; i++) {
+                if (arr[i].root === this.$route.params.rootName) {
+                  this.temp = arr[i]
                 }
-              }).then(response => {
-                let arr = response.data.result
-                for (let i = 0; i < arr.length; i++) {
-                  if (arr[i].root === this.$route.params.rootName) {
-                    this.temp = arr[i]
-                  }
-                }
+              }
+              if (!res.data.customer) {    // 本人
                 this.imgSrc = this.temp.cover
                 Axios.post('/story/getMyCreationPreview', {
                   data: this.temp
@@ -261,11 +261,11 @@
                     this.writePermit = this.writeAuthorized
                   }
                 })
-              })
-            } else {
-              // 访客
-              alert('访客模式')
-            }
+              } else {
+                // 访客模式
+                this.$router.replace(`/story/${this.temp.data[0]}`)
+              }
+            })
           } else {
             // 用户名不存在或不合法
             this.$emit('error')

@@ -72,7 +72,7 @@
           params: {
             user: this.$route.params.user
           },
-          timeout: 5000
+          timeout: 8000
         }).then((response) => {
           Indicator.close()
           if (response.data.permit) {
@@ -108,6 +108,15 @@
               position: 'middle',
               duration: 1000
             })
+          }
+        })
+        Axios.get('/register/checkUser', {
+          params: {
+            user: this.$route.params.user
+          }
+        }).then(response => {
+          if (response.data.customer) {
+            this.title = response.data.sex + '的创作'
           }
         })
       },

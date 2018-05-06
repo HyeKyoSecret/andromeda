@@ -7,9 +7,13 @@
       <span class="title">
           选择好友推荐
       </span>
-        <span class="finish" :class="{extend: recommendList.length}" @click="buildStory">
+        <span class="finish" :class="{extend: recommendList.length}" @click="buildStory" v-if="buildPermit">
         发布
-          <label v-if="recommendList.length">({{recommendList.length}}/10)</label>
+        <label v-if="recommendList.length">({{recommendList.length}}/10)</label>
+      </span>
+      <span class="fake finish" :class="{extend: recommendList.length}" v-else>
+        发布
+        <label v-if="recommendList.length">({{recommendList.length}}/10)</label>
       </span>
     </div>
     <div class="search">
@@ -24,7 +28,7 @@
           <div class="icon">
             <img src="../../img/icon/greenbingo_unselected.png" v-if="!item.active"/>
             <img src="../../img/icon/greenbingo.png" v-else/></div>
-          <div class="head"><img src="" /></div>
+          <div class="head"><img :src="item.headImg" @error="setErrorImg(index, 'search')"/></div>
           <div class="name">{{item.name}}</div>
         </div>
       </div>
@@ -50,7 +54,7 @@
         <div class="icon">
           <img src="../../img/icon/greenbingo_unselected.png" v-if="!item.active"/>
           <img src="../../img/icon/greenbingo.png" v-else/></div>
-        <div class="head"><img /></div>
+        <div class="head"><img :src="item.headImg" @error="setErrorImg(index, 'friend')"/></div>
         <div class="name">{{item.name}}</div>
       </div>
     </div>
@@ -60,7 +64,7 @@
         <div class="icon">
           <img src="../../img/icon/greenbingo.png" />
         </div>
-        <div class="head"><img/></div>
+        <div class="head"><img :src="item.headImg" @error="setErrorImg(index, 'recommend')"/></div>
         <div class="name">{{item.name}}</div>
       </div>
     </div>
@@ -231,6 +235,7 @@
         storyRecommendVis: false
       }
     },
+    props: ['buildPermit'],
     created: function () {
       this.getData()
     },
@@ -240,6 +245,15 @@
       }
     },
     methods: {
+      setErrorImg (index, val) {
+        if (val === 'friend') {
+          this.friendList[index].headImg = require('../../img/images/defaultHeadImg.png')
+        } else if (val === 'search') {
+          this.searchList[index].headImg = require('../../img/images/defaultHeadImg.png')
+        } else if (val === 'recommend') {
+          this.recommendList[index].headImg = require('../../img/images/defaultHeadImg.png')
+        }
+      },
       openRecommend () {
         this.storyRecommendVis = true
       },

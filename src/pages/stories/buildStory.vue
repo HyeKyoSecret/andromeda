@@ -84,7 +84,12 @@
       </div>
     </div>
     <div class="fourth-step" v-show="fourthStep">
-      <story-recommend ref="recommend" v-on:build="buildRoot" v-on:back="storyRoute(3)"></story-recommend>
+      <story-recommend ref="recommend" v-on:build="buildRoot" v-on:back="storyRoute(3)" :buildPermit="buildPermit"></story-recommend>
+    </div>
+    <div class="lalala">
+      <mt-progress :value="percent" :bar-height="10">
+        <div slot="end">{{Math.ceil(percent)}}%</div>
+      </mt-progress>
     </div>
   </div>
 </template>
@@ -92,6 +97,9 @@
   @import "../../scss/config";
   @import "../../scss/style.css";
   @import "../../scss/cropper.css";
+    .lalala {
+      margin-top: 80px;
+    }
     .first-step {
       height: 100%;
       width: 100%;
@@ -354,7 +362,7 @@
   import Axios from 'axios'
   import Cropper from 'cropperjs'
   import Debounce from '../../js/debounce.js'
-  import { MessageBox, Toast } from 'mint-ui'
+  import { MessageBox, Toast, Indicator } from 'mint-ui'
   import StoryRecommend from '../../components/story/buildStoryRecommend.vue'
   export default {
     components: {
@@ -381,7 +389,9 @@
         file: '',          // 封面图片文件
         fileName: '',
         fileExt: '',      // 封面图片后缀名
-        coverErrorMessage: ''
+        coverErrorMessage: '',
+        buildPermit: true,
+        percent: 0
       }
     },
     computed: {
@@ -580,10 +590,19 @@
         })
       }, 500),
       buildRoot (recommend) {
+        Indicator.open('上传故事中…')
+        this.buildPermit = false
         this.buildCheck = false
+        let self = this
         let config = {
           headers: {
             'Content-Type': 'multipart/form-data'
+          },
+          timeout: 250000,
+          onUploadProgress: function (progressEvent) {
+            self.$nextTick(() => {
+              self.percent = (progressEvent.loaded / progressEvent.total) * 100
+            })
           }
         }
         let formData = new FormData()
@@ -593,6 +612,7 @@
         formData.append('recommend', recommend)
         formData.append('writePermit', this.writePermit)
         Axios.post('/story/buildRoot', formData, config).then((response) => {
+          Indicator.close()
           if (response.data.permit === true) {
             Toast({
               message: response.data.message,
@@ -609,10 +629,21 @@
               duration: 1000
             })
           }
+          this.buildPermit = true
+        }).catch(error => {
+          Indicator.close()
+          this.buildPermit = true
+          if (error) {
+            Toast({
+              message: '上传超时，请稍后再试',
+              position: 'middle',
+              duration: 1000
+            })
+          }
         })
         setTimeout(function () {      // 超时处理
           this.buildCheck = true
-        }.bind(this), 4000)
+        }.bind(this), 5000)
       },
       leaveBuild () {
         if (this.rootName || this.rootContent) {

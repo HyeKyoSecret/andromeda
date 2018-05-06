@@ -847,8 +847,7 @@ router.post('/user/uploadHeadImg', function (req, res) {
     let savePath = path.join(imgPath, fileName)
     let usePath = path.join(proPath, fileName)
     let thumbSavePath = path.join(thumbPath, fileName)
-    User.findOneAndUpdate
-    ({id: fields.id}, {$set: {'headImg': savePath}})
+    User.findOneAndUpdate({id: fields.id}, {$set: {'headImg': savePath}})
       .exec((err, user) => {
         if (err) {
           res.send({error: true, type: 'DB', message: '发生错误，上传失败'})

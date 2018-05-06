@@ -5,7 +5,7 @@
       撰写新的故事
     </div>
     <div class="my-creation-content">
-      <router-link :to="item.path" tag='div' class="one-story" v-for="(item, index) in story" :key="item.name" v-bind:zty="12345">
+      <router-link :to="item.path" tag='div' class="one-story" v-for="(item, index) in story" :key="item.name">
         <div class="story-information">
           <div class="cover">
             <div><img :src="item.cover" @error="setErrorImg(index)"/></div>

@@ -296,7 +296,7 @@
 <script>
   import FootMenu from '../../components/foot-menu.vue'
   import notice from '../../components/notice/notice.vue'
-  import { Toast } from 'mint-ui'
+  import { Toast, Indicator } from 'mint-ui'
   import Axios from 'axios'
   import Cropper from 'cropperjs'
   export default {
@@ -489,18 +489,30 @@
         let config = {
           headers: {
             'Content-Type': 'multipart/form-data'
-          }
+          },
+          timeout: 15000 // 最大上传时间
         }
         let formData = new FormData()
         formData.append('file', file, this.fileName)
         formData.append('id', this.userId)
+        Indicator.open('头像上传中...')
         Axios.post('/user/uploadHeadImg', formData, config).then(response => {
+          Indicator.close()
           Toast({
             message: response.data.message,
             position: 'middle',
             duration: 1000
           })
           this.checkUser()
+        }).catch(error => {
+          Indicator.close()
+          if (error) {
+            Toast({
+              message: '请求超时，请检查网络环境',
+              position: 'middle',
+              duration: 1000
+            })
+          }
         })
       },
       checkUser () {

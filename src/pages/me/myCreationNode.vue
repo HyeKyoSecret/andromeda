@@ -61,7 +61,7 @@
   import Cropper from 'cropperjs'
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
-  import { Toast, MessageBox } from 'mint-ui'
+  import { Toast, MessageBox, Indicator } from 'mint-ui'
   export default {
     components: {
       notice,
@@ -209,23 +209,34 @@
         this.panel = false
       },
       postImg () {
+        Indicator.open('上传中...')
         let config = {
           headers: {
             'Content-Type': 'multipart/form-data'
-          }
+          },
+          timeout: 15000
         }
         let formData = new FormData()
         formData.append('file', this.file, this.fileName)
         formData.append('rootName', this.temp.root)
         formData.append('id', this.$route.params.user)
         Axios.post('/story/updateCover', formData, config).then(response => {
+          Indicator.close()
           Toast({
             message: response.data.message,
             position: 'middle',
             duration: 1000
           })
           this.imgSrc = response.data.result
-          console.log(this.imgSrc)
+        }).catch(error => {
+          Indicator.close()
+          if (error) {
+            Toast({
+              message: '请求超时，请检查网络环境',
+              position: 'middle',
+              duration: 1000
+            })
+          }
         })
       },
       setErrorImg: function () {

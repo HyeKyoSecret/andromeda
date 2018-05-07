@@ -98,9 +98,6 @@
   @import "../../scss/config";
   @import "../../scss/style.css";
   @import "../../scss/cropper.css";
-    .lalala {
-      margin-top: 80px;
-    }
     .first-step {
       height: 100%;
       width: 100%;

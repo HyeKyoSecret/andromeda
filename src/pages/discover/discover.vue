@@ -71,7 +71,7 @@
       getData () {
         Axios.get('/story/getDefaultDiscovery', {
           params: {
-            storyLength: parseInt(this.storyList.length / 5)
+            storyLength: parseInt(this.storyList.length / 8)
           }
         })
           .then(response => {

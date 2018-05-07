@@ -1354,7 +1354,7 @@ router.get('/story/getStack', (req, res) => {
 router.get('/story/getDefaultDiscovery', (req, res) => {
   'use strict'
   let result = []
-  let existLength = req.query.storyLength * 5
+  let existLength = req.query.storyLength * 8
   Root.find({})
     .populate({
       path: 'author'

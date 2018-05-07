@@ -277,11 +277,13 @@
               }
             }).then(response => {
               let arr = response.data.result
+              console.log('arr' + arr)
               for (let i = 0; i < arr.length; i++) {
                 if (arr[i].root === this.$route.params.rootName) {
                   this.temp = arr[i]
                 }
               }
+              console.log('temp' + this.temp)
               if (!res.data.customer) {    // 本人
                 this.imgSrc = this.temp.cover
                 Axios.post('/story/getMyCreationPreview', {

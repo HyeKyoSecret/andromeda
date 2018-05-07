@@ -17,7 +17,10 @@
         </div>
       </div>
     </div>
-    <div>
+    <div v-infinite-scroll="getData"
+         infinite-scroll-disabled= false
+         infinite-scroll-distance="10"
+         infinite-scroll-immediate-check= true>
       <router-link tag="div" v-for="(item, index) in storyList" :to="item.path" :key='item.path' class="one-recommendation" >
         <div class="story-information">
           <div class="cover">
@@ -66,7 +69,11 @@
     },
     methods: {
       getData () {
-        Axios.get('/story/getDefaultDiscovery')
+        Axios.get('/story/getDefaultDiscovery', {
+          params: {
+            storyLength: parseInt(this.storyList.length / 5)
+          }
+        })
           .then(response => {
             if (response.data.error) {
               Toast({
@@ -75,16 +82,21 @@
                 duration: 1000
               })
             } else {
-              response.data.result.forEach((o) => {
-                this.storyList.push({
-                  storyName: o.storyName,
-                  content: o.content,
-                  author: o.author,
-                  date: o.date,
-                  path: `/story/${o.path}`,
-                  cover: o.cover
-                })
+              let existStory = this.storyList.some(function (story) {
+                return story.path && story.path.split('/story/')[1].toString() === response.data.result[0].path.toString()
               })
+              if (!existStory) {
+                response.data.result.forEach((o) => {
+                  this.storyList.push({
+                    storyName: o.storyName,
+                    content: o.content,
+                    author: o.author,
+                    date: o.date,
+                    path: `/story/${o.path}`,
+                    cover: o.cover
+                  })
+                })
+              }
             }
           })
       },

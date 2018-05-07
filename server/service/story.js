@@ -43,7 +43,12 @@ router.post('/story/buildRoot', (req, res) => {
       if (err) {
         console.log(err)
       } else {
-        let fileName = tool.getFileName(files.file.path)
+        let fileName
+        if (files.file) {
+          fileName = tool.getFileName(files.file.path)
+        } else {
+          fileName = ''
+        }
         let savePath = path.join(imgPath, fileName)
         let usePath = path.join(proPath, fileName)
         let thumbSavePath = path.join(thumbPath, fileName)
@@ -1349,8 +1354,13 @@ router.get('/story/getStack', (req, res) => {
 router.get('/story/getDefaultDiscovery', (req, res) => {
   'use strict'
   let result = []
+  let existLength = req.query.storyLength * 5
   Root.find({})
-    .populate('author')
+    .populate({
+      path: 'author'
+    })
+    .limit(5)
+    .skip(existLength)
     .exec((err, root) => {
       if (err) {
         res.send({error: true, type: 'database', message: '发生错误请稍后再试'})
@@ -1367,29 +1377,7 @@ router.get('/story/getDefaultDiscovery', (req, res) => {
               cover: tool.formImg(sRoot.coverImg)
             })
           })
-          Story.find({})
-            .populate('root')
-            .populate('author')
-            .exec((error, story) => {
-              if (error) {
-                res.send({error: true, type: 'database', message: '发生错误请稍后再试'})
-              }
-              if (story) {
-                story.forEach((sStory) => {
-                  result.push({
-                    storyName: sStory.root.name,
-                    content: sStory.content,
-                    author: sStory.author.nickname,
-                    date: moment(sStory.date).format('YYYY.MM.DD HH:mm'),
-                    path: sStory.id,
-                    cover: tool.formImg(sStory.root.coverImg)
-                  })
-                })
-                res.send({result: result})
-              } else {
-                res.send({result: result})
-              }
-            })
+          res.send({result: result})
         } else {
           res.send({result: result})
         }
@@ -1705,7 +1693,6 @@ router.post('/story/updateCover', function (req, res) {
   if (!fs.existsSync(thumbPath)) {
     fs.mkdirSync(thumbPath)
   }
-  console.log(req.session.userId)
   form.uploadDir = imgPath
   form.keepExtensions = true    // 保存扩展名
   form.maxFieldsSize = 20 * 1024 * 1024   // 上传文件的最大大小
@@ -1713,7 +1700,12 @@ router.post('/story/updateCover', function (req, res) {
     if (err) {
       res.send({error: true, type: 'db', message: '发生错误，修改失败'})
     }
-    let fileName = tool.getFileName(files.file.path)
+    let fileName
+    if (files.file) {
+      fileName = tool.getFileName(files.file.path)
+    } else {
+      fileName = ''
+    }
     let savePath = path.join(imgPath, fileName)
     let usePath = path.join(proPath, fileName)
     let thumbSavePath = path.join(thumbPath, fileName)

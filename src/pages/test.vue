@@ -1,22 +1,30 @@
 <template>
-  <div>ceshi333</div>
+  <div class="aa">
+    <div class="c">1</div>
+    <div class="c">2</div>
+    <div class="c">3</div>
+    <div class="c">4</div>
+    <div class="c">5</div>
+    <div class="c">6</div>
+  </div>
 </template>
 <script>
-  import Axios from 'axios'
   export default {
-    data () {
-      return {}
-    },
-    created: function () {
-      this.go()
-    },
-    methods: {
-      go () {
-        Axios.get('/register/testGm')
-          .then(response => {
-            console.log(response.data)
-          })
+  }
+</script>
+<style lang="scss" scoped>
+  .aa {
+    .c {
+      width: 80px;
+      height: 80px;
+      background: red;
+      border: 1px solid white;
+      &:last-child:after {
+        content: '';
+        display: block;
+        height: 100px;
+        background: black;
       }
     }
   }
-</script>
+</style>

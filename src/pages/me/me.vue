@@ -1,6 +1,10 @@
 <template>
   <div class="me">
     <notice v-bind:title="title"></notice>
+    <!--进度条-->
+    <mt-progress :value="percent" :bar-height="6" v-if="percentShow">
+      <!--<div slot="end">{{Math.ceil(percent)}}%</div>-->
+    </mt-progress>
     <!--头像裁剪遮罩-->
     <div class="container" v-show="panel">
       <div>
@@ -46,8 +50,8 @@
         </div>
       </div>
       <router-link to="/login" tag="div" class="fake-user-main" v-else>
-        <p>登录仙女座，</p>
-        <p>链接你与Ta们的故事</p>
+        <img src="../../img/images/logo.png" alt="">
+        <p>登录仙女座，链接你与Ta们的故事</p>
       </router-link>
         <div class="user-operation">
           <router-link :to='item.path' tag='div' class="line" v-for='item in operation' :key="item.name">
@@ -178,16 +182,13 @@
         padding: 11px 0 11px 0;
         flex-wrap: nowrap;
         flex-direction: column;
+        img {
+          display: block;
+          width: 60px;
+        }
         p {
-          text-align: left;
-          margin: 10px 0 0 10px;
-          font-size: 18px;
-          &:first-child {
-            margin-left: -35%;
-          }
-          &:last-child {
-            margin-left: 35%
-          }
+          margin-top: 10px;
+          font-size: 16px;
         }
       }
       .user-operation {
@@ -297,6 +298,7 @@
   import FootMenu from '../../components/foot-menu.vue'
   import notice from '../../components/notice/notice.vue'
   import { Toast, Indicator } from 'mint-ui'
+  import lrz from 'lrz'
   import Axios from 'axios'
   import Cropper from 'cropperjs'
   export default {
@@ -382,7 +384,9 @@
         sign: '',
         fpath: '',
         fileName: '', // 文件名
-        fileExt: ''  // 文件后缀名
+        fileExt: '',  // 文件后缀名
+        percentShow: false,
+        percent: 0
       }
     },
     watch: {
@@ -451,12 +455,17 @@
         if (!files.length) return
         this.panel = true
         this.picValue = files[0]
-        this.url = this.getObjectURL(this.picValue)
+        let self = this
         // 每次替换图片要重新得到新的url
-        if (this.cropper) {
-          this.cropper.replace(this.url)
-        }
-        this.panel = true
+        lrz(this.picValue, {width: 900, quality: 0.75}) // 压缩图片
+          .then(function (rst) {
+            self.url = rst.base64
+            // 每次替换图片要重新得到新的url
+            if (self.cropper) {
+              self.cropper.replace(self.url)
+            }
+            self.panel = true
+          })
       },
       changeToFile (dataurl) {
         let arr = dataurl.split(',')
@@ -485,12 +494,19 @@
         this.panel = false
       },
       postImg () {
+        this.percentShow = true
         let file = this.changeToFile(this.headerImage)
+        let self = this
         let config = {
           headers: {
             'Content-Type': 'multipart/form-data'
           },
-          timeout: 15000 // 最大上传时间
+          timeout: 20000, // 最大上传时间
+          onUploadProgress: function (progressEvent) {
+            self.$nextTick(() => {
+              self.percent = (progressEvent.loaded / progressEvent.total) * 100
+            })
+          }
         }
         let formData = new FormData()
         formData.append('file', file, this.fileName)
@@ -498,6 +514,8 @@
         Indicator.open('头像上传中...')
         Axios.post('/user/uploadHeadImg', formData, config).then(response => {
           Indicator.close()
+          this.percentShow = false
+          this.percent = 0
           Toast({
             message: response.data.message,
             position: 'middle',
@@ -512,6 +530,8 @@
               position: 'middle',
               duration: 1000
             })
+            this.percentShow = false
+            this.percent = 0
           }
         })
       },
@@ -547,7 +567,7 @@
                 Toast({
                   message: '发生错误',
                   position: 'middle',
-                  duration: 700
+                  duration: 1000
                 })
               }
             })

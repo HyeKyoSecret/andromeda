@@ -843,7 +843,12 @@ router.post('/user/uploadHeadImg', function (req, res) {
     if (err) {
       console.log(err)
     }
-    let fileName = tool.getFileName(files.file.path)
+    let fileName
+    if (files.file) {
+      fileName = tool.getFileName(files.file.path)
+    } else {
+      fileName = ''
+    }
     let savePath = path.join(imgPath, fileName)
     let usePath = path.join(proPath, fileName)
     let thumbSavePath = path.join(thumbPath, fileName)

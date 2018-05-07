@@ -1,43 +1,46 @@
 <template>
   <div class="my-creation">
     <notice v-bind:title="title"></notice>
-    <div class="create-new-story" v-if="isUser">
-      撰写新的故事
+    <div class="button-bar">
+      <div class="button">
+        <div ><span class="root">我发起的</span></div>
+        <div ><span class="story">我参与的</span></div>
+      </div>
     </div>
-    <div class="my-creation-content">
-      <router-link :to="item.path" tag='div' class="one-story" v-for="(item, index) in story" :key="item.name">
-        <div class="story-information">
-          <div class="cover">
-            <div><img :src="item.cover" @error="setErrorImg(index)"/></div>
-            <div class="story-quantity">
-              <span><img src="../../img/icon/graybook.png" /></span>
-              <span class="number">4399</span>
+      <div class="my-creation-content">
+        <router-link :to="item.path" tag='div' class="one-story" v-for="(item, index) in story" :key="item.name">
+          <div class="story-information">
+            <div class="cover">
+              <div><img :src="item.cover" @error="setErrorImg(index)"/></div>
+              <div class="story-quantity">
+                <span><img src="../../img/icon/graybook.png" /></span>
+                <span class="number">4399</span>
+              </div>
+              <div class="story-quantity">
+                <span><img src="../../img/icon/gray_flag.png" /></span>
+                <span class="number">14392</span>
+              </div>
             </div>
-            <div class="story-quantity">
-              <span><img src="../../img/icon/gray_flag.png" /></span>
-              <span class="number">14392</span>
+            <div class="right-part">
+              <div class="story-name">
+                <span class="name">{{item.name}}</span>
+                <span class="owner" v-if="item.isRoot">题主</span>
+              </div>
+              <div class="info-quantity">
+                <span><img src="../../img/icon/gray_pen.png" /></span>
+                <span>{{item.num}}篇</span>
+              </div>
+              <div class="info-quantity">
+                <span><img src="../../img/icon/gray_thumb.png" /></span>
+                <span>122次</span>
+              </div>
+              <div class="last-write-time">
+                最后创作时间：{{item.latestDate}}
+              </div>
             </div>
           </div>
-          <div class="right-part">
-            <div class="story-name">
-              <span class="name">{{item.name}}</span>
-              <span class="owner" v-if="item.isRoot">题主</span>
-            </div>
-            <div class="info-quantity">
-              <span><img src="../../img/icon/gray_pen.png" /></span>
-              <span>{{item.num}}篇</span>
-            </div>
-            <div class="info-quantity">
-              <span><img src="../../img/icon/gray_thumb.png" /></span>
-              <span>122次</span>
-            </div>
-            <div class="last-write-time">
-              最后创作时间：{{item.latestDate}}
-            </div>
-          </div>
-        </div>
-      </router-link>
-    </div>
+        </router-link>
+      </div>
     <foot-menu></foot-menu>
   </div>
 </template>
@@ -150,18 +153,51 @@
     /*height: 100%;*/
     min-height: 100%;
     background: $bg-gray;
+    .button-bar {
+      width: 100%;
+      background: white;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .button {
+        width: 90%;
+        height: 26px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .root.router-link-active {
+          border: 2px solid $dark-red;
+          line-height: 22px;
+        }
+        .story.router-link-active {
+          border: 2px solid $dark-blue;
+          line-height: 22px;
+        }
+        div {
+          flex: 1;
+          text-align: center;
+          line-height: 26px;
+          span {
+            display: inline-block;
+            width: 80px;
+            height: 26px;
+            color: white;
+            border-radius: 5px;
+            box-sizing: border-box;
+          }
+          .root{
+            background: $icon-red;
+          }
+          .story {
+            background: $icon-blue;
+          }
+        }
+      }
+    }
     .my-creation-content {
       margin-top: 25px;
-    }
-    .create-new-story {
-      margin: 10px 25% 20px 25%;
-      background-color: $icon-red;
-      height: 30px;
-      color: white;
-      text-align: center;
-      line-height:30px;
-      border-radius: 5px;
-      font-size:16px;
     }
     .one-story {
       height: 140px;

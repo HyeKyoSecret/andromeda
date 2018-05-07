@@ -1,6 +1,10 @@
 <template>
   <div class="my-creation-node">
     <notice v-bind:title="$route.params.rootName"></notice>
+    <!--进度条-->
+    <mt-progress :value="percent" :bar-height="8" v-if="percentShow">
+      <!--<div slot="end">{{Math.ceil(percent)}}%</div>-->
+    </mt-progress>
     <div class="container" v-show="panel">
       <div>
         <img id="cover" class="image-item" :src="url" alt="Picture">
@@ -12,16 +16,16 @@
       <input type="file" ref="input" accept="image" @change="change">
     </label>
     <div v-if="result.root">
-      <transition
-        name="custom-classes-transition"
-        leave-active-class="animated bounceOutUp">
-      <div class="open-authorized" v-if="!writeAuthorized">
-        <div class="line">
-          <div class="name">开放自由续写</div>
-          <mt-switch v-model="writePermit" class="switch"></mt-switch>
-        </div>
-      </div>
-      </transition>
+      <!--<transition-->
+        <!--name="custom-classes-transition"-->
+        <!--leave-active-class="animated bounceOutUp">-->
+      <!--<div class="open-authorized" v-if="!writeAuthorized">-->
+        <!--<div class="line">-->
+          <!--<div class="name">开放自由续写</div>-->
+          <!--<mt-switch v-model="writePermit" class="switch"></mt-switch>-->
+        <!--</div>-->
+      <!--</div>-->
+      <!--</transition>-->
       <div class="one-node" @click="goStory(result.root.id)">
         <div class="story-information">
           <div class="cover">
@@ -43,7 +47,7 @@
         </div>
       </div>
     </div>
-    <div v-if="result.story">
+    <div class='preview-content' v-if="result.story">
       <div class="story-preview"  v-for="(item, index) in result.story" :key="item.id" @click="goStory(item.id)">
         <div class="content">{{item.content}}</div>
         <div class="info">
@@ -61,7 +65,8 @@
   import Cropper from 'cropperjs'
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
-  import { Toast, MessageBox, Indicator } from 'mint-ui'
+  import lrz from 'lrz'
+  import { Toast, Indicator } from 'mint-ui'
   export default {
     components: {
       notice,
@@ -88,32 +93,34 @@
         file: '',          // 封面图片文件
         fileName: '',
         fileExt: '',      // 封面图片后缀名
-        coverErrorMessage: ''
+        coverErrorMessage: '',
+        percent: 0,
+        percentShow: false
       }
     },
     watch: {
-      writePermit: function (curVal) {
-        if (curVal !== false) {
-          MessageBox.confirm('开放自由续写后将无法再关闭，确认开放吗?').then(action => {
-            Axios.post('/story/changeWritePermit', {
-              rootName: this.result.root.name,
-              writePermit: curVal
-            }).then((response) => {
-              if (response.data === 'error') {
-                Toast({
-                  message: '网络错误，请稍后再试',
-                  position: 'middle',
-                  duration: 1000
-                })
-              } else {
-                this.writeAuthorized = true
-              }
-            })
-          }).catch(action => {
-            this.writePermit = false
-          })
-        }
-      }
+      // writePermit: function (curVal) {
+      //   if (curVal !== false) {
+      //     MessageBox.confirm('开放自由续写后将无法再关闭，确认开放吗?').then(action => {
+      //       Axios.post('/story/changeWritePermit', {
+      //         rootName: this.result.root.name,
+      //         writePermit: curVal
+      //       }).then((response) => {
+      //         if (response.data === 'error') {
+      //           Toast({
+      //             message: '网络错误，请稍后再试',
+      //             position: 'middle',
+      //             duration: 1000
+      //           })
+      //         } else {
+      //           this.writeAuthorized = true
+      //         }
+      //       })
+      //     }).catch(action => {
+      //       this.writePermit = false
+      //     })
+      //   }
+      // }
     },
     created: function () {
       this.checkUser()
@@ -158,12 +165,16 @@
         if (!files.length) return
         this.panel = true
         this.picValue = files[0]
-        this.url = this.getObjectURL(this.picValue)
-        // 每次替换图片要重新得到新的url
-        if (this.cropper) {
-          this.cropper.replace(this.url)
-        }
-        this.panel = true
+        let self = this
+        lrz(this.picValue, {width: 900, quality: 0.70}) // 压缩图片
+          .then(function (rst) {
+            self.url = rst.base64
+            // 每次替换图片要重新得到新的url
+            if (self.cropper) {
+              self.cropper.replace(self.url)
+            }
+            self.panel = true
+          })
       },
       changeToFile (dataurl) {
         let arr = dataurl.split(',')
@@ -209,12 +220,19 @@
         this.panel = false
       },
       postImg () {
+        this.percentShow = true
         Indicator.open('上传中...')
+        let self = this
         let config = {
           headers: {
             'Content-Type': 'multipart/form-data'
           },
-          timeout: 15000
+          timeout: 20000,
+          onUploadProgress: function (progressEvent) {
+            self.$nextTick(() => {
+              self.percent = (progressEvent.loaded / progressEvent.total) * 100
+            })
+          }
         }
         let formData = new FormData()
         formData.append('file', this.file, this.fileName)
@@ -228,6 +246,7 @@
             duration: 1000
           })
           this.imgSrc = response.data.result
+          this.percentShow = false
         }).catch(error => {
           Indicator.close()
           if (error) {
@@ -236,6 +255,8 @@
               position: 'middle',
               duration: 1000
             })
+            this.percent = 0
+            this.percentShow = false
           }
         })
       },
@@ -415,47 +436,51 @@
         }
       }
     }
-    .story-preview {
-      margin-top: 10px;
-      width: 100%;
-      background: white;
-      &:last-child:after {
-        content: '';
-        display: block;
-        height: 100px;
+    .preview-content {
+      .story-preview {
+        margin-top: 10px;
         width: 100%;
-      }
-      .content {
-        width: 95%;
-        margin: 0 auto;
-        padding-top: 15px;
-        min-height: 28px;
-        display: -webkit-box;
-        display: -moz-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        -moz-box-orient: vertical;
-        -moz-line-clamp: 2;
-        overflow: hidden;
-        font-size: 14px;
-        color: $font-dark;
-      }
-      .info {
-        height: 30px;
-        line-height: 30px;
-        margin-top: 15px;
-        border-top: 1px solid $bg-gray;
-        text-align: right;
-        font-size: 14px;
-        color: $font-gray;
-        img {
-          width: 14px;
+        background: white;
+        &:last-child:after {
+          content: '';
+          display: block;
+          height: 100px;
+          width: 100%;
+          background: $bg-gray;
         }
-        .date {
-          margin-left: 15px;
-          margin-right: 15px;
+        .content {
+          width: 95%;
+          margin: 0 auto;
+          padding-top: 15px;
+          min-height: 28px;
+          display: -webkit-box;
+          display: -moz-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          -moz-box-orient: vertical;
+          -moz-line-clamp: 2;
+          overflow: hidden;
+          font-size: 14px;
+          color: $font-dark;
+        }
+        .info {
+          height: 30px;
+          line-height: 30px;
+          margin-top: 15px;
+          border-top: 1px solid $bg-gray;
+          text-align: right;
+          font-size: 14px;
+          color: $font-gray;
+          img {
+            width: 14px;
+          }
+          .date {
+            margin-left: 15px;
+            margin-right: 15px;
+          }
         }
       }
     }
+
   }
 </style>

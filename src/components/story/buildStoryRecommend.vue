@@ -1,7 +1,10 @@
 <template>
   <div class="build-story-recommend" v-if="storyRecommendVis">
     <div class="notice">
-      <span class="cancel" :class="{extend: recommendList.length}" @click="back">
+      <span class="cancel" :class="{extend: recommendList.length}" @click="back" v-if="buildPermit">
+        上一步
+      </span>
+      <span class="cancel fake" :class="{extend: recommendList.length}" v-else>
         上一步
       </span>
       <span class="title">
@@ -22,6 +25,8 @@
       <span class="delete" v-if="deleteBtn" @click="deleteSearch"><img src="../../img/icon/delete.png"></span>
       <span class="cancel" v-if="cancelBtn" @click="cancelSearch">取消</span>
     </div>
+    <!--进度条-->
+    <slot v-if="!buildPermit"></slot>
     <div class="search-board" v-if="searchBoard">
       <div class="friend-list">
         <div class="one-friend" v-for="(item, index) in searchList" @click="addSearchFriend(index)">
@@ -91,6 +96,11 @@
         font-size: 14px;
       }
       .cancel {
+        margin-left: 5px;
+        flex: 1.6;
+      }
+      .cancel.fake{
+        color: $font-color;
         margin-left: 5px;
         flex: 1.6;
       }

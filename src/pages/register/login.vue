@@ -9,8 +9,9 @@
       </span>
     </div>
     <div class="logo-show">
-      <div class="logo"></div>
-      <div class="logo-words"></div>
+      <div class="logo">
+        <img src="../../img/images/logo.png" alt="">
+      </div>
     </div>
     <div class="login-input">
       <div>
@@ -179,6 +180,11 @@
     .logo-show{
       width: 100%;
       height: 130px;
+      text-align: center;
+      img {
+        margin-top: 30px;
+        width: 100px;
+      }
     }
     .login-input {
       width: 80%;

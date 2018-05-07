@@ -37,7 +37,7 @@
       </span>
       </div>
       <div class="story-name">
-        塞尔达传说
+        {{rootName}}
       </div>
       <div class="container" v-show="panel">
         <div>
@@ -84,12 +84,13 @@
       </div>
     </div>
     <div class="fourth-step" v-show="fourthStep">
-      <story-recommend ref="recommend" v-on:build="buildRoot" v-on:back="storyRoute(3)" :buildPermit="buildPermit"></story-recommend>
+      <story-recommend ref="recommend" v-on:build="buildRoot" v-on:back="storyRoute(3)" :buildPermit="buildPermit">
+        <mt-progress :value="percent" :bar-height="6">
+          <!--<div slot="end">{{Math.ceil(percent)}}%</div>-->
+        </mt-progress>
+      </story-recommend>
     </div>
     <div class="lalala">
-      <mt-progress :value="percent" :bar-height="10">
-        <div slot="end">{{Math.ceil(percent)}}%</div>
-      </mt-progress>
     </div>
   </div>
 </template>
@@ -360,6 +361,7 @@
 </style>
 <script>
   import Axios from 'axios'
+  import lrz from 'lrz'
   import Cropper from 'cropperjs'
   import Debounce from '../../js/debounce.js'
   import { MessageBox, Toast, Indicator } from 'mint-ui'
@@ -495,12 +497,16 @@
         if (!files.length) return
         this.panel = true
         this.picValue = files[0]
-        this.url = this.getObjectURL(this.picValue)
-        // 每次替换图片要重新得到新的url
-        if (this.cropper) {
-          this.cropper.replace(this.url)
-        }
-        this.panel = true
+        let self = this
+        lrz(this.picValue, {width: 900, quality: 0.70}) // 压缩图片
+          .then(function (rst) {
+            self.url = rst.base64
+            // 每次替换图片要重新得到新的url
+            if (self.cropper) {
+              self.cropper.replace(self.url)
+            }
+            self.panel = true
+          })
       },
       changeToFile (dataurl) {
         let arr = dataurl.split(',')
@@ -598,7 +604,7 @@
           headers: {
             'Content-Type': 'multipart/form-data'
           },
-          timeout: 250000,
+          timeout: 20000,
           onUploadProgress: function (progressEvent) {
             self.$nextTick(() => {
               self.percent = (progressEvent.loaded / progressEvent.total) * 100

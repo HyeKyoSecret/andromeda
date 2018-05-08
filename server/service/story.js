@@ -581,7 +581,6 @@ router.post('/story/xuildStory', (req, res) => {
                                 }
 
                                 search().catch((err) => {
-                                  'use strict'
                                   console.log('执行出现了错误' + err)
                                   res.send('error')
                                 })
@@ -714,7 +713,6 @@ router.post('/story/buildStory', (req, res) => {
                             }
 
                             search().catch((err) => {
-                              'use strict'
                               if (err) {
                                 res.send({error: true, type: 'story', message: '服务器忙，请稍后再试'})
                               }
@@ -751,7 +749,6 @@ router.post('/story/buildStory', (req, res) => {
           } else if (ftNode.split('')[0] === 'S') { // 从ftNode id上判断前驱节点是否是普通故事节点
             Story.findOne({id: ftNode})
               .exec((err, odstory) => {
-                'use strict'
                 if (err) {
                   res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                 } else {
@@ -1359,7 +1356,7 @@ router.get('/story/getDefaultDiscovery', (req, res) => {
     .populate({
       path: 'author'
     })
-    .limit(5)
+    .limit(8)
     .skip(existLength)
     .exec((err, root) => {
       if (err) {

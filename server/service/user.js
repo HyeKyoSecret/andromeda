@@ -16,6 +16,7 @@ router.get('/user/getMyCreation', (req, res) => {
   'use strict'
   let user = req.query.user
   let type = req.query.type
+  // let result = []
   let rootList = []
   let storyList = []
   let val = req.query.val
@@ -39,9 +40,21 @@ router.get('/user/getMyCreation', (req, res) => {
         User.findOne({id: user})
           .populate({
             path: 'myCreation.root',
+            populate: {
+              path: 'root'
+            },
             options: {
               skip: val * 8,
               limit: 8,
+              sort: { date: -1 }
+            }
+          })
+          .populate({
+            path: 'myCreation.story',
+            populate: {
+              path: 'root'
+            },
+            options: {
               sort: { date: -1 }
             }
           })
@@ -60,6 +73,19 @@ router.get('/user/getMyCreation', (req, res) => {
                       label: 'root'
                     })
                   })
+                  if (user.myCreation && user.myCreation.story) {
+                    for (let i = 0; i < user.myCreation.story.length; i++) {
+                      for (let j = 0; j < rootList.length; j++) {
+                        console.log('a' + user.myCreation.story[i].root.name)
+                        console.log('b' + rootList[j].root)
+                        if (user.myCreation.story[i].root.name === rootList[j].root) {
+                          if (user.myCreation.story[i].date.getTime() > rootList[j].timeStamp) {
+                            rootList[j].timeStamp = user.myCreation.story[i].date.getTime()
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
                 res.send({permit: true, result: rootList})
               } else {
@@ -895,5 +921,84 @@ router.get('/user/getHeadImg', (req, res) => {
       res.send({result: headImg})
     }
   })
+})
+router.get('/user/getMyCreationNode', (req, res) => {
+  let user = req.query.user
+  let root = req.query.root
+  let result = {
+    user: false,
+    id: '',
+    rootName: '',
+    rootContent: '',
+    headImg: '',
+    date: '',
+    story: []
+  }
+  let loginUser = req.session.userId || req.cookies.And ? req.cookies.And.userId : undefined
+  // User.findOne({id: user})
+  //   .populate({
+  //     path: 'myCreation.root',
+  //     options: {
+  //       sort: { date: -1 }
+  //     }
+  //   })
+  //   .populate({
+  //     path: 'myCreation.story',
+  //     populate: 'root',
+  //     options: {
+  //       sort: { date: -1 }
+  //     }
+  //   })
+  //   .exec((err, user) => {
+  //     if (err) {
+  //       res.send({error: true, message: '发生错误，请稍后再试', type: 'DB'})
+  //     } else {
+  //       if (user) {
+  //         // if (user.myCreation && user.myCreation.root) {
+  //         //   for (let i = 0; i < user.myCreation.root.length; i++) {
+  //         //     console.log(user.myCreation.root[i].name + '+++++' + root)
+  //         //     if (user.myCreation.root[i].name === root) {
+  //         //       let o = user.myCreation.root[i]
+  //         //       result.id = o.id
+  //         //       result.rootName = o.name
+  //         //       result.rootContent = o.content
+  //         //       result.headImg = tool.formImg(o.headImg)
+  //         //       result.date = o.date
+  //         //       result.user = loginUser === user
+  //         //       if (user.myCreation && user.myCreation.story) {
+  //         //         for (let i = 0; i < user.myCreation.story.length; i++) {
+  //         //           if (user.myCreation.story[i].root.name === root) {
+  //         //             let o = user.myCreation.story[i]
+  //         //             result.story.push({
+  //         //               id: o.id,
+  //         //               content: o.content,
+  //         //               date: o.date
+  //         //             })
+  //         //           }
+  //         //         }
+  //         //       }
+  //         //     }
+  //         //   }
+  //         //   res.send({error: false, result: result})
+  //         // } else {
+  //         //   // 在故事中寻找
+  //         // }
+  //       } else {
+  //         res.send({error: true, message: '找不到资源', type: 'user'})
+  //       }
+  //     }
+  //   })
+  Story.aggregate({$group: {'_id': '$root.name', 'num': {$sum: 1}}})
+    .exec((err, doc) => {
+      if (err) {
+        console.log(err)
+      }
+      Root.populate(doc, {path: 'name'}, function (err, xyc) {
+        if (err) {
+          console.log(err)
+        }
+        console.log(JSON.stringify(xyc))
+      })
+    })
 })
 module.exports = router

@@ -123,7 +123,7 @@
       // }
     },
     created: function () {
-      this.checkUser()
+      this.getMyCreationNode()
     },
     mounted () {
       // 初始化这个裁剪框
@@ -263,51 +263,14 @@
       setErrorImg: function () {
         this.imgSrc = require('../../img/photo/defaultPic.png')
       },
-      checkUser: function () {
-        Axios.get('/register/checkUser', {
+      getMyCreationNode () {
+        Axios.get('/user/getMyCreationNode', {
           params: {
-            user: this.$route.params.user
+            user: this.$route.params.user,
+            root: this.$route.params.rootName
           }
-        }).then(res => {
-          if (res.data.user) {
-            // 本人
-            Axios.get('/user/getMyCreation', {
-              params: {
-                user: this.$route.params.user
-              }
-            }).then(response => {
-              let arr = response.data.result
-              console.log('arr' + arr)
-              for (let i = 0; i < arr.length; i++) {
-                if (arr[i].root === this.$route.params.rootName) {
-                  this.temp = arr[i]
-                }
-              }
-              console.log('temp' + this.temp)
-              if (!res.data.customer) {    // 本人
-                this.imgSrc = this.temp.cover
-                Axios.post('/story/getMyCreationPreview', {
-                  data: this.temp
-                }).then(response => {
-                  this.result = response.data
-                  if (response.data.root) {
-                    this.writeAuthorized = response.data.root.writePermit
-                    this.writePermit = this.writeAuthorized
-                  }
-                })
-              } else {
-                // 访客模式
-                this.$router.replace(`/story/${this.temp.data[0]}`)
-              }
-            })
-          } else {
-            // 用户名不存在或不合法
-            this.$emit('error')
-          }
-        }).catch((error) => {
-          if (error) {
-            this.$emit('error')
-          }
+        }).then(response => {
+          console.log(response.data.result)
         })
       },
       goStory: function (id) {

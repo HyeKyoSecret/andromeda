@@ -2,7 +2,7 @@
   <div class="my-creation-node">
     <notice v-bind:title="$route.params.rootName"></notice>
     <!--进度条-->
-    <mt-progress :value="percent" :bar-height="8" v-if="percentShow">
+    <mt-progress :value="percent" :bar-height="6" v-if="percentShow">
       <!--<div slot="end">{{Math.ceil(percent)}}%</div>-->
     </mt-progress>
     <div class="container" v-show="panel">
@@ -16,16 +16,16 @@
       <input type="file" ref="input" accept="image" @change="change">
     </label>
     <div v-if="result.root">
-      <!--<transition-->
-        <!--name="custom-classes-transition"-->
-        <!--leave-active-class="animated bounceOutUp">-->
-      <!--<div class="open-authorized" v-if="!writeAuthorized">-->
-        <!--<div class="line">-->
-          <!--<div class="name">开放自由续写</div>-->
-          <!--<mt-switch v-model="writePermit" class="switch"></mt-switch>-->
-        <!--</div>-->
-      <!--</div>-->
-      <!--</transition>-->
+      <transition
+        name="custom-classes-transition"
+        leave-active-class="animated bounceOutUp">
+      <div class="open-authorized" v-if="!writeAuthorized">
+        <div class="line">
+          <div class="name">开放自由续写</div>
+          <mt-switch v-model="writePermit" class="switch"></mt-switch>
+        </div>
+      </div>
+      </transition>
       <div class="one-node" @click="goStory(result.root.id)">
         <div class="story-information">
           <div class="cover">
@@ -264,13 +264,14 @@
         this.imgSrc = require('../../img/photo/defaultPic.png')
       },
       getMyCreationNode () {
+        console.log('zhixing')
         Axios.get('/user/getMyCreationNode', {
           params: {
             user: this.$route.params.user,
             root: this.$route.params.rootName
           }
         }).then(response => {
-          console.log(response.data.result)
+          console.log(response.data)
         })
       },
       goStory: function (id) {

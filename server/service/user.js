@@ -934,7 +934,8 @@ router.get('/user/getMyCreationNode', (req, res) => {
     date: '',
     story: []
   }
-  let loginUser = req.session.userId || req.cookies.And ? req.cookies.And.userId : undefined
+  console.log('收到一次完整请求' + user + root)
+  // let loginUser = req.session.userId || req.cookies.And ? req.cookies.And.userId : undefined
   // User.findOne({id: user})
   //   .populate({
   //     path: 'myCreation.root',
@@ -988,17 +989,6 @@ router.get('/user/getMyCreationNode', (req, res) => {
   //       }
   //     }
   //   })
-  Story.aggregate({$group: {'_id': '$root.name', 'num': {$sum: 1}}})
-    .exec((err, doc) => {
-      if (err) {
-        console.log(err)
-      }
-      Root.populate(doc, {path: 'name'}, function (err, xyc) {
-        if (err) {
-          console.log(err)
-        }
-        console.log(JSON.stringify(xyc))
-      })
-    })
 })
+
 module.exports = router

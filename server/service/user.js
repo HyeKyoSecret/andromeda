@@ -12,174 +12,6 @@ const path = require('path')
 const fs = require('fs')
 const tool = require('../tool')
 const gm = require('gm').subClass({imageMagick: true})
-router.get('/user/getMyCreation', (req, res) => {
-  'use strict'
-  let user = req.query.user
-  let type = req.query.type
-  // let result = []
-  let rootList = []
-  let storyList = []
-  let val = req.query.val
-  // function bubbleSort (arr) {   // 排序算法
-  //   for (let i = 0; i < arr.length - 1; i++) {
-  //     for (let j = 0; j < arr.length - 1 - i; j++) {
-  //       if (arr[j]['timeStamp'] < arr[j + 1]['timeStamp']) {
-  //         let tmp = arr[j]
-  //         arr[j] = arr[j + 1]
-  //         arr[j + 1] = tmp
-  //       }
-  //     }
-  //   }
-  //   return arr
-  // }
-
-  if (user) {
-    let userReg = /^U([0-9]){7}$/
-    if (userReg.test(user)) {
-      if (type === 'root') {
-        User.findOne({id: user})
-          .populate({
-            path: 'myCreation.root',
-            populate: {
-              path: 'root'
-            },
-            options: {
-              skip: val * 8,
-              limit: 8,
-              sort: { date: -1 }
-            }
-          })
-          .populate({
-            path: 'myCreation.story',
-            populate: {
-              path: 'root'
-            },
-            options: {
-              sort: { date: -1 }
-            }
-          })
-          .exec((err, user) => {
-            if (err) {
-              res.send({permit: false})
-            } else {
-              if (user) {
-                if (user.myCreation && user.myCreation.root) {   // 存在根节点
-                  user.myCreation.root.forEach((root) => {
-                    rootList.push({
-                      root: root.name,
-                      timeStamp: root.date.getTime(),
-                      data: [root.id],
-                      cover: tool.formImg(root.coverImg),
-                      label: 'root'
-                    })
-                  })
-                  if (user.myCreation && user.myCreation.story) {
-                    for (let i = 0; i < user.myCreation.story.length; i++) {
-                      for (let j = 0; j < rootList.length; j++) {
-                        console.log('a' + user.myCreation.story[i].root.name)
-                        console.log('b' + rootList[j].root)
-                        if (user.myCreation.story[i].root.name === rootList[j].root) {
-                          if (user.myCreation.story[i].date.getTime() > rootList[j].timeStamp) {
-                            rootList[j].timeStamp = user.myCreation.story[i].date.getTime()
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-                res.send({permit: true, result: rootList})
-              } else {
-                res.send({permit: false, type: '404'})
-              }
-            }
-          })
-      } else if (type === 'story') {
-        User.findOne({id: user})
-          .populate({
-            path: 'myCreation.story',
-            populate: {
-              path: 'root'
-            },
-            options: {
-              sort: { date: -1 }
-            }
-          })
-          .exec((err, user) => {
-            if (err) {
-              res.send({permit: false})
-            } else {
-              if (user) {
-                if (user.myCreation && user.myCreation.story) {   // 存在普通故事节点
-                  user.myCreation.story.forEach((story) => {
-                    storyList.push({
-                      root: story.root ? story.root.name : '',
-                      id: story.id,
-                      timeStamp: story.date.getTime(),
-                      cover: tool.formImg(story.root.coverImg),
-                      label: 'story'
-                    })
-                  })
-                  let map = {}
-                  let dest = []       // 将story归类
-                  for (let i = 0; i < storyList.length; i++) {
-                    let ai = storyList[i]
-                    if (!map[ai.root]) {
-                      dest.push({
-                        root: ai.root,
-                        data: [ai.id],
-                        cover: ai.cover,
-                        timeStamp: ai.timeStamp
-                      })
-                      map[ai.root] = ai
-                    } else {
-                      for (let j = 0; j < dest.length; j++) {
-                        let dj = dest[j]
-                        if (dj.root === ai.root) {
-                          dj.data.push(ai.id)
-                          break
-                        }
-                      }
-                    }
-                  }
-                  // let temp = {}
-                  // for (let i = 0; i < rootList.length; i++) {
-                  //   let ai = rootList[i]
-                  //   if (!temp[ai.root]) {
-                  //     result.push({
-                  //       root: ai.root,
-                  //       data: ai.data,
-                  //       label: ai.label,
-                  //       date: ai.date,
-                  //       timeStamp: ai.timeStamp,
-                  //       cover: ai.cover
-                  //     })
-                  //     temp[ai.root] = ai
-                  //   } else {
-                  //     for (let j = 0; j < result.length; j++) {
-                  //       let dj = result[j]
-                  //       if (dj.root === ai.root) {
-                  //         dj.timeStamp = ai.timeStamp
-                  //         for (let k = 0; k < ai.data.length; k++) {
-                  //           dj.data.push(ai.data[k])
-                  //         }
-                  //         break
-                  //       }
-                  //     }
-                  //   }
-                  // }
-                  res.send({permit: true, result: dest})
-                }
-              }
-            }
-          })
-      }
-    } else {
-      res.send({permit: false, type: '404'})
-    }
-  } else {
-    console.log('不是user')
-  }
-})
 router.get('/user/getMySubscription', (req, res) => {
   'use strict'
   // let sysUser
@@ -922,6 +754,174 @@ router.get('/user/getHeadImg', (req, res) => {
     }
   })
 })
+router.get('/user/getMyCreation', (req, res) => {
+  'use strict'
+  let user = req.query.user
+  let type = req.query.type
+  // let result = []
+  let rootList = []
+  let storyList = []
+  let val = req.query.val
+  // function bubbleSort (arr) {   // 排序算法
+  //   for (let i = 0; i < arr.length - 1; i++) {
+  //     for (let j = 0; j < arr.length - 1 - i; j++) {
+  //       if (arr[j]['timeStamp'] < arr[j + 1]['timeStamp']) {
+  //         let tmp = arr[j]
+  //         arr[j] = arr[j + 1]
+  //         arr[j + 1] = tmp
+  //       }
+  //     }
+  //   }
+  //   return arr
+  // }
+
+  if (user) {
+    let userReg = /^U([0-9]){7}$/
+    if (userReg.test(user)) {
+      if (type === 'root') {
+        User.findOne({id: user})
+          .populate({
+            path: 'myCreation.root',
+            populate: {
+              path: 'root'
+            },
+            options: {
+              skip: val * 8,
+              limit: 8,
+              sort: { date: -1 }
+            }
+          })
+          .populate({
+            path: 'myCreation.story',
+            populate: {
+              path: 'root'
+            },
+            options: {
+              sort: { date: -1 }
+            }
+          })
+          .exec((err, user) => {
+            if (err) {
+              res.send({permit: false})
+            } else {
+              if (user) {
+                if (user.myCreation && user.myCreation.root) {   // 存在根节点
+                  user.myCreation.root.forEach((root) => {
+                    rootList.push({
+                      root: root.name,
+                      timeStamp: root.date.getTime(),
+                      data: [root.id],
+                      cover: tool.formImg(root.coverImg),
+                      label: 'root'
+                    })
+                  })
+                  if (user.myCreation && user.myCreation.story) {
+                    for (let i = 0; i < user.myCreation.story.length; i++) {
+                      for (let j = 0; j < rootList.length; j++) {
+                        console.log('a' + user.myCreation.story[i].root.name)
+                        console.log('b' + rootList[j].root)
+                        if (user.myCreation.story[i].root.name === rootList[j].root) {
+                          if (user.myCreation.story[i].date.getTime() > rootList[j].timeStamp) {
+                            rootList[j].timeStamp = user.myCreation.story[i].date.getTime()
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                res.send({permit: true, result: rootList})
+              } else {
+                res.send({permit: false, type: '404'})
+              }
+            }
+          })
+      } else if (type === 'story') {
+        User.findOne({id: user})
+          .populate({
+            path: 'myCreation.story',
+            populate: {
+              path: 'root'
+            },
+            options: {
+              sort: { date: -1 }
+            }
+          })
+          .exec((err, user) => {
+            if (err) {
+              res.send({permit: false})
+            } else {
+              if (user) {
+                if (user.myCreation && user.myCreation.story) {   // 存在普通故事节点
+                  user.myCreation.story.forEach((story) => {
+                    storyList.push({
+                      root: story.root ? story.root.name : '',
+                      id: story.id,
+                      timeStamp: story.date.getTime(),
+                      cover: tool.formImg(story.root.coverImg),
+                      label: 'story'
+                    })
+                  })
+                  let map = {}
+                  let dest = []       // 将story归类
+                  for (let i = 0; i < storyList.length; i++) {
+                    let ai = storyList[i]
+                    if (!map[ai.root]) {
+                      dest.push({
+                        root: ai.root,
+                        data: [ai.id],
+                        cover: ai.cover,
+                        timeStamp: ai.timeStamp
+                      })
+                      map[ai.root] = ai
+                    } else {
+                      for (let j = 0; j < dest.length; j++) {
+                        let dj = dest[j]
+                        if (dj.root === ai.root) {
+                          dj.data.push(ai.id)
+                          break
+                        }
+                      }
+                    }
+                  }
+                  // let temp = {}
+                  // for (let i = 0; i < rootList.length; i++) {
+                  //   let ai = rootList[i]
+                  //   if (!temp[ai.root]) {
+                  //     result.push({
+                  //       root: ai.root,
+                  //       data: ai.data,
+                  //       label: ai.label,
+                  //       date: ai.date,
+                  //       timeStamp: ai.timeStamp,
+                  //       cover: ai.cover
+                  //     })
+                  //     temp[ai.root] = ai
+                  //   } else {
+                  //     for (let j = 0; j < result.length; j++) {
+                  //       let dj = result[j]
+                  //       if (dj.root === ai.root) {
+                  //         dj.timeStamp = ai.timeStamp
+                  //         for (let k = 0; k < ai.data.length; k++) {
+                  //           dj.data.push(ai.data[k])
+                  //         }
+                  //         break
+                  //       }
+                  //     }
+                  //   }
+                  // }
+                  res.send({permit: true, result: dest})
+                }
+              }
+            }
+          })
+      }
+    } else {
+      res.send({permit: false, type: '404'})
+    }
+  } else {
+    console.log('不是user')
+  }
+})
 router.get('/user/getMyCreationNode', (req, res) => {
   let user = req.query.user
   let root = req.query.root
@@ -934,61 +934,60 @@ router.get('/user/getMyCreationNode', (req, res) => {
     date: '',
     story: []
   }
-  console.log('收到一次完整请求' + user + root)
-  // let loginUser = req.session.userId || req.cookies.And ? req.cookies.And.userId : undefined
-  // User.findOne({id: user})
-  //   .populate({
-  //     path: 'myCreation.root',
-  //     options: {
-  //       sort: { date: -1 }
-  //     }
-  //   })
-  //   .populate({
-  //     path: 'myCreation.story',
-  //     populate: 'root',
-  //     options: {
-  //       sort: { date: -1 }
-  //     }
-  //   })
-  //   .exec((err, user) => {
-  //     if (err) {
-  //       res.send({error: true, message: '发生错误，请稍后再试', type: 'DB'})
-  //     } else {
-  //       if (user) {
-  //         // if (user.myCreation && user.myCreation.root) {
-  //         //   for (let i = 0; i < user.myCreation.root.length; i++) {
-  //         //     console.log(user.myCreation.root[i].name + '+++++' + root)
-  //         //     if (user.myCreation.root[i].name === root) {
-  //         //       let o = user.myCreation.root[i]
-  //         //       result.id = o.id
-  //         //       result.rootName = o.name
-  //         //       result.rootContent = o.content
-  //         //       result.headImg = tool.formImg(o.headImg)
-  //         //       result.date = o.date
-  //         //       result.user = loginUser === user
-  //         //       if (user.myCreation && user.myCreation.story) {
-  //         //         for (let i = 0; i < user.myCreation.story.length; i++) {
-  //         //           if (user.myCreation.story[i].root.name === root) {
-  //         //             let o = user.myCreation.story[i]
-  //         //             result.story.push({
-  //         //               id: o.id,
-  //         //               content: o.content,
-  //         //               date: o.date
-  //         //             })
-  //         //           }
-  //         //         }
-  //         //       }
-  //         //     }
-  //         //   }
-  //         //   res.send({error: false, result: result})
-  //         // } else {
-  //         //   // 在故事中寻找
-  //         // }
-  //       } else {
-  //         res.send({error: true, message: '找不到资源', type: 'user'})
-  //       }
-  //     }
-  //   })
+  let loginUser = req.session.userId || req.cookies.And ? req.cookies.And.userId : undefined
+  User.findOne({id: user})
+    .populate({
+      path: 'myCreation.root',
+      options: {
+        sort: { date: -1 }
+      }
+    })
+    .populate({
+      path: 'myCreation.story',
+      populate: 'root',
+      options: {
+        sort: { date: -1 }
+      }
+    })
+    .exec((err, user) => {
+      if (err) {
+        res.send({error: true, message: '发生错误，请稍后再试', type: 'DB'})
+      } else {
+        if (user) {
+          if (user.myCreation && user.myCreation.root) {
+            for (let i = 0; i < user.myCreation.root.length; i++) {
+              if (user.myCreation.root[i].name === root) {
+                let o = user.myCreation.root[i]
+                result.id = o.id
+                result.rootName = o.name
+                result.rootContent = o.content
+                result.headImg = tool.formImg(o.headImg)
+                result.date = o.date
+                result.user = loginUser === user
+                if (user.myCreation && user.myCreation.story) {
+                  for (let i = 0; i < user.myCreation.story.length; i++) {
+                    if (user.myCreation.story[i].root.name === root) {
+                      let o = user.myCreation.story[i]
+                      result.story.push({
+                        id: o.id,
+                        content: o.content,
+                        date: o.date
+                      })
+                    }
+                  }
+                }
+              }
+            }
+            console.log(JSON.stringify(result))
+            res.send({error: false, result: result})
+          } else {
+            // 在故事中寻找
+          }
+        } else {
+          res.send({error: true, message: '找不到资源', type: 'user'})
+        }
+      }
+    })
 })
 
 module.exports = router

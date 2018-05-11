@@ -264,7 +264,6 @@
         this.imgSrc = require('../../img/photo/defaultPic.png')
       },
       getMyCreationNode () {
-        console.log('zhixing')
         Axios.get('/user/getMyCreationNode', {
           params: {
             user: this.$route.params.user,

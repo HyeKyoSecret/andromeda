@@ -888,7 +888,6 @@ router.get('/user/getMyCreation', (req, res) => {
                       }
                     }
                   }
-                  console.log(bbb)
                   for (let j = 0; j < dest.length; j++) {
                     if (user.myCreation && user.myCreation.root) {
                       for (let i = 0; i < user.myCreation.root.length; i++) {

@@ -47,8 +47,6 @@
         if (this.story.length > 0) {
           if (this.story[0].isRoot === 'root') {
             this.$emit('loadMore', 'root')
-          } else {
-            this.$emit('loadMore', 'story')
           }
         }
       }

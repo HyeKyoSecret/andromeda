@@ -829,7 +829,6 @@ router.get('/user/getMyCreation', (req, res) => {
                     }
                   }
                 }
-                console.log(rootList)
                 res.send({permit: true, result: rootList})
               } else {
                 res.send({permit: false, type: '404'})
@@ -889,15 +888,19 @@ router.get('/user/getMyCreation', (req, res) => {
                       }
                     }
                   }
-                  dest.forEach(function (item) {
+                  console.log(bbb)
+                  for (let j = 0; j < dest.length; j++) {
                     if (user.myCreation && user.myCreation.root) {
                       for (let i = 0; i < user.myCreation.root.length; i++) {
-                        if (item.rootId !== user.myCreation.root[i].id) {
-                          result.push(item)
+                        if (dest[j].rootId !== user.myCreation.root[i].id) {
+                          result.push(dest[j])
+                          break
                         }
                       }
+                    } else {
+                      result = dest
                     }
-                  })
+                  }
                   res.send({permit: true, result: result})
                 }
               }

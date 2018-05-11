@@ -758,7 +758,7 @@ router.get('/user/getMyCreation', (req, res) => {
   'use strict'
   let user = req.query.user
   let type = req.query.type
-  // let result = []
+  let result = []
   let rootList = []
   let storyList = []
   let val = req.query.val
@@ -809,6 +809,7 @@ router.get('/user/getMyCreation', (req, res) => {
                   user.myCreation.root.forEach((root) => {
                     rootList.push({
                       root: root.name,
+                      count: 1,
                       timeStamp: root.date.getTime(),
                       data: [root.id],
                       cover: tool.formImg(root.coverImg),
@@ -818,9 +819,8 @@ router.get('/user/getMyCreation', (req, res) => {
                   if (user.myCreation && user.myCreation.story) {
                     for (let i = 0; i < user.myCreation.story.length; i++) {
                       for (let j = 0; j < rootList.length; j++) {
-                        console.log('a' + user.myCreation.story[i].root.name)
-                        console.log('b' + rootList[j].root)
                         if (user.myCreation.story[i].root.name === rootList[j].root) {
+                          rootList[j].count ++
                           if (user.myCreation.story[i].date.getTime() > rootList[j].timeStamp) {
                             rootList[j].timeStamp = user.myCreation.story[i].date.getTime()
                           }
@@ -829,6 +829,7 @@ router.get('/user/getMyCreation', (req, res) => {
                     }
                   }
                 }
+                console.log(rootList)
                 res.send({permit: true, result: rootList})
               } else {
                 res.send({permit: false, type: '404'})
@@ -846,6 +847,9 @@ router.get('/user/getMyCreation', (req, res) => {
               sort: { date: -1 }
             }
           })
+          .populate({
+            path: 'myCreation.root',
+          })
           .exec((err, user) => {
             if (err) {
               res.send({permit: false})
@@ -855,6 +859,7 @@ router.get('/user/getMyCreation', (req, res) => {
                   user.myCreation.story.forEach((story) => {
                     storyList.push({
                       root: story.root ? story.root.name : '',
+                      rootId: story.root ? story.root.id : '',
                       id: story.id,
                       timeStamp: story.date.getTime(),
                       cover: tool.formImg(story.root.coverImg),
@@ -868,6 +873,7 @@ router.get('/user/getMyCreation', (req, res) => {
                     if (!map[ai.root]) {
                       dest.push({
                         root: ai.root,
+                        rootId: ai.rootId,
                         data: [ai.id],
                         cover: ai.cover,
                         timeStamp: ai.timeStamp
@@ -883,33 +889,16 @@ router.get('/user/getMyCreation', (req, res) => {
                       }
                     }
                   }
-                  // let temp = {}
-                  // for (let i = 0; i < rootList.length; i++) {
-                  //   let ai = rootList[i]
-                  //   if (!temp[ai.root]) {
-                  //     result.push({
-                  //       root: ai.root,
-                  //       data: ai.data,
-                  //       label: ai.label,
-                  //       date: ai.date,
-                  //       timeStamp: ai.timeStamp,
-                  //       cover: ai.cover
-                  //     })
-                  //     temp[ai.root] = ai
-                  //   } else {
-                  //     for (let j = 0; j < result.length; j++) {
-                  //       let dj = result[j]
-                  //       if (dj.root === ai.root) {
-                  //         dj.timeStamp = ai.timeStamp
-                  //         for (let k = 0; k < ai.data.length; k++) {
-                  //           dj.data.push(ai.data[k])
-                  //         }
-                  //         break
-                  //       }
-                  //     }
-                  //   }
-                  // }
-                  res.send({permit: true, result: dest})
+                  dest.forEach(function (item) {
+                    if (user.myCreation && user.myCreation.root) {
+                      for (let i = 0; i < user.myCreation.root.length; i++) {
+                        if (item.rootId !== user.myCreation.root[i].id) {
+                          result.push(item)
+                        }
+                      }
+                    }
+                  })
+                  res.send({permit: true, result: result})
                 }
               }
             }
@@ -944,7 +933,9 @@ router.get('/user/getMyCreationNode', (req, res) => {
     })
     .populate({
       path: 'myCreation.story',
-      populate: 'root',
+      populate: {
+        path: 'root'
+      },
       options: {
         sort: { date: -1 }
       }
@@ -961,9 +952,9 @@ router.get('/user/getMyCreationNode', (req, res) => {
                 result.id = o.id
                 result.rootName = o.name
                 result.rootContent = o.content
-                result.headImg = tool.formImg(o.headImg)
-                result.date = o.date
-                result.user = loginUser === user
+                result.coverImg = tool.formImg(o.coverImg)
+                result.date = moment(o.date).format('YYYY年M月D日 HH:m')
+                result.user = loginUser === user.id
                 if (user.myCreation && user.myCreation.story) {
                   for (let i = 0; i < user.myCreation.story.length; i++) {
                     if (user.myCreation.story[i].root.name === root) {
@@ -971,14 +962,14 @@ router.get('/user/getMyCreationNode', (req, res) => {
                       result.story.push({
                         id: o.id,
                         content: o.content,
-                        date: o.date
+                        date: moment(o.date).format('YYYY年M月D日 HH:m'),
+                        zan: o.zan ? o.zan.length : 0
                       })
                     }
                   }
                 }
               }
             }
-            console.log(JSON.stringify(result))
             res.send({error: false, result: result})
           } else {
             // 在故事中寻找

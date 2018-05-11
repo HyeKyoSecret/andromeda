@@ -25,6 +25,9 @@ router.post('/story/buildRoot', (req, res) => {
     fs.writeFileSync(to, fs.readFileSync(from))
     // fs.createReadStream(src).pipe(fs.createWriteStream(dst))  大文件复制
   }
+  if (!fs.existsSync('../picture')) {
+    fs.mkdirSync('../picture')
+  }
   if (!fs.existsSync(imgPath)) {
     fs.mkdirSync(imgPath)
   }

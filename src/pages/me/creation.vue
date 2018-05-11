@@ -70,11 +70,10 @@
               for (let i = 0; i < response.data.result.length; i++) {
                 this[type].push({
                   name: response.data.result[i].root,
-                  num: response.data.result[i].data.length,
-                  latestDate: moment(response.data.result[i].timeStamp).format('YYYY年M月D日'),
+                  num: response.data.result[i].count ? response.data.result[i].count : response.data.result[i].data.length,
+                  latestDate: moment(response.data.result[i].timeStamp).format('YYYY年M月D日 HH:m'),
                   isRoot: response.data.result[i].label,
                   path: this.getPath(response.data.result[i]),
-                  data: response.data.data,
                   cover: response.data.result[i].cover
                 })
               }
@@ -200,7 +199,7 @@
     z-index: 999;
   }
   .fade-enter-active, .fade-leave-active {
-    transition: opacity .3s;
+    transition: opacity .4s;
   }
   .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
     opacity: 0;

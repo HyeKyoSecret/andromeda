@@ -15,7 +15,7 @@
     <label id="input">
       <input type="file" ref="input" accept="image" @change="change">
     </label>
-    <div v-if="result.root">
+    <div v-if="result">
       <transition
         name="custom-classes-transition"
         leave-active-class="animated bounceOutUp">
@@ -26,23 +26,23 @@
         </div>
       </div>
       </transition>
-      <div class="one-node" @click="goStory(result.root.id)">
+      <div class="one-node" @click="goStory(result.id)">
         <div class="story-information">
           <div class="cover">
             <div><img :src="imgSrc" @error="setErrorImg" @click.stop="choosePic"/></div>
-            <div class="change-cover" @click.stop="choosePic">更换封面</div>
+            <div class="change-cover" v-if='result.user' @click.stop="choosePic">更换封面</div>
           </div>
           <div class="right-part">
             <div class="story-name">
-              <span class="name">{{result.root.name}}</span>
+              <span class="name">{{result.rootName}}</span>
               <span class="beginning">开头</span>
             </div>
-            <div class="story-content">{{result.root.content}}</div>
+            <div class="story-content">{{result.rootContent}}</div>
             <div class="like-quantity">
               <span><img src="../../img/icon/gray_thumb.png" /></span>
               <span>18次</span>
             </div>
-            <div class="time">{{result.root.date}}</div>
+            <div class="time">{{result.date}}</div>
           </div>
         </div>
       </div>
@@ -52,7 +52,7 @@
         <div class="content">{{item.content}}</div>
         <div class="info">
           <span><img src="../../img/icon/gray_thumb.png" /></span>
-          <span>18</span>
+          <span>{{item.zan}}</span>
           <span class="date">{{item.date}}</span>
         </div>
       </div>
@@ -74,11 +74,6 @@
     },
     data () {
       return {
-        rootInfo: {
-          name: '',
-          content: '',
-          date: ''
-        },
         temp: {},
         result: {},
         writePermit: true,
@@ -145,7 +140,9 @@
     },
     methods: {
       choosePic () {
-        this.$refs.input.click()
+        if (this.result.user) {
+          this.$refs.input.click()
+        }
       },
       getObjectURL (file) {
         let url = null
@@ -270,7 +267,8 @@
             root: this.$route.params.rootName
           }
         }).then(response => {
-          console.log(response.data)
+          this.result = response.data.result
+          this.imgSrc = response.data.result.coverImg
         })
       },
       goStory: function (id) {

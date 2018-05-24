@@ -143,13 +143,13 @@ router.post('/story/buildRoot', (req, res) => {
 router.get('/story/getStory', (req, res) => {
   'use strict'
   let id = req.query.id
-
   let result = {
     title: '',
     content: '',
     author: '',
     date: ''
   }
+  let user = req.session.userId ? req.session.userId : req.cookies.And ? req.cookies.And.userId : null
   if (rootReg.test(id)) {
     Root.findOne({id: id})
       .populate('author')
@@ -163,7 +163,23 @@ router.get('/story/getStory', (req, res) => {
             result.author = root.author.nickname
             result.authorId = root.author.id
             result.date = moment(root.date).format('YYYY年M月D日 HH:mm')
-            res.send({permit: true, result: result})
+            User.findOne({id: user})
+              .exec((err, doc) => {
+                if (err) {
+                  res.send({permit: false, type: 'DB', message: '发生错误，请稍后再试'})
+                } else {
+                  if (doc) {
+                    Root.updateOne({id: id}, {$addToSet: {'readCounts': doc._id}}, {upsert: true})
+                      .exec(err => {
+                        if (!err) {
+                          res.send({permit: true, result: result})
+                        }
+                      })
+                  } else {
+                    res.send({permit: true, result: result})
+                  }
+                }
+              })
           } else {
             res.send({permit: false})
           }
@@ -183,7 +199,23 @@ router.get('/story/getStory', (req, res) => {
             result.author = story.author.nickname
             result.authorId = story.author.id
             result.date = moment(story.date).format('YYYY年M月D日 HH:mm')
-            res.send({permit: true, result: result})
+            User.findOne({id: user})
+              .exec((err, doc) => {
+                if (err) {
+                  res.send({permit: false, type: 'DB', message: '发生错误，请稍后再试'})
+                } else {
+                  if (doc) {
+                    Root.updateOne({id: id}, {$addToSet: {'readCounts': doc._id}}, {upsert: true})
+                      .exec(err => {
+                        if (!err) {
+                          res.send({permit: true, result: result})
+                        }
+                      })
+                  } else {
+                    res.send({permit: true, result: result})
+                  }
+                }
+              })
           } else {
             res.send({permit: false})
           }
@@ -1288,68 +1320,6 @@ router.post('/story/cancelSubscribe', (req, res) => {
     }
   }
   exe()
-})
-router.get('/story/getStack', (req, res) => {
-  'use strict'
-  let fid = 'R10006'
-  let stack = []
-  let p
-  Root.findOne({id: fid}, (err, root) => {
-    if (err) {
-      console.log(err)
-    }
-    let getObj = function (id) {
-      return new Promise((resolve, reject) => {
-        Story.findOne({_id: id})
-          .exec((err, story) => {
-            if (err) {
-              console.log(err)
-            }
-            if (story) {
-              resolve(story)
-            } else {
-              Root.findOne({_id: id}, (err, root) => {
-                if (err) {
-                  console.log(err)
-                }
-                if (root) {
-                  resolve(root)
-                } else {
-                  resolve(null)
-                }
-              })
-            }
-          })
-      })
-    }
-
-    let exe = async function (root) {
-      p = root._id
-      let _temp
-      let count = 0
-      while (p || stack.length) {
-        if (p) {
-          count = count + 1
-          _temp = await getObj(p)
-          stack.push({
-            _id: _temp._id,
-            id: _temp.id,
-            content: _temp.content
-          })
-          p = _temp.lc
-        } else {
-          stack.pop()
-          p = _temp.rb
-          if (!p && stack.length > 1) {
-            _temp = await getObj(stack[stack.length - 1]._id)
-            p = _temp.rb
-            stack.pop()
-          }
-        }
-      }
-    }
-    exe(root)
-  })
 })
 router.get('/story/getDefaultDiscovery', (req, res) => {
   'use strict'

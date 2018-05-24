@@ -14,6 +14,9 @@ const StoryRootSchema = new Schema({
   name: String,
   content: String,
   coverImg: String,
+  readCounts: [{
+    type: Schema.Types.ObjectId, ref: 'User'
+  }],
   zan: [{
     type: Schema.Types.ObjectId, ref: 'User'
   }],

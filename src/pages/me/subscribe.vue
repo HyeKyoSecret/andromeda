@@ -3,11 +3,11 @@
     <notice title="我的订阅"></notice>
     <div class="show-story" v-if="contentList">
       <div class="background">
-        <div class="left-part"><img src="../../img/photo/LegendofZelda.png" /></div>
+        <div class="left-part"><img :src="cover.coverImg" @error="setCoverErrorImg"/></div>
         <div class="right-part">
           <div class="already-read">
               <img src="../../img/icon/already_read.png" />
-              <div class="read-amount">918</div>
+              <div class="read-amount">17</div>
           </div>
           <div class="story-name">{{cover.name}}</div>
           <div class="quantity">
@@ -28,9 +28,9 @@
         </div>
       </div>
     </div>
-    <div class="shelf" v-for="item in contentList" v-if="contentList.length">
-      <div class="book" v-for="q in item" @click="changeCover(q)">
-        <div class="cover"><img src="../../img/photo/LegendofZelda.png" /></div>
+    <div class="shelf" v-for="(item, index) in contentList" v-if="contentList.length">
+      <div class="book" v-for="(q, index2) in item" @click="changeCover(q)">
+        <div class="cover"><img :src="q.coverImg" @error="setErrorImg(index, index2)"/></div>
         <div class="progress-bar"></div>
         <div class="name">{{q.name}}</div>
       </div>
@@ -169,7 +169,8 @@
           name: '',
           follower: 0,
           nodeNum: 0,  // 后续结点数量
-          myCreation: 0 // 当前用户参与编辑的数量
+          myCreation: 0, // 当前用户参与编辑的数量
+          coverImg: ''
         }
       }
     },
@@ -181,7 +182,7 @@
         this.cover.id = obj.id
         this.cover.name = obj.name
         this.cover.follower = obj.follower
-        console.log(obj.id + this.cover.id)
+        this.cover.coverImg = obj.coverImg
         if (obj.id && this.cover.id) {
           Axios.all([Axios.get('/user/getSubStack', {params: {id: obj.id}}), Axios.get('/user/getContribute', {params: {id: this.cover.id}})])
             .then(Axios.spread((stack, contr) => {
@@ -198,17 +199,12 @@
         }).then(response => {
           if (!response.data.error) {
             if (response.data.result) {
-              response.data.result.forEach(data => {
-                this.subList.push({
-                  id: data.id,
-                  name: data.name,
-                  follower: data.follower
-                })
-              })
+              this.subList = response.data.result
               if (this.subList.length) {
                 this.cover.id = this.subList[0].id
                 this.cover.name = this.subList[0].name
                 this.cover.follower = this.subList[0].follower
+                this.cover.coverImg = this.subList[0].coverImg
               }
               let temp = parseInt(this.subList.length / 3)
               for (let i = 0; i <= temp; i++) {
@@ -223,6 +219,7 @@
                   }
                 }
               }
+              console.log(JSON.stringify(this.contentList))
               this.changeCover(this.cover)
             }
           } else {
@@ -233,6 +230,13 @@
             })
           }
         })
+      },
+      setCoverErrorImg () {
+        this.cover.coverImg = require('../../img/photo/default2.png')
+      },
+      setErrorImg (i, j) {
+        console.log(this.contentList[i][j])
+        this.contentList[i][j].coverImg = require('../../img/photo/default2.png')
       }
     }
   }

@@ -47,8 +47,13 @@
         if (this.story.length > 0) {
           if (this.story[0].isRoot === 'root') {
             this.$emit('loadMore', 'root')
+          } else {
+            this.$emit('loadMore', 'story')
           }
         }
+      },
+      setErrorImg (x) {
+        this.story[x].cover = require('../../../img/photo/defaultPic.png')
       }
     }
   }

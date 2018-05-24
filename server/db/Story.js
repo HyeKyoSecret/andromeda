@@ -13,6 +13,9 @@ const StorySchema = new Schema({
   date: { type: Date, default: Date.now },
   root: { type: Schema.Types.ObjectId, ref: 'StoryRoot' },
   content: String,
+  readCounts: [{
+    type: Schema.Types.ObjectId, ref: 'User'
+  }],
   zan: [{
     type: Schema.Types.ObjectId, ref: 'User'
   }],

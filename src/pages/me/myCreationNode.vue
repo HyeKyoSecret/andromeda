@@ -35,12 +35,12 @@
           <div class="right-part">
             <div class="story-name">
               <span class="name">{{result.rootName}}</span>
-              <span class="beginning">开头</span>
+              <span class="beginning" v-if="result.user">开头</span>
             </div>
             <div class="story-content">{{result.rootContent}}</div>
             <div class="like-quantity">
               <span><img src="../../img/icon/gray_thumb.png" /></span>
-              <span>18次</span>
+              <span>{{result.zan}}次</span>
             </div>
             <div class="time">{{result.date}}</div>
           </div>
@@ -267,8 +267,12 @@
             root: this.$route.params.rootName
           }
         }).then(response => {
-          this.result = response.data.result
-          this.imgSrc = response.data.result.coverImg
+          if (!response.data.error) {
+            this.result = response.data.result
+            this.imgSrc = response.data.result.coverImg
+          } else {
+            this.$emit('error')
+          }
         })
       },
       goStory: function (id) {

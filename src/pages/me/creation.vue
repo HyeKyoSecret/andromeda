@@ -14,7 +14,7 @@
     </keep-alive>
     <keep-alive>
       <transition name="fade">
-        <creation :story="story" v-if="myStoryActive"></creation>
+        <creation :story="story" v-if="myStoryActive" v-on:loadMore="fetchData"></creation>
       </transition>
     </keep-alive>
     <foot-menu></foot-menu>
@@ -71,7 +71,7 @@
                 this[type].push({
                   name: response.data.result[i].root,
                   num: response.data.result[i].count ? response.data.result[i].count : response.data.result[i].data.length,
-                  latestDate: moment(response.data.result[i].timeStamp).format('YYYY年M月D日 HH:m'),
+                  latestDate: moment(response.data.result[i].timeStamp).format('YYYY年M月D日 HH:mm'),
                   isRoot: response.data.result[i].label,
                   path: this.getPath(response.data.result[i]),
                   cover: response.data.result[i].cover
@@ -112,20 +112,10 @@
         })
       },
       getPath (val) {
-        let path
-        if (!val.label) {
-          if (val.data.length === 1) {
-            path = `/story/${val.data[0]}`
-          } else {
-            path = `myCreation/${val.root}`
-          }
-        } else {
-          path = `myCreation/${val.root}`
-        }
-        return path
+        return `myCreation/${val.root}`
       },
       setErrorImg (x) {
-        this.story[x].cover = require('../../img/photo/defaultPic.png')
+        this.story[x].cover = require('../../img/photo/default2.png')
       },
       myRoot () {
         this.myRootActive = true

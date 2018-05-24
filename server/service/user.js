@@ -34,7 +34,8 @@ router.get('/user/getMySubscription', (req, res) => {
           result.push({
             id: sub[i].id,
             name: sub[i].name,
-            follower: sub[i].subscribe.length
+            follower: sub[i].subscribe ? sub[i].subscribe.length : 0,
+            coverImg: tool.formImg(sub[i].coverImg)
           })
         }
         res.send({error: false, result: result})
@@ -758,7 +759,6 @@ router.get('/user/getMyCreation', (req, res) => {
   'use strict'
   let user = req.query.user
   let type = req.query.type
-  let result = []
   let rootList = []
   let storyList = []
   let val = req.query.val
@@ -774,7 +774,6 @@ router.get('/user/getMyCreation', (req, res) => {
   //   }
   //   return arr
   // }
-
   if (user) {
     let userReg = /^U([0-9]){7}$/
     if (userReg.test(user)) {
@@ -815,6 +814,9 @@ router.get('/user/getMyCreation', (req, res) => {
                       cover: tool.formImg(root.coverImg),
                       label: 'root'
                     })
+                    console.log('后续结点数量统计' + tool.getRootInfo(root.id, function (count) {
+                      console.log(JSON.stringify(count))
+                    }))
                   })
                   if (user.myCreation && user.myCreation.story) {
                     for (let i = 0; i < user.myCreation.story.length; i++) {
@@ -843,11 +845,13 @@ router.get('/user/getMyCreation', (req, res) => {
               path: 'root'
             },
             options: {
+              skip: val * 8,
+              limit: 8,
               sort: { date: -1 }
             }
           })
           .populate({
-            path: 'myCreation.root',
+            path: 'myCreation.root'
           })
           .exec((err, user) => {
             if (err) {
@@ -888,19 +892,16 @@ router.get('/user/getMyCreation', (req, res) => {
                       }
                     }
                   }
-                  for (let j = 0; j < dest.length; j++) {
-                    if (user.myCreation && user.myCreation.root) {
-                      for (let i = 0; i < user.myCreation.root.length; i++) {
-                        if (dest[j].rootId !== user.myCreation.root[i].id) {
-                          result.push(dest[j])
-                          break
+                  if (user.myCreation && user.myCreation.root) {
+                    for (let i = 0; i < user.myCreation.root.length; i++) {
+                      for (let j = 0; j < dest.length; j++) {
+                        if (user.myCreation.root[i].id === dest[j].rootId) {
+                          dest.splice(j, 1)
                         }
                       }
-                    } else {
-                      result = dest
                     }
                   }
-                  res.send({permit: true, result: result})
+                  res.send({permit: true, result: dest})
                 }
               }
             }
@@ -955,8 +956,9 @@ router.get('/user/getMyCreationNode', (req, res) => {
                 result.rootName = o.name
                 result.rootContent = o.content
                 result.coverImg = tool.formImg(o.coverImg)
-                result.date = moment(o.date).format('YYYY年M月D日 HH:m')
+                result.date = moment(o.date).format('YYYY年M月D日 HH:mm')
                 result.user = loginUser === user.id
+                result.zan = o.zan ? o.zan.length : 0
                 if (user.myCreation && user.myCreation.story) {
                   for (let i = 0; i < user.myCreation.story.length; i++) {
                     if (user.myCreation.story[i].root.name === root) {
@@ -964,7 +966,7 @@ router.get('/user/getMyCreationNode', (req, res) => {
                       result.story.push({
                         id: o.id,
                         content: o.content,
-                        date: moment(o.date).format('YYYY年M月D日 HH:m'),
+                        date: moment(o.date).format('YYYY年M月D日 HH:mm'),
                         zan: o.zan ? o.zan.length : 0
                       })
                     }
@@ -972,9 +974,57 @@ router.get('/user/getMyCreationNode', (req, res) => {
                 }
               }
             }
-            res.send({error: false, result: result})
+            if (!result.id) {
+              if (user.myCreation.story) {
+                for (let i = 0; i < user.myCreation.story.length; i++) {
+                  if (user.myCreation.story[i].root.name === root) {
+                    let o = user.myCreation.story[i]
+                    result.id = o.root.id
+                    result.rootName = o.root.name
+                    result.rootContent = o.root.content
+                    result.coverImg = tool.formImg(o.root.coverImg)
+                    result.date = moment(o.root.date).format('YYYY年M月D日 HH:mm')
+                    result.user = false
+                    result.zan = o.root.zan ? o.root.zan.length : 0
+                    result.story.push({
+                      id: o.id,
+                      content: o.content,
+                      date: moment(o.date).format('YYYY年M月D日 HH:mm'),
+                      zan: o.zan ? o.zan.length : 0
+                    })
+                  }
+                }
+                res.send({error: false, result: result})
+              } else {
+                res.send({error: true})
+              }
+            } else {
+              res.send({error: false, result: result})
+            }
           } else {
-            // 在故事中寻找
+            if (user.myCreation && user.myCreation.story) {
+              for (let i = 0; i < user.myCreation.story.length; i++) {
+                if (user.myCreation.story[i].root.name === root) {
+                  let o = user.myCreation.story[i]
+                  result.id = o.root.id
+                  result.rootName = o.root.name
+                  result.rootContent = o.root.content
+                  result.coverImg = tool.formImg(o.root.coverImg)
+                  result.date = moment(o.root.date).format('YYYY年M月D日 HH:mm')
+                  result.user = false
+                  result.zan = o.root.zan ? o.root.zan.length : 0
+                  result.story.push({
+                    id: o.id,
+                    content: o.content,
+                    date: moment(o.date).format('YYYY年M月D日 HH:mm'),
+                    zan: o.zan ? o.zan.length : 0
+                  })
+                }
+              }
+              res.send({error: false, result: result})
+            } else {
+              res.send({error: true})
+            }
           }
         } else {
           res.send({error: true, message: '找不到资源', type: 'user'})

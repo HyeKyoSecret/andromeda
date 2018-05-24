@@ -74,7 +74,10 @@
                   latestDate: moment(response.data.result[i].timeStamp).format('YYYY年M月D日 HH:mm'),
                   isRoot: response.data.result[i].label,
                   path: this.getPath(response.data.result[i]),
-                  cover: response.data.result[i].cover
+                  cover: response.data.result[i].cover,
+                  nodeCounts: response.data.result[i].nodeCounts,
+                  zanCounts: response.data.result[i].zanCounts,
+                  readCounts: response.data.result[i].readCounts
                 })
               }
             }

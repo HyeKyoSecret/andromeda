@@ -55,7 +55,6 @@ exports.clearFiles = function (imgPath) {
 }
 exports.getRootInfo = function (fid, callback) {
   'use strict'
-  console.log('接收到的fid' + fid)
   let stack = []
   let p
   Root.findOne({id: fid}, (err, root) => {
@@ -91,16 +90,16 @@ exports.getRootInfo = function (fid, callback) {
       p = root._id
       let _temp
       let count = {
-        nodeCount: 0, // 总结点数量
-        zanCount: 0, // 故事被赞总量
-        readCount: 0  // 故事阅读总量
+        nodeCounts: 0, // 总结点数量
+        zanCounts: 0, // 故事被赞总量
+        readCounts: 0  // 故事阅读总量
       }
       while (p || stack.length) {
         if (p) {
           _temp = await getObj(p)
-          count.nodeCount = count.nodeCount + 1
-          count.zanCount += _temp.zan ? _temp.zan.length : 0
-          count.readCount += _temp.readCount ? _temp.readCount.length : 0
+          count.nodeCounts += 1
+          count.zanCounts += _temp.zan ? _temp.zan.length : 0
+          count.readCounts += _temp.readCounts ? _temp.readCounts.length : 0
           stack.push({
             _id: _temp._id,
             id: _temp.id,

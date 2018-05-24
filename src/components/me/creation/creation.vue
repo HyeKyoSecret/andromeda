@@ -10,11 +10,11 @@
           <div><img :src="item.cover" @error="setErrorImg(index)"/></div>
           <div class="story-quantity">
             <span><img src="../../../img/icon/graybook.png" /></span>
-            <span class="number">4399</span>
+            <span class="number">{{item.readCounts}}</span>
           </div>
           <div class="story-quantity">
             <span><img src="../../../img/icon/gray_flag.png" /></span>
-            <span class="number">14392</span>
+            <span class="number">{{item.nodeCounts}}</span>
           </div>
         </div>
         <div class="right-part">
@@ -28,7 +28,7 @@
           </div>
           <div class="info-quantity">
             <span><img src="../../../img/icon/gray_thumb.png" /></span>
-            <span>122次</span>
+            <span>{{item.zanCounts}}次</span>
           </div>
           <div class="last-write-time">
             最后创作时间：{{item.latestDate}}

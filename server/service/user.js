@@ -805,33 +805,37 @@ router.get('/user/getMyCreation', (req, res) => {
             } else {
               if (user) {
                 if (user.myCreation && user.myCreation.root) {   // 存在根节点
-                  user.myCreation.root.forEach((root) => {
-                    rootList.push({
-                      root: root.name,
-                      count: 1,
-                      timeStamp: root.date.getTime(),
-                      data: [root.id],
-                      cover: tool.formImg(root.coverImg),
-                      label: 'root'
-                    })
-                    console.log('后续结点数量统计' + tool.getRootInfo(root.id, function (count) {
-                      console.log(JSON.stringify(count))
-                    }))
-                  })
-                  if (user.myCreation && user.myCreation.story) {
-                    for (let i = 0; i < user.myCreation.story.length; i++) {
-                      for (let j = 0; j < rootList.length; j++) {
-                        if (user.myCreation.story[i].root.name === rootList[j].root) {
-                          rootList[j].count ++
-                          if (user.myCreation.story[i].date.getTime() > rootList[j].timeStamp) {
-                            rootList[j].timeStamp = user.myCreation.story[i].date.getTime()
+                  user.myCreation.root.forEach((root, index, array) => {
+                    tool.getRootInfo(root.id, function (count) {
+                      rootList.push({
+                        root: root.name,
+                        count: 1, // 我参与创作的数量
+                        timeStamp: root.date.getTime(),
+                        data: [root.id],
+                        cover: tool.formImg(root.coverImg),
+                        nodeCounts: count.nodeCounts,
+                        zanCounts: count.zanCounts,
+                        readCounts: count.readCounts,
+                        label: 'root'
+                      })
+                      if (user.myCreation && user.myCreation.story) {
+                        for (let i = 0; i < user.myCreation.story.length; i++) {
+                          for (let j = 0; j < rootList.length; j++) {
+                            if (user.myCreation.story[i].root.name === rootList[j].root) {
+                              rootList[j].count ++
+                              if (user.myCreation.story[i].date.getTime() > rootList[j].timeStamp) {
+                                rootList[j].timeStamp = user.myCreation.story[i].date.getTime()
+                              }
+                            }
                           }
                         }
                       }
-                    }
-                  }
+                      if (index === array.length - 1) {
+                        res.send({permit: true, result: rootList})
+                      }
+                    })
+                  })
                 }
-                res.send({permit: true, result: rootList})
               } else {
                 res.send({permit: false, type: '404'})
               }
@@ -859,49 +863,59 @@ router.get('/user/getMyCreation', (req, res) => {
             } else {
               if (user) {
                 if (user.myCreation && user.myCreation.story) {   // 存在普通故事节点
-                  user.myCreation.story.forEach((story) => {
-                    storyList.push({
-                      root: story.root ? story.root.name : '',
-                      rootId: story.root ? story.root.id : '',
-                      id: story.id,
-                      timeStamp: story.date.getTime(),
-                      cover: tool.formImg(story.root.coverImg),
-                      label: 'story'
+                  user.myCreation.story.forEach((story, index, array) => {
+                    tool.getRootInfo(story.root.id, function (count) {
+                      storyList.push({
+                        root: story.root ? story.root.name : '',
+                        rootId: story.root ? story.root.id : '',
+                        id: story.id,
+                        timeStamp: story.date.getTime(),
+                        cover: tool.formImg(story.root.coverImg),
+                        nodeCounts: count.nodeCounts,
+                        zanCounts: count.zanCounts,
+                        readCounts: count.readCounts,
+                        label: 'story'
+                      })
+                      let map = {}
+                      let dest = []       // 将story归类
+                      for (let i = 0; i < storyList.length; i++) {
+                        let ai = storyList[i]
+                        if (!map[ai.root]) {
+                          dest.push({
+                            root: ai.root,
+                            rootId: ai.rootId,
+                            data: [ai.id],
+                            cover: ai.cover,
+                            nodeCounts: ai.nodeCounts,
+                            zanCounts: ai.zanCounts,
+                            readCounts: ai.readCounts,
+                            timeStamp: ai.timeStamp
+                          })
+                          map[ai.root] = ai
+                        } else {
+                          for (let j = 0; j < dest.length; j++) {
+                            let dj = dest[j]
+                            if (dj.root === ai.root) {
+                              dj.data.push(ai.id)
+                              break
+                            }
+                          }
+                        }
+                      }
+                      if (user.myCreation && user.myCreation.root) {
+                        for (let i = 0; i < user.myCreation.root.length; i++) {
+                          for (let j = 0; j < dest.length; j++) {
+                            if (user.myCreation.root[i].id === dest[j].rootId) {
+                              dest.splice(j, 1)
+                            }
+                          }
+                        }
+                      }
+                      if (index === array.length -1) {
+                        res.send({permit: true, result: dest})
+                      }
                     })
                   })
-                  let map = {}
-                  let dest = []       // 将story归类
-                  for (let i = 0; i < storyList.length; i++) {
-                    let ai = storyList[i]
-                    if (!map[ai.root]) {
-                      dest.push({
-                        root: ai.root,
-                        rootId: ai.rootId,
-                        data: [ai.id],
-                        cover: ai.cover,
-                        timeStamp: ai.timeStamp
-                      })
-                      map[ai.root] = ai
-                    } else {
-                      for (let j = 0; j < dest.length; j++) {
-                        let dj = dest[j]
-                        if (dj.root === ai.root) {
-                          dj.data.push(ai.id)
-                          break
-                        }
-                      }
-                    }
-                  }
-                  if (user.myCreation && user.myCreation.root) {
-                    for (let i = 0; i < user.myCreation.root.length; i++) {
-                      for (let j = 0; j < dest.length; j++) {
-                        if (user.myCreation.root[i].id === dest[j].rootId) {
-                          dest.splice(j, 1)
-                        }
-                      }
-                    }
-                  }
-                  res.send({permit: true, result: dest})
                 }
               }
             }

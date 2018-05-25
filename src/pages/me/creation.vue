@@ -7,16 +7,7 @@
         <div ><span class="story" :class="{active: myStoryActive}" @click="myStory">我参与的</span></div>
       </div>
     </div>
-    <keep-alive>
-      <transition name="fade">
-        <creation :story="root" v-if="myRootActive" v-on:loadMore="fetchData"></creation>
-      </transition>
-    </keep-alive>
-    <keep-alive>
-      <transition name="fade">
-        <creation :story="story" v-if="myStoryActive" v-on:loadMore="fetchData"></creation>
-      </transition>
-    </keep-alive>
+        <creation :story="myRootActive ? root : story"  v-on:loadMore="fetchData"></creation>
     <foot-menu></foot-menu>
   </div>
 </template>

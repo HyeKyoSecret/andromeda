@@ -1,4 +1,4 @@
-<template>
+ <template>
   <div id="demo">
     <!-- 遮罩层 -->
     <slot></slot>

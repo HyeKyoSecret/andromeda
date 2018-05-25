@@ -2,7 +2,6 @@
   <div class="my-creation-content"
        v-infinite-scroll="loadMore"
        infinite-scroll-disabled= true
-       infinite-scroll-immediate-check = true
        infinite-scroll-distance="10">
     <router-link :to="item.path" tag='div' class="one-story" v-for="(item, index) in story" :key="item.name">
       <div class="story-information">

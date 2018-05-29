@@ -169,7 +169,7 @@ router.get('/story/getStory', (req, res) => {
                   res.send({permit: false, type: 'DB', message: '发生错误，请稍后再试'})
                 } else {
                   if (doc) {
-                    Root.updateOne({id: id}, {$addToSet: {'readCounts': doc._id}}, {upsert: true})
+                    Root.updateOne({id: id}, {$addToSet: {'readCounts': doc._id}})
                       .exec(err => {
                         if (!err) {
                           res.send({permit: true, result: result})
@@ -205,7 +205,7 @@ router.get('/story/getStory', (req, res) => {
                   res.send({permit: false, type: 'DB', message: '发生错误，请稍后再试'})
                 } else {
                   if (doc) {
-                    Story.updateOne({id: id}, {$addToSet: {'readCounts': doc._id}}, {upsert: true})
+                    Story.updateOne({id: id}, {$addToSet: {'readCounts': doc._id}})
                       .exec(err => {
                         if (!err) {
                           res.send({permit: true, result: result})

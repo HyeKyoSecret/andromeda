@@ -15,12 +15,13 @@ export default [
   },
   {
     path: '/people/:user?/',
+    name: 'people',
     component: resolve => require(['../pages/me/me.vue'], resolve),
     children: [
       {
         path: 'message',
         component: resolve => require(['../pages/me/message.vue'], resolve),
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, keepAlive: false },
         children: [
           {
             path: 'words',
@@ -46,28 +47,31 @@ export default [
       },
       {
         path: 'creation',
+        name: 'creation',
         component: resolve => require(['../pages/me/creation.vue'], resolve),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, keepAlive: true }
       },
       {
         path: 'subscribe',
         component: resolve => require(['../pages/me/subscribe.vue'], resolve),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, keepAlive: false }
       },
       {
         path: 'friendList',
         component: resolve => require(['../pages/me/friendList.vue'], resolve),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, keepAlive: false }
       },
       {
         path: 'myCreation/:rootName',
+        name: 'myCreation',
         alias: 'creationNode',
         component: resolve => require(['../pages/me/myCreationNode.vue'], resolve),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, keepAlive: false }
       },
       {
         path: 'changeInfo',
-        component: resolve => require(['../pages/me/changeInfo.vue'], resolve)
+        component: resolve => require(['../pages/me/changeInfo.vue'], resolve),
+        meta: { requiresAuth: true, keepAlive: false }
       }
     ]
   },

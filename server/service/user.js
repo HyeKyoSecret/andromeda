@@ -785,8 +785,6 @@ router.get('/user/getMyCreation', (req, res) => {
               path: 'root'
             },
             options: {
-              skip: val * 8,
-              limit: 8,
               sort: { date: -1 }
             }
           })
@@ -806,7 +804,7 @@ router.get('/user/getMyCreation', (req, res) => {
               if (user) {
                 if (user.myCreation && user.myCreation.root) {   // 存在根节点
                   user.myCreation.root.forEach((root, index, array) => {
-                    tool.getRootInfo(root.id, function (count) {
+                    tool.getRootInfo(root.id, function (count, next) {
                       rootList.push({
                         root: root.name,
                         count: 1, // 我参与创作的数量
@@ -830,7 +828,7 @@ router.get('/user/getMyCreation', (req, res) => {
                           }
                         }
                       }
-                      if (index === array.length - 1) {
+                      if (rootList.length === array.length) {
                         res.send({permit: true, result: rootList})
                       }
                     })
@@ -849,8 +847,6 @@ router.get('/user/getMyCreation', (req, res) => {
               path: 'root'
             },
             options: {
-              skip: val * 8,
-              limit: 8,
               sort: { date: -1 }
             }
           })
@@ -911,11 +907,13 @@ router.get('/user/getMyCreation', (req, res) => {
                           }
                         }
                       }
-                      if (index === array.length -1) {
+                      if (dest.length === array.length) {
                         res.send({permit: true, result: dest})
                       }
                     })
                   })
+                } else {
+                  res.send({permit: true, result: null})
                 }
               }
             }

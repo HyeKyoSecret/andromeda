@@ -34,6 +34,19 @@
         myStoryActive: false
       }
     },
+    // beforeRouteLeave (to, from, next) {
+    //   if (to.name === 'myCreation') {
+    //     if (!from.meta.keepAlive) {
+    //       from.meta.keepAlive = true
+    //     }
+    //     next()
+    //   } else {
+    //     from.meta.keepAlive = false
+    //     to.meta.keepAlive = false
+    //     this.$destroy()
+    //     next()
+    //   }
+    // },
     created: function () {
       this.fetchData('root')
       this.fetchData('story')

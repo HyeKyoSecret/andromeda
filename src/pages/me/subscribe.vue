@@ -235,7 +235,6 @@
         this.cover.coverImg = require('../../img/photo/default2.png')
       },
       setErrorImg (i, j) {
-        console.log(this.contentList[i][j])
         this.contentList[i][j].coverImg = require('../../img/photo/default2.png')
       }
     }

@@ -1,12 +1,10 @@
 <template>
   <div class="read-story">
     <notice v-bind:title="storyInfo.title"></notice>
-    <div class="marker">
-      <img src="../../img/icon/marker_selected.png" />
-    </div>
-    <div class="context">
-      {{storyInfo.content}}
-    </div>
+    <!--<div class="marker">-->
+      <!--<img src="../../img/icon/marker_selected.png" />-->
+    <!--</div>-->
+    <div class="context"><p v-for="item in storyInfo.content">{{item}}</p></div>
     <div class="related-info">
       <!--<div class="anchor"><thumb src="../../thumb/icon/anchor.png" /></div>-->
       <div class="author-info">
@@ -77,10 +75,15 @@
       }
     }
     .context {
-      margin: 30px 10px 0 10px;
+      margin: 30px 10px 0 11px;
       font-size: 16px;
-      height: calc(100vh - 300px);
+      height: calc(100vh - 220px);
       color: $font-dark;
+      white-space: pre-wrap;
+      p {
+        text-indent: 2em;
+        margin: 5px 0 5px 0;
+      }
     }
     .related-info {
       display: flex;
@@ -219,7 +222,7 @@
       return {
         storyInfo: {
           title: '',
-          content: '',
+          content: [],
           author: '',
           authorId: '',
           date: '',
@@ -258,7 +261,7 @@
         }).then(response => {
           if (response.data.permit && response.data.result) {
             this.storyInfo.title = response.data.result.title
-            this.storyInfo.content = response.data.result.content
+            this.storyInfo.content = response.data.result.content.split('\r\n')
             this.storyInfo.author = response.data.result.author
             this.storyInfo.authorId = `/people/${response.data.result.authorId}`
             this.storyInfo.date = response.data.result.date

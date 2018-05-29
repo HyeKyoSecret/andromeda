@@ -73,7 +73,7 @@
       <span class="commit" @click="openRecommend" v-else>下一步</span>
       </div>
       <div class="context">
-        <textarea  name="context" placeholder="在这里书写您的故事" v-model="rootContent"></textarea>
+        <textarea id="context" name="context" placeholder="在这里书写您的故事" v-model="rootContent" rows="16"></textarea>
       </div>
       <div class="permission">
         <div class="line">
@@ -327,6 +327,7 @@
           outline: none;
           font-size: 16px;
           padding: 5px;
+          line-height: 16px;
         }
       }
       .permission {
@@ -423,16 +424,16 @@
             duration: 1000
           })
         } else {
-          if (this.rootContent.length > 180) {
-            this.buildCheck = false
-            Toast({
-              message: `您已超过最大字数${this.rootContent.length - 180}字`,
-              position: 'middle',
-              duration: 1000
-            })
-          } else {
-            this.buildCheck = true
-          }
+          // if (this.rootContent.length > 250) {
+          //   this.buildCheck = false
+          //   Toast({
+          //     message: `您已超过最大字数${this.rootContent.length - 250}字`,
+          //     position: 'middle',
+          //     duration: 1000
+          //   })
+          // } else {
+          //   this.buildCheck = true
+          // }
         }
       },
       rootName: function () {

@@ -77,11 +77,10 @@
             删除好友
           </div>
         </div>
-      <!--<keep-alive>-->
-        <!--<router-view v-if="$route.meta.keepAlive"></router-view>-->
-      <!--</keep-alive>-->
-      <!--<router-view v-if="!$route.meta.keepAlive"></router-view>-->
-      <router-view></router-view>
+      <keep-alive>
+        <router-view v-if="$route.meta.keepAlive"></router-view>
+      </keep-alive>
+      <router-view v-if="!$route.meta.keepAlive"></router-view>
     </div>
     <foot-menu v-if="!isLoginCustomer"></foot-menu>
   </div>

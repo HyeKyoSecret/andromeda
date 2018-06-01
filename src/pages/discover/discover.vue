@@ -83,7 +83,7 @@
               })
             } else {
               let existStory = this.storyList.some(function (story) {
-                return story.path && story.path.split('/story/')[1].toString() === response.data.result[0].path.toString()
+                return story.path && response.data.result[0] && story.path.split('/story/')[1].toString() === response.data.result[0].path.toString()
               })
               if (!existStory) {
                 response.data.result.forEach((o) => {

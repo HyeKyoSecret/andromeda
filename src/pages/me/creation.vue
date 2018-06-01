@@ -39,15 +39,16 @@
     //     if (!from.meta.keepAlive) {
     //       from.meta.keepAlive = true
     //     }
-    //     next()
     //   } else {
-    //     from.meta.keepAlive = false
-    //     to.meta.keepAlive = false
-    //     this.$destroy()
+    //     // from.meta.keepAlive = false
+    //     // to.meta.keepAlive = false
+    //     // this.$destroy()
+    //     console.log('hello')
     //     next()
     //   }
     // },
     created: function () {
+      console.log('重新执行了create')
       this.fetchData('root')
       this.fetchData('story')
     },
@@ -60,10 +61,10 @@
         Axios.get('/user/getMyCreation', {
           params: {
             type: type,
-            val: parseInt(this[type].length / 8),
+            val: parseInt(this[type].length / 6),
             user: this.$route.params.user
           },
-          timeout: 8000
+          timeout: 6000
         }).then((response) => {
           Indicator.close()
           if (response.data.permit) {
@@ -100,9 +101,10 @@
           }
         }).catch((error) => {
           Indicator.close()
+          console.log(error)
           if (error) {
             Toast({
-              message: '请求超时，请稍后再试',
+              message: '请求超时485654',
               position: 'middle',
               duration: 1000
             })

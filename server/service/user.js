@@ -759,21 +759,22 @@ router.get('/user/getMyCreation', (req, res) => {
   'use strict'
   let user = req.query.user
   let type = req.query.type
+  console.log('收到' + user + type)
   let rootList = []
   let storyList = []
   let val = req.query.val
-  // function bubbleSort (arr) {   // 排序算法
-  //   for (let i = 0; i < arr.length - 1; i++) {
-  //     for (let j = 0; j < arr.length - 1 - i; j++) {
-  //       if (arr[j]['timeStamp'] < arr[j + 1]['timeStamp']) {
-  //         let tmp = arr[j]
-  //         arr[j] = arr[j + 1]
-  //         arr[j + 1] = tmp
-  //       }
-  //     }
-  //   }
-  //   return arr
-  // }
+  function bubbleSort (arr) {   // 排序算法，从大到小
+    for (let i = 0; i < arr.length - 1; i++) {
+      for (let j = 0; j < arr.length - 1 - i; j++) {
+        if (arr[j]['timeStamp'] < arr[j + 1]['timeStamp']) {
+          let tmp = arr[j]
+          arr[j] = arr[j + 1]
+          arr[j + 1] = tmp
+        }
+      }
+    }
+    return arr
+  }
   if (user) {
     let userReg = /^U([0-9]){7}$/
     if (userReg.test(user)) {
@@ -785,6 +786,8 @@ router.get('/user/getMyCreation', (req, res) => {
               path: 'root'
             },
             options: {
+              limit: 6,
+              skip: 6 * val,
               sort: { date: -1 }
             }
           })
@@ -804,7 +807,7 @@ router.get('/user/getMyCreation', (req, res) => {
               if (user) {
                 if (user.myCreation && user.myCreation.root) {   // 存在根节点
                   user.myCreation.root.forEach((root, index, array) => {
-                    tool.getRootInfo(root.id, function (count, next) {
+                    tool.getRootInfo(root.id, function (count) {
                       rootList.push({
                         root: root.name,
                         count: 1, // 我参与创作的数量
@@ -829,7 +832,7 @@ router.get('/user/getMyCreation', (req, res) => {
                         }
                       }
                       if (rootList.length === array.length) {
-                        res.send({permit: true, result: rootList})
+                        res.send({permit: true, result: bubbleSort(rootList)})
                       }
                     })
                   })
@@ -872,43 +875,43 @@ router.get('/user/getMyCreation', (req, res) => {
                         readCounts: count.readCounts,
                         label: 'story'
                       })
-                      let map = {}
-                      let dest = []       // 将story归类
-                      for (let i = 0; i < storyList.length; i++) {
-                        let ai = storyList[i]
-                        if (!map[ai.root]) {
-                          dest.push({
-                            root: ai.root,
-                            rootId: ai.rootId,
-                            data: [ai.id],
-                            cover: ai.cover,
-                            nodeCounts: ai.nodeCounts,
-                            zanCounts: ai.zanCounts,
-                            readCounts: ai.readCounts,
-                            timeStamp: ai.timeStamp
-                          })
-                          map[ai.root] = ai
-                        } else {
-                          for (let j = 0; j < dest.length; j++) {
-                            let dj = dest[j]
-                            if (dj.root === ai.root) {
-                              dj.data.push(ai.id)
-                              break
+                      if (storyList.length === array.length) {
+                        let map = {}
+                        let dest = []       // 将story归类
+                        for (let i = 0; i < storyList.length; i++) {
+                          let ai = storyList[i]
+                          if (!map[ai.root]) {
+                            dest.push({
+                              root: ai.root,
+                              rootId: ai.rootId,
+                              data: [ai.id],
+                              cover: ai.cover,
+                              nodeCounts: ai.nodeCounts,
+                              zanCounts: ai.zanCounts,
+                              readCounts: ai.readCounts,
+                              timeStamp: ai.timeStamp
+                            })
+                            map[ai.root] = ai
+                          } else {
+                            for (let j = 0; j < dest.length; j++) {
+                              let dj = dest[j]
+                              if (dj.root === ai.root) {
+                                dj.data.push(ai.id)
+                                break
+                              }
                             }
                           }
                         }
-                      }
-                      if (user.myCreation && user.myCreation.root) {
-                        for (let i = 0; i < user.myCreation.root.length; i++) {
-                          for (let j = 0; j < dest.length; j++) {
-                            if (user.myCreation.root[i].id === dest[j].rootId) {
-                              dest.splice(j, 1)
+                        if (user.myCreation && user.myCreation.root) {
+                          for (let i = 0; i < user.myCreation.root.length; i++) {
+                            for (let j = 0; j < dest.length; j++) {
+                              if (user.myCreation.root[i].id === dest[j].rootId) {
+                                dest.splice(j, 1)
+                              }
                             }
                           }
                         }
-                      }
-                      if (dest.length === array.length) {
-                        res.send({permit: true, result: dest})
+                        res.send({permit: true, result: bubbleSort(dest)})
                       }
                     })
                   })
@@ -923,7 +926,7 @@ router.get('/user/getMyCreation', (req, res) => {
       res.send({permit: false, type: '404'})
     }
   } else {
-    console.log('不是user')
+    console.log('bushiuser')
   }
 })
 router.get('/user/getMyCreationNode', (req, res) => {

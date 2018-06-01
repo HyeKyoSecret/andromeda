@@ -424,16 +424,16 @@
             duration: 1000
           })
         } else {
-          // if (this.rootContent.length > 250) {
-          //   this.buildCheck = false
-          //   Toast({
-          //     message: `您已超过最大字数${this.rootContent.length - 250}字`,
-          //     position: 'middle',
-          //     duration: 1000
-          //   })
-          // } else {
-          //   this.buildCheck = true
-          // }
+          if (this.rootContent.length > 250) {
+            this.buildCheck = false
+            Toast({
+              message: `您已超过最大字数${this.rootContent.length - 250}字`,
+              position: 'middle',
+              duration: 1000
+            })
+          } else {
+            this.buildCheck = true
+          }
         }
       },
       rootName: function () {
@@ -471,7 +471,7 @@
       })
     },
     created: function () {
-      this.loadDraft()
+      // this.loadDraft()
     },
     methods: {
       choosePic () {

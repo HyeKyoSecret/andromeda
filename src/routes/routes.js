@@ -102,7 +102,8 @@ export default [
   },
   {
     path: '/discover',
-    component: resolve => require(['../pages/discover/discover.vue'], resolve)
+    component: resolve => require(['../pages/discover/discover.vue'], resolve),
+    meta: { keepAlive: true }
   },
   {
     path: '/start',

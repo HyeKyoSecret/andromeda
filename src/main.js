@@ -15,8 +15,16 @@ Axios.defaults.withCredentials = true
 Vue.use(MintUI)
 Vue.use(VueRouter)
 Vue.use(VueFinger)
+const scrollBehavior = (to, from, savedPosition) => {
+  if (savedPosition) {
+    return savedPosition
+  } else {
+    return { x: 0, y: 0 }
+  }
+}
 const router = new VueRouter({
   mode: 'history',
+  scrollBehavior,
   routes
 })
 router.beforeEach((to, from, next) => {
@@ -51,10 +59,10 @@ router.beforeEach((to, from, next) => {
 // router.afterEach((to, from) => {
 //   if (from.name === 'people' && to.name === 'myCreation') {
 //     let isRefresh = sessionStorage.get('isRefresh')
-//     console.log('isRrfresh' + isRefresh)
+//     console.log('isRefresh' + isRefresh)
 //     if (isRefresh === 0) {
 //       sessionStorage.set('isRefresh', null)
-//       window.location.reload()
+//       // window.location.reload()
 //     } else {
 //       sessionStorage.set('isRefresh', 0)
 //     }

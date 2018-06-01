@@ -104,7 +104,7 @@ router.post('/story/buildRoot', (req, res) => {
                                         }
                                         if (i === rootStory.recommend.length - 1) {
                                           gm(savePath)
-                                            .thumb(300, 400, thumbSavePath, 100, function (err) {
+                                            .thumb(300, 400, thumbSavePath, 80, function (err) {
                                               if (err) {
                                                 res.send({permit: false, type: 'gm', message: '发生错误'})
                                               } else {
@@ -116,7 +116,7 @@ router.post('/story/buildRoot', (req, res) => {
                                     }
                                   } else {
                                     gm(savePath)
-                                      .thumb(300, 400, thumbSavePath, 100, function (err) {
+                                      .thumb(300, 400, thumbSavePath, 80, function (err) {
                                         if (err) {
                                           res.send({permit: false, type: 'gm', message: '发生错误'})
                                         } else {
@@ -1685,7 +1685,7 @@ router.post('/story/updateCover', function (req, res) {
           res.send({error: true, type: 'DB', message: '发生错误，上传失败'})
         } else {
           gm(savePath)
-            .thumb(300, 400, thumbSavePath, 100, function (err) {
+            .thumb(300, 400, thumbSavePath, 80, function (err) {
               if (err) {
                 res.send({error: false, type: 'gm', message: '发生错误'})
               } else {

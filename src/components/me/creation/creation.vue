@@ -1,8 +1,8 @@
 <template>
   <div class="my-creation-content"
        v-infinite-scroll="loadMore"
-       infinite-scroll-disabled= true
-       infinite-scroll-distance="10">
+       infinite-scroll-disabled = true
+       infinite-scroll-distance = "10">
     <router-link :to="item.path" tag='div' class="one-story" v-for="(item, index) in story" :key="item.name">
       <div class="story-information">
         <div class="cover">
@@ -19,7 +19,7 @@
         <div class="right-part">
           <div class="story-name">
             <span class="name">{{item.name}}</span>
-            <span class="owner" v-if="item.isRoot">创建者</span>
+            <span class="owner" v-if="item.isRoot">创建人</span>
           </div>
           <div class="info-quantity">
             <span><img src="../../../img/icon/gray_pen.png" /></span>

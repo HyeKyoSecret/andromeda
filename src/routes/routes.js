@@ -85,7 +85,9 @@ export default [
   },
   {
     path: '/test',
-    component: resolve => require(['../pages/test.vue'], resolve)
+    name: 'test',
+    component: resolve => require(['../pages/test.vue'], resolve),
+    meta: { keepAlive: true }
   },
   {
     path: '/buildStory',         // 创建新故事
@@ -103,7 +105,7 @@ export default [
   {
     path: '/discover',
     component: resolve => require(['../pages/discover/discover.vue'], resolve),
-    meta: { keepAlive: true }
+    meta: { keepAlive: false }
   },
   {
     path: '/start',

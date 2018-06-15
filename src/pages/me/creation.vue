@@ -1,6 +1,7 @@
 <template>
   <div class="my-creation">
     <notice v-bind:title="title"></notice>
+    <div style="position: fixed; top: 0;">{{time}}</div>
     <div class="button-bar">
       <div class="button">
         <div ><span class="root" :class="{active: myRootActive}" @click="myRoot">我发起的</span></div>
@@ -34,91 +35,100 @@
         myStoryActive: false
       }
     },
-    // beforeRouteLeave (to, from, next) {
-    //   if (to.name === 'myCreation') {
-    //     if (!from.meta.keepAlive) {
-    //       from.meta.keepAlive = true
-    //     }
-    //   } else {
-    //     // from.meta.keepAlive = false
-    //     // to.meta.keepAlive = false
-    //     // this.$destroy()
-    //     console.log('hello')
-    //     next()
-    //   }
-    // },
+    beforeRouteLeave (to, from, next) {
+      if (to.name === 'myCreation') {
+        if (!from.meta.keepAlive) {
+          from.meta.keepAlive = true
+          next()
+        }
+        next()
+      } else {
+        from.meta.keepAlive = false
+        to.meta.keepAlive = false
+        this.$destroy()
+        next()
+      }
+    },
     created: function () {
-      console.log('重新执行了create')
+      console.log('触发创建')
+      let time = new Date()
+      this.time = time.getTime()
       this.fetchData('root')
       this.fetchData('story')
     },
+    activated: function () {
+      console.log('触发激活')
+    },
     methods: {
       fetchData (type) {
-        Indicator.open({
-          text: '加载中...',
-          spinnerType: 'fading-circle'
-        })
-        Axios.get('/user/getMyCreation', {
-          params: {
-            type: type,
-            val: parseInt(this[type].length / 6),
-            user: this.$route.params.user
-          },
-          timeout: 6000
-        }).then((response) => {
-          Indicator.close()
-          if (response.data.permit) {
-            let exist = this[type].some(function (story) {
-              return response.data.result[0] && response.data.result[0].root === story.name
-            })
-            if (!exist) {
-              for (let i = 0; i < response.data.result.length; i++) {
-                this[type].push({
-                  name: response.data.result[i].root,
-                  num: response.data.result[i].count ? response.data.result[i].count : response.data.result[i].data.length,
-                  latestDate: moment(response.data.result[i].timeStamp).format('YYYY年M月D日 HH:mm'),
-                  isRoot: response.data.result[i].label,
-                  path: this.getPath(response.data.result[i]),
-                  cover: response.data.result[i].cover,
-                  nodeCounts: response.data.result[i].nodeCounts,
-                  zanCounts: response.data.result[i].zanCounts,
-                  readCounts: response.data.result[i].readCounts
+        if (this.$route.name === 'creation') {
+          console.log('请求数据')
+          Indicator.open({
+            text: '加载中...',
+            spinnerType: 'fading-circle'
+          })
+          Axios.get('/user/getMyCreation', {
+            params: {
+              type: type,
+              val: parseInt(this[type].length / 6),
+              user: this.$route.params.user
+            },
+            timeout: 6000
+          }).then((response) => {
+            Indicator.close()
+            if (response.data.permit) {
+              let exist = this[type].some(function (story) {
+                return response.data.result[0] && response.data.result[0].root === story.name
+              })
+              if (!exist) {
+                for (let i = 0; i < response.data.result.length; i++) {
+                  this[type].push({
+                    name: response.data.result[i].root,
+                    num: response.data.result[i].count ? response.data.result[i].count : response.data.result[i].data.length,
+                    latestDate: moment(response.data.result[i].timeStamp).format('YYYY年M月D日 HH:mm'),
+                    isRoot: response.data.result[i].label,
+                    path: this.getPath(response.data.result[i]),
+                    cover: response.data.result[i].cover,
+                    nodeCounts: response.data.result[i].nodeCounts,
+                    zanCounts: response.data.result[i].zanCounts,
+                    readCounts: response.data.result[i].readCounts
+                  })
+                }
+              }
+            } else {
+              if (response.data.type === '404') {
+                // 用户名错误
+                this.$emit('error')
+              } else {
+                // 数据库错误
+                Toast({
+                  message: '发生错误，请稍后再试',
+                  position: 'middle',
+                  duration: 1000
                 })
               }
             }
-          } else {
-            if (response.data.type === '404') {
-              // 用户名错误
-              this.$emit('error')
-            } else {
-              // 数据库错误
+          }).catch((error) => {
+            Indicator.close()
+            console.log(error)
+            if (error) {
               Toast({
-                message: '发生错误，请稍后再试',
+                message: '请求超时485654',
                 position: 'middle',
                 duration: 1000
               })
             }
-          }
-        }).catch((error) => {
-          Indicator.close()
-          console.log(error)
-          if (error) {
-            Toast({
-              message: '请求超时485654',
-              position: 'middle',
-              duration: 1000
-            })
-          }
-        })
-        Axios.get('/register/checkUser', {
-          params: {
-            user: this.$route.params.user
-          }
-        }).then(response => {
-          if (response.data.customer) {
-            this.title = response.data.sex + '的创作'
-          }
-        })
+          })
+          Axios.get('/register/checkUser', {
+            params: {
+              user: this.$route.params.user
+            }
+          }).then(response => {
+            if (response.data.customer) {
+              this.title = response.data.sex + '的创作'
+            }
+          })
+        }
       },
       getPath (val) {
         return `myCreation/${val.root}`

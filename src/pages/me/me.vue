@@ -77,11 +77,14 @@
             删除好友
           </div>
         </div>
-      <keep-alive>
-        <router-view v-if="$route.meta.keepAlive"></router-view>
-      </keep-alive>
-      <router-view v-if="!$route.meta.keepAlive"></router-view>
     </div>
+    <router-link to="/people/test">qu ceshi</router-link>
+    <keep-alive>
+      <router-view v-if="$route.meta.keepAlive">
+        {{$route.meta.keepAlive}}hahha
+      </router-view>
+    </keep-alive>
+    <router-view v-if="!$route.meta.keepAlive">{{$route.meta.keepAlive}}xx</router-view>
     <foot-menu v-if="!isLoginCustomer"></foot-menu>
   </div>
 </template>
@@ -347,7 +350,7 @@
           {
             name: '我的轨迹',
             icon: require('../../img/icon/my_trail.png'),
-            path: '/people/message/words'
+            path: '/test'
           }
         ],
         cOperation: [

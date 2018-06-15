@@ -56,20 +56,7 @@ router.beforeEach((to, from, next) => {
     next() // 确保一定要调用 next()
   }
 })
-// router.afterEach((to, from) => {
-//   if (from.name === 'people' && to.name === 'myCreation') {
-//     let isRefresh = sessionStorage.get('isRefresh')
-//     console.log('isRefresh' + isRefresh)
-//     if (isRefresh === 0) {
-//       sessionStorage.set('isRefresh', null)
-//       // window.location.reload()
-//     } else {
-//       sessionStorage.set('isRefresh', 0)
-//     }
-//   } else if (from.name === 'creation' && to.name === 'people') {
-//     sessionStorage.set('isRefresh', 0)
-//   }
-// })
+
 /* eslint-disable */
 new Vue({
   router,

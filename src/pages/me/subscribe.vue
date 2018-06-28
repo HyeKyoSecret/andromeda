@@ -219,7 +219,6 @@
                   }
                 }
               }
-              console.log(JSON.stringify(this.contentList))
               this.changeCover(this.cover)
             }
           } else {

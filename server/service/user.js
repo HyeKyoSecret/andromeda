@@ -759,7 +759,6 @@ router.get('/user/getMyCreation', (req, res) => {
   'use strict'
   let user = req.query.user
   let type = req.query.type
-  console.log('收到' + user + type)
   let rootList = []
   let storyList = []
   let val = req.query.val
@@ -926,7 +925,7 @@ router.get('/user/getMyCreation', (req, res) => {
       res.send({permit: false, type: '404'})
     }
   } else {
-    console.log('bushiuser')
+    res.send({permit: false, type: '404'})
   }
 })
 router.get('/user/getMyCreationNode', (req, res) => {

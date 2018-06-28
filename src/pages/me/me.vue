@@ -78,13 +78,10 @@
           </div>
         </div>
     </div>
-    <router-link to="/people/test">qu ceshi</router-link>
     <keep-alive>
-      <router-view v-if="$route.meta.keepAlive">
-        {{$route.meta.keepAlive}}hahha
-      </router-view>
+      <router-view v-if="$route.meta.keepAlive"></router-view>
     </keep-alive>
-    <router-view v-if="!$route.meta.keepAlive">{{$route.meta.keepAlive}}xx</router-view>
+    <router-view v-if="!$route.meta.keepAlive"></router-view>
     <foot-menu v-if="!isLoginCustomer"></foot-menu>
   </div>
 </template>

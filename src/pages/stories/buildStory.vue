@@ -441,8 +441,8 @@
           this.rootNameError = '故事名不能为空'
           this.rootNameCheck = false
         } else {
-          if (this.rootName.length > 12) {
-            this.rootNameError = '故事名最多为12个字符'
+          if (this.rootName.length > 15) {
+            this.rootNameError = '故事名最多为15个字符'
             this.rootNameCheck = false
           } else {
             this.rootNameError = ''

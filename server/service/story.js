@@ -1690,7 +1690,9 @@ router.post('/story/updateCover', function (req, res) {
                 res.send({error: false, type: 'gm', message: '发生错误'})
               } else {
                 copyIt(thumbSavePath, usePath)     // 拷贝文件
-                tool.clearFiles(root.coverImg)
+                if (root) {
+                  tool.clearFiles(root.coverImg)
+                }
                 res.send({error: false, message: '修改成功', result: tool.formImg(savePath)})
               }
             })

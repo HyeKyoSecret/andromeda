@@ -1,6 +1,6 @@
 <template>
   <div class="read-story">
-    <notice v-bind:title="storyInfo.title"></notice>
+    <notice v-bind:title="storyInfo.title" v-bind:more="moreList"></notice>
     <!--<div class="marker">-->
       <!--<img src="../../img/icon/marker_selected.png" />-->
     <!--</div>-->
@@ -49,12 +49,12 @@
       </div>
     </div>
     <div class="jump-menu">
-      <div class="button">刚才阅读</div>
-      <div class="button">最浅未读</div>
-      <div class="button">最深以读</div>
+      <!--<div class="button">刚才阅读</div>-->
+      <!--<div class="button">最浅未读</div>-->
+      <!--<div class="button">最深以读</div>-->
       <div class="button">开头</div>
-      <div class="button">锚定节点</div>
-      <div class="button">热门节点</div>
+      <!--<div class="button">锚定节点</div>-->
+      <!--<div class="button">热门节点</div>-->
       <div class="button">书签</div>
     </div>
     <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
@@ -233,7 +233,8 @@
           num: 0,
           subscribe: false
         },
-        writeWindow: false
+        writeWindow: false,
+        moreList: ['bookMark', 'report']
       }
     },
     created: function () {

@@ -49,7 +49,27 @@ export default [
         path: 'creation',
         name: 'creation',
         component: resolve => require(['../pages/me/creation.vue'], resolve),
-        meta: { requiresAuth: true, keepAlive: true }
+        meta: { requiresAuth: true, keepAlive: true },
+        beforeEnter: (to, from, next) => {
+          if (from.name !== 'myCreation') {
+            to.meta.keepAlive = false
+            next()
+          } else {
+            if (!to.meta.keepAlive) {
+              to.meta.keepAlive = true
+            }
+            next()
+          }
+        },
+        children: [
+          {
+            path: 'myCreation/:rootName',
+            name: 'myCreation',
+            alias: 'creationNode',
+            component: resolve => require(['../pages/me/myCreationNode.vue'], resolve),
+            meta: { requiresAuth: true }
+          }
+        ]
       },
       {
         path: 'subscribe',
@@ -59,13 +79,6 @@ export default [
       {
         path: 'friendList',
         component: resolve => require(['../pages/me/friendList.vue'], resolve),
-        meta: { requiresAuth: true, keepAlive: false }
-      },
-      {
-        path: 'myCreation/:rootName',
-        name: 'myCreation',
-        alias: 'creationNode',
-        component: resolve => require(['../pages/me/myCreationNode.vue'], resolve),
         meta: { requiresAuth: true, keepAlive: false }
       },
       {

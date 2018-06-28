@@ -74,7 +74,6 @@
     },
     data () {
       return {
-        temp: {},
         result: {},
         writePermit: true,
         writeAuthorized: true,
@@ -233,7 +232,7 @@
         }
         let formData = new FormData()
         formData.append('file', this.file, this.fileName)
-        formData.append('rootName', this.temp.root)
+        formData.append('rootName', this.$route.params.rootName)
         formData.append('id', this.$route.params.user)
         Axios.post('/story/updateCover', formData, config).then(response => {
           Indicator.close()
@@ -244,6 +243,7 @@
           })
           this.imgSrc = response.data.result
           this.percentShow = false
+          this.$emit('refreshImg', this.$route.params.rootName, response.data.result)
         }).catch(error => {
           Indicator.close()
           if (error) {

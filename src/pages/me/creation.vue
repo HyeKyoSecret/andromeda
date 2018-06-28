@@ -1,7 +1,6 @@
 <template>
   <div class="my-creation">
     <notice v-bind:title="title"></notice>
-    <div style="position: fixed; top: 0;">{{time}}</div>
     <div class="button-bar">
       <div class="button">
         <div ><span class="root" :class="{active: myRootActive}" @click="myRoot">我发起的</span></div>
@@ -9,6 +8,7 @@
       </div>
     </div>
         <creation :story="myRootActive ? root : story"  v-on:loadMore="fetchData"></creation>
+    <router-view v-on:refreshImg="refreshImage"></router-view>
     <foot-menu></foot-menu>
   </div>
 </template>
@@ -35,34 +35,13 @@
         myStoryActive: false
       }
     },
-    beforeRouteLeave (to, from, next) {
-      if (to.name === 'myCreation') {
-        if (!from.meta.keepAlive) {
-          from.meta.keepAlive = true
-          next()
-        }
-        next()
-      } else {
-        from.meta.keepAlive = false
-        to.meta.keepAlive = false
-        this.$destroy()
-        next()
-      }
-    },
     created: function () {
-      console.log('触发创建')
-      let time = new Date()
-      this.time = time.getTime()
       this.fetchData('root')
       this.fetchData('story')
-    },
-    activated: function () {
-      console.log('触发激活')
     },
     methods: {
       fetchData (type) {
         if (this.$route.name === 'creation') {
-          console.log('请求数据')
           Indicator.open({
             text: '加载中...',
             spinnerType: 'fading-circle'
@@ -73,7 +52,7 @@
               val: parseInt(this[type].length / 6),
               user: this.$route.params.user
             },
-            timeout: 6000
+            timeout: 10000
           }).then((response) => {
             Indicator.close()
             if (response.data.permit) {
@@ -112,8 +91,9 @@
             Indicator.close()
             console.log(error)
             if (error) {
+              console.log(error)
               Toast({
-                message: '请求超时485654',
+                message: '请求超时',
                 position: 'middle',
                 duration: 1000
               })
@@ -131,7 +111,7 @@
         }
       },
       getPath (val) {
-        return `myCreation/${val.root}`
+        return `creation/myCreation/${val.root}`
       },
       setErrorImg (x) {
         this.story[x].cover = require('../../img/photo/default2.png')
@@ -143,6 +123,15 @@
       myStory () {
         this.myRootActive = false
         this.myStoryActive = true
+      },
+      refreshImage (name, path) {
+        // 同步修改封面
+        for (let i = 0; i < this.root.length; i++) {
+          if (this.root[i].name === name) {
+            this.root[i].cover = path
+            break
+          }
+        }
       }
     }
   }

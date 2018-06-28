@@ -1,8 +1,8 @@
 <template>
   <div class="aa">
-    {{time}}
-    <slot></slot>
-    <router-link to="/people">揍你</router-link>
+    <div class="b">开始自闭</div>
+    <div><mt-switch v-model="writePermit" class="switch"></mt-switch>
+    </div>
   </div>
 </template>
 <script>
@@ -27,13 +27,18 @@
   }
 </script>
 <style lang="scss" scoped>
+  @import '../scss/style.css';
   .aa {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 1000px;
-    background: darkseagreen;
-    font-size: 20px;
+    height: 80px;
+    width: 210px;
+    margin-left: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    div {
+      font-size: 21px;
+      flex: 1;
+    }
+
   }
 </style>

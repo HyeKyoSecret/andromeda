@@ -111,6 +111,16 @@ const UserSchema = new Schema({
       content_4: String
     }
   ],
+  mark: [
+    {
+      rootId: String,
+      story: [{
+        name: { type: String, default: '未命名' },
+        id: String,
+        date: { type: Date, default: Date.now }
+      }]
+    }
+  ],
   headImg: String
 })
 UserSchema.pre('save', function (next) {

@@ -6,10 +6,10 @@
     <span class="title">
       {{title}}
     </span>
-    <span class="more" v-if="more" @click="show">
+    <span class="more" v-if="more" @click="showMenu">
       <img src="../../img/icon/more.png" alt="">
     </span>
-    <div v-if="more" class="menu">
+    <div v-if="more && menuActive" class="menu">
       <div class="entry-trangle-top"></div>
       <div class="content" v-for="item in menuList">
         <span class="menu-icon"><img :src="item.icon" alt="">
@@ -25,25 +25,24 @@
       return {
         menu: [
           {
-            name: 'bookMark',
-            label: '添加书签',
-            icon: require('../../img/icon/bookmark.png')
-          },
-          {
             name: 'report',
             label: '举报',
             icon: require('../../img/icon/report.png')
           }
         ],
-        menuList: []
+        menuList: [],
+        menuActive: false
       }
     },
     created: function () {
-      // this.buildMenuList()
+      this.buildMenuList()
     },
     methods: {
       goBack () {
         this.$router.go(-1)
+      },
+      showMenu () {
+        this.menuActive = !this.menuActive
       },
       buildMenuList () {
         if (this.more) {

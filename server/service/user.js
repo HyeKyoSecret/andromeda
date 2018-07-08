@@ -327,7 +327,7 @@ router.get('/user/acceptFriend', (req, res) => {
         User.updateOne({$and: [{id: id}, {'pending.addFriend.from': fromUser._id}]}, {
           $push: {'friendList': {'friend': fromUser._id}},
           $set: {'pending.addFriend.$.state': 'resolve'}
-        }, {upsert: true}, (error) => {
+        }, (error) => {
           if (error) {
             res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
           }
@@ -338,7 +338,7 @@ router.get('/user/acceptFriend', (req, res) => {
               'promote': {'description': 'friendRequest', 'content_1': user.nickname, 'content_2': '接受了您的好友请求'}
             },
             $pull: {'pending.request': {'to': user._id}}
-          }, {upsert: true}, (error2) => {
+          }, (error2) => {
             if (error2) {
               console.log(error2)
               res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
@@ -348,7 +348,6 @@ router.get('/user/acceptFriend', (req, res) => {
           })
         })
       } else {
-        console.log('存在')
         // 更新对方的好友列表
         User.updateOne({$and: [{id: fromId}, {'pending.request.to': user._id}]}, {
           $push: {
@@ -356,7 +355,7 @@ router.get('/user/acceptFriend', (req, res) => {
             'promote': {'description': 'friendRequest', 'content_1': user.nickname, 'content_2': '接受了您的好友请求'}
           },
           $pull: {'pending.request': {'to': user._id}}
-        }, {upsert: true}, (error2) => {
+        }, (error2) => {
           if (error2) {
             console.log(error2)
             res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
@@ -1046,5 +1045,46 @@ router.get('/user/getMyCreationNode', (req, res) => {
       }
     })
 })
-
+router.post('/user/changeMark', (req, res) => {
+  console.log('jinru')
+  let rootReg = /^R([0-9]){7}$/
+  let storyReg = /^S([0-9]){7}$/
+  let markActive = req.body.markActive
+  let id = req.body.id
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    if (rootReg.test(id)) {
+      User.findOne({username: user})
+        .exec((err, duser) => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            if (duser) {
+              duser.mark.forEach((mark) => {
+                if (mark && mark.rootId === id) {
+                  if (markActive) {
+                    User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$addToSet: {'story': id}})
+                      .exec((err2) => {
+                        if (err2) {
+                          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                        } else {
+                          res.send({error: false})
+                        }
+                      })
+                  }
+                }
+              })
+            }
+          }
+        })
+    }
+  } else {
+    res.send({error: true, type: 'user'})
+  }
+})
 module.exports = router

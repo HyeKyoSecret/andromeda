@@ -1,9 +1,10 @@
 <template>
   <div class="read-story">
     <notice v-bind:title="storyInfo.title" v-bind:more="moreList"></notice>
-    <!--<div class="marker">-->
-      <!--<img src="../../img/icon/marker_selected.png" />-->
-    <!--</div>-->
+    <div class="marker" @click="changeMark">
+      <img src="../../img/icon/marker_unselected.png" v-if="!markActive"/>
+      <img src="../../img/icon/marker_selected.png" v-else/>
+    </div>
     <div class="context"><p v-for="item in storyInfo.content">{{item}}</p></div>
     <div class="related-info">
       <!--<div class="anchor"><thumb src="../../thumb/icon/anchor.png" /></div>-->
@@ -67,7 +68,7 @@
     background: $bg-gray;
     .marker {
       float: right;
-      margin-right: 30px;
+      margin-right: 45px;
       margin-top: -15px;
       img {
         height: 45px;
@@ -228,13 +229,14 @@
           date: '',
           ftNode: ''
         },
+        markActive: false,
         menuInfo: {
           zan: false,
           num: 0,
           subscribe: false
         },
         writeWindow: false,
-        moreList: ['bookMark', 'report']
+        moreList: ['report']
       }
     },
     created: function () {
@@ -391,6 +393,15 @@
               duration: 1000
             })
           }
+        })
+      },
+      changeMark () {
+        this.markActive = !this.markActive
+        Axios.post('/user/changeMark', {
+          id: this.$route.params.id,
+          markActive: this.markActive
+        }).then(response => {
+          console.log(response.data)
         })
       },
       prepareRec () {

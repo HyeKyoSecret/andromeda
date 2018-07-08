@@ -89,7 +89,6 @@
             }
           }).catch((error) => {
             Indicator.close()
-            console.log(error)
             if (error) {
               console.log(error)
               Toast({

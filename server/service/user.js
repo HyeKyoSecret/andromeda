@@ -803,7 +803,7 @@ router.get('/user/getMyCreation', (req, res) => {
               res.send({permit: false})
             } else {
               if (user) {
-                if (user.myCreation && user.myCreation.root) {   // 存在根节点
+                if (user.myCreation.root.length) {   // 存在根节点
                   user.myCreation.root.forEach((root, index, array) => {
                     tool.getRootInfo(root.id, function (count) {
                       rootList.push({
@@ -817,7 +817,7 @@ router.get('/user/getMyCreation', (req, res) => {
                         readCounts: count.readCounts,
                         label: 'root'
                       })
-                      if (user.myCreation && user.myCreation.story) {
+                      if (user.myCreation.story.length) {
                         for (let i = 0; i < user.myCreation.story.length; i++) {
                           for (let j = 0; j < rootList.length; j++) {
                             if (user.myCreation.story[i].root.name === rootList[j].root) {
@@ -834,6 +834,8 @@ router.get('/user/getMyCreation', (req, res) => {
                       }
                     })
                   })
+                } else {
+                  res.send({permit: true, result: rootList})
                 }
               } else {
                 res.send({permit: false, type: '404'})
@@ -859,7 +861,7 @@ router.get('/user/getMyCreation', (req, res) => {
               res.send({permit: false})
             } else {
               if (user) {
-                if (user.myCreation && user.myCreation.story) {   // 存在普通故事节点
+                if (user.myCreation.story.length) {   // 存在普通故事节点
                   user.myCreation.story.forEach((story, index, array) => {
                     tool.getRootInfo(story.root.id, function (count) {
                       storyList.push({
@@ -900,7 +902,7 @@ router.get('/user/getMyCreation', (req, res) => {
                             }
                           }
                         }
-                        if (user.myCreation && user.myCreation.root) {
+                        if (user.myCreation.root.length) {
                           for (let i = 0; i < user.myCreation.root.length; i++) {
                             for (let j = 0; j < dest.length; j++) {
                               if (user.myCreation.root[i].id === dest[j].rootId) {
@@ -914,7 +916,7 @@ router.get('/user/getMyCreation', (req, res) => {
                     })
                   })
                 } else {
-                  res.send({permit: true, result: null})
+                  res.send({permit: true, result: rootList})
                 }
               }
             }
@@ -1046,7 +1048,6 @@ router.get('/user/getMyCreationNode', (req, res) => {
     })
 })
 router.post('/user/changeMark', (req, res) => {
-  console.log('jinru')
   let rootReg = /^R([0-9]){7}$/
   let storyReg = /^S([0-9]){7}$/
   let markActive = req.body.markActive
@@ -1065,20 +1066,44 @@ router.post('/user/changeMark', (req, res) => {
             res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
           } else {
             if (duser) {
-              duser.mark.forEach((mark) => {
-                if (mark && mark.rootId === id) {
-                  if (markActive) {
-                    User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$addToSet: {'story': id}})
-                      .exec((err2) => {
-                        if (err2) {
-                          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                        } else {
-                          res.send({error: false})
-                        }
-                      })
+              if (duser.mark.length) {
+                duser.mark.forEach((mark) => {
+                  if (mark && mark.rootId === id) {
+                    if (markActive) {
+                      User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$addToSet: {'story.id': [id]}})
+                        .exec((err2) => {
+                          if (err2) {
+                            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                          } else {
+                            res.send({error: false})
+                          }
+                        })
+                    }
+                  } else {
+                    if (markActive) {
+                      User.updateOne({username: user}, {$addToSet: {'mark': {'rootId': id, 'story.id': [id]}}})
+                        .exec((err3) => {
+                          if (err3) {
+                            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                          } else {
+                            res.send({error: false})
+                          }
+                        })
+                    }
                   }
+                })
+              } else {
+                if (markActive) {
+                  User.updateOne({username: user}, {$addToSet: {'mark': {'rootId': id, 'story.$.id': id}}})
+                    .exec((err3) => {
+                      if (err3) {
+                        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                      } else {
+                        res.send({error: false})
+                      }
+                    })
                 }
-              })
+              }
             }
           }
         })

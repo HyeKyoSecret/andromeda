@@ -282,34 +282,6 @@ router.get('/register/quitLogin', (req, res) => {
     }
   })
 })
-router.get('/register/a', function (req, res) {
-  res.send({result: 666})
-})
-router.post('/test/words', function (req, res) {
-  console.log('shoudao' + req.body.words)
-  res.send('success')
-})
-router.get('/register/b', function (req, res) {
-  console.log('req.cookies.And' + req.cookies.And)
-  if (req.cookies.And) {
-    console.log('后台判断cookies存在' + req.cookies.And.user)
-    res.send('yes')
-  } else {
-    res.send('no')
-  }
-})
-router.get('/register/testGm', function (req, res) {
-  let filePath = path.resolve('__dirname', '../static/picture/head/upload_04d8686d819e61f9ab33a798893ce72a.JPG')
-  let savePath = path.resolve('__dirname', '../static/thumb/images/hua.jpg')
-  console.log(filePath)
-  gm(filePath)
-    .thumb(180, 240, savePath, 80, function (err) {
-      if (err) {
-        console.log(err)
-      } else {
-        console.log('success')
-        res.send('ok')
-      }
-    })
-})
+
+
 module.exports = router

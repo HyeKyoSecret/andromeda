@@ -176,6 +176,7 @@
             duration: 700
           })
           this.getCaptcha()
+          this.$router.push('/')
         })
       }
     },

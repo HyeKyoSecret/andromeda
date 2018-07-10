@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "css-loader": "^0.28.7",
+    "lrz": "^4.9.40",
     "mint-ui": "^2.2.13",
     "moment": "^2.19.4",
     "vue": "^2.4.2",

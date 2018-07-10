@@ -227,7 +227,8 @@
           author: '',
           authorId: '',
           date: '',
-          ftNode: ''
+          ftNode: '',
+          markList: []
         },
         markActive: false,
         menuInfo: {
@@ -241,6 +242,7 @@
     },
     created: function () {
       this.getData()
+      this.getMark() // 获取书签
       this.ftNode = this.$route.params.id
       this.fetchMenuData()
 //      this.getNextNode()
@@ -270,6 +272,24 @@
             this.storyInfo.date = response.data.result.date
           } else {
             this.$emit('error')
+          }
+        })
+      },
+      getMark () {
+        Axios.get('/user/getMark', {
+          params: {
+            id: this.$route.params.id
+          }
+        }).then(response => {
+          if (!response.data.error) {
+            this.markList = response.data.result
+            this.markActive = response.data.mark
+          } else {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
           }
         })
       },
@@ -318,7 +338,6 @@
               if (action === 'confirm') {
                 this.$router.push('/login')
               }
-              // 这边欠一个重定向
             })
           }
         })
@@ -367,7 +386,6 @@
               showCancelButton: true
             }).then(action => {
               this.$router.push('/login')
-              // 这边欠一个重定向
             })
           }
         })
@@ -401,7 +419,13 @@
           id: this.$route.params.id,
           markActive: this.markActive
         }).then(response => {
-          console.log(response.data)
+          if (response.data.error) {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
+          }
         })
       },
       prepareRec () {

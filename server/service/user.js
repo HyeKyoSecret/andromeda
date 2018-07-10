@@ -567,8 +567,6 @@ router.get('/user/getFriendList', (req, res) => {
               headImg: tool.formImg(friend.friend.headImg)
             })
           })
-          let hello = ['阿北山', '龙儿', 'h', 'a', 6, '牛', 'd', 'f']
-          console.log(hello.sort())
           res.send({error: false, result: result})
         } else {
           res.send({error: true, type: 'user', message: '发生错误，请重新登录'})
@@ -1067,21 +1065,33 @@ router.post('/user/changeMark', (req, res) => {
           } else {
             if (duser) {
               if (duser.mark.length) {
-                duser.mark.forEach((mark) => {
+                duser.mark.forEach((mark, index, array) => {
                   if (mark && mark.rootId === id) {
                     if (markActive) {
-                      User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$addToSet: {'story.id': [id]}})
-                        .exec((err2) => {
-                          if (err2) {
-                            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                          } else {
-                            res.send({error: false})
-                          }
-                        })
+                      mark.story.push({
+                        id: id
+                      })
+                    } else {
+                      mark.story.splice(index, 1)
                     }
+                    User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$set: {'mark': array}})
+                      .exec((err2) => {
+                        if (err2) {
+                          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                        } else {
+                          res.send({error: false})
+                        }
+                      })
                   } else {
                     if (markActive) {
-                      User.updateOne({username: user}, {$addToSet: {'mark': {'rootId': id, 'story.id': [id]}}})
+                      let k =
+                      {
+                        rootId: id,
+                        story: {
+                          id: id
+                        }
+                      }
+                      User.updateOne({username: user}, {$addToSet: {'mark': k}})
                         .exec((err3) => {
                           if (err3) {
                             res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -1089,12 +1099,22 @@ router.post('/user/changeMark', (req, res) => {
                             res.send({error: false})
                           }
                         })
+                    } else {
+                      // 这种情况是有问题的，但用户并无影响。查开发手册
+                      res.send({error: false})
                     }
                   }
                 })
               } else {
                 if (markActive) {
-                  User.updateOne({username: user}, {$addToSet: {'mark': {'rootId': id, 'story.$.id': id}}})
+                  let k =
+                  {
+                    rootId: id,
+                    story: {
+                      id: id
+                    }
+                  }
+                  User.updateOne({username: user}, {$addToSet: {'mark': k}})
                     .exec((err3) => {
                       if (err3) {
                         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -1102,14 +1122,186 @@ router.post('/user/changeMark', (req, res) => {
                         res.send({error: false})
                       }
                     })
+                } else {
+                  // 这种情况是有问题的，但用户并无影响。查开发手册
+                  res.send({error: false})
                 }
               }
             }
           }
         })
+    } else if (storyReg.test(id)) {
+      Story.findOne({id: id})
+        .populate('root')
+        .exec((err, doc) => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            if (doc) {
+              let rId = doc.root.id
+              User.findOne({username: user})
+                .exec((err3, duser) => {
+                  if (err3) {
+                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                  } else {
+                    if (duser) {
+                      if (duser.mark.length) {
+                        duser.mark.forEach((mark, index, array) => {
+                          if (mark && mark.rootId === rId) {
+                            if (markActive) {
+                              mark.story.push({
+                                id: id
+                              })
+                            } else {
+                              mark.story.splice(index, 1)
+                            }
+                            User.updateOne({$and: [{username: user}, {'mark.rootId': rId}]}, {$set: {'mark': array}})
+                              .exec((err2) => {
+                                if (err2) {
+                                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                } else {
+                                  res.send({error: false})
+                                }
+                              })
+                          } else {
+                            if (markActive) {
+                              let k =
+                              {
+                                rootId: rId,
+                                story: {
+                                  id: id
+                                }
+                              }
+                              User.updateOne({username: user}, {$addToSet: {'mark': k}})
+                                .exec((err3) => {
+                                  if (err3) {
+                                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                  } else {
+                                    res.send({error: false})
+                                  }
+                                })
+                            } else {
+                              // 这种情况是有问题的，但用户并无影响。查开发手册
+                              res.send({error: false})
+                            }
+                          }
+                        })
+                      } else {
+                        if (markActive) {
+                          let k =
+                          {
+                            rootId: rId,
+                            story: {
+                              id: id
+                            }
+                          }
+                          User.updateOne({username: user}, {$addToSet: {'mark': k}})
+                            .exec((err3) => {
+                              if (err3) {
+                                res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                              } else {
+                                res.send({error: false})
+                              }
+                            })
+                        } else {
+                          // 这种情况是有问题的，但用户并无影响。查开发手册
+                          res.send({error: false})
+                        }
+                      }
+                    } else {
+                      res.send({error: true, type: 'value', message: '数据错误，请尝试重新登录'})
+                    }
+                  }
+                })
+            } else {
+              res.send({error: true, type: 'value', message: '数据错误，请尝试重新登录'})
+            }
+          }
+        })
     }
   } else {
-    res.send({error: true, type: 'user'})
+    res.send({error: true, type: 'value', message: '数据错误'})
+  }
+})
+router.get('/user/getMark', (req, res) => {
+  let id = req.query.id
+  const rootReg = /^R([0-9]){7}$/
+  const storyReg = /^S([0-9]){7}$/
+  let result = []
+  let markExist = false
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    if (rootReg.test(id)) {
+      User.findOne({username: user})
+        .exec((err, doc) => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            if (doc) {
+              if (doc.mark.length) {
+                doc.mark.forEach((mark) => {
+                  if (mark.rootId === id) {
+                    markExist = mark.story.some(function (sid) {
+                      return sid.id === id
+                    })
+                    result = mark
+                  }
+                })
+                res.send({error: false, result: result, mark: markExist})
+              } else {
+                res.send({error: false, result: [], mark: markExist})
+              }
+            } else {
+              res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})
+            }
+          }
+        })
+    } else if (storyReg.test(id)) {
+      Story.findOne({id: id})
+        .populate('root')
+        .exec((err, story) => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            if (story) {
+              let rId = story.root.id
+              User.findOne({username: user})
+                .exec((err, doc) => {
+                  if (err) {
+                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                  } else {
+                    if (doc) {
+                      if (doc.mark.length) {
+                        doc.mark.forEach((mark) => {
+                          if (mark.rootId === rId) {
+                            markExist = mark.story.some(function (sid) {
+                              return sid.id === id
+                            })
+                            result = mark
+                          }
+                        })
+                        res.send({error: false, result: result, mark: markExist})
+                      } else {
+                        res.send({error: false, result: [], mark: markExist})
+                      }
+                    } else {
+                      res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})
+                    }
+                  }
+                })
+            } else {
+              res.send({error: true, type: 'value', message: '数据错误'})
+            }
+          }
+        })
+    }
+  } else {
+    res.send({error: true, type: 'user', message: '数据错误，请尝试重新登录'})
   }
 })
 module.exports = router

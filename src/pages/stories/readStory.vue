@@ -279,12 +279,11 @@
       this.ftNode = this.$route.params.id
       this.fetchMenuData()
 //      this.getNextNode()
-      this.prepareRec()
+      // this.prepareRec()
     },
     computed: {
       markMenuMargin: function () {
         if (this.markList && this.markList.story) {
-          console.log('cunzai' + JSON.stringify(this.markList.story))
           return -20 + this.markList.story.length * -30
         } else {
           return -20

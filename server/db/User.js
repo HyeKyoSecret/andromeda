@@ -117,6 +117,7 @@ const UserSchema = new Schema({
       story: [{
         name: { type: String, default: '未命名' },
         id: String,
+        brief: String,
         date: { type: Date, default: Date.now }
       }]
     }

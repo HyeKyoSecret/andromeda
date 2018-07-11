@@ -5,7 +5,7 @@
       <img src="../../img/icon/marker_unselected.png" v-if="!markActive"/>
       <img src="../../img/icon/marker_selected.png" v-else/>
     </div>
-    <div class="context"><p v-for="item in storyInfo.content">{{item}}</p></div>
+    <div class="context" @click.self="closeMenu"><p v-for="item in storyInfo.content">{{item}}</p></div>
     <div class="related-info">
       <!--<div class="anchor"><thumb src="../../thumb/icon/anchor.png" /></div>-->
       <div class="author-info">
@@ -44,19 +44,26 @@
         <img src="../../img/icon/yellowcomment.png" />
         <div>评论</div>
       </div>
-      <div class="button">
+      <div class="button" @click="showButton">
         <img src="../../img/icon/yellowjump.png" />
         <div>智能跳转</div>
       </div>
     </div>
-    <div class="jump-menu">
-      <!--<div class="button">刚才阅读</div>-->
+    <div class="jump-menu" v-if="menuActive">
+      <!--<div class="button">刚才阅读</divh>-->
       <!--<div class="button">最浅未读</div>-->
       <!--<div class="button">最深以读</div>-->
       <div class="button">开头</div>
       <!--<div class="button">锚定节点</div>-->
       <!--<div class="button">热门节点</div>-->
       <div class="button">书签</div>
+    </div>
+    <div class="mark-menu" v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story">
+      <div class="mark" v-for="item in markList.story">
+        <div class="name">未命名</div>
+        <div class="content">爱总忽然退潮心慌乱触礁沉没在深海里</div>
+        <div class="time">2018.7.22 19:34</div>
+      </div>
     </div>
     <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
   </div>
@@ -184,9 +191,8 @@
       }
     }
     .jump-menu {
-      display: none;
       position: absolute;
-      top: 120px;
+      top: 35%;
       left: 50%;
       width: 240px;
       background-color: white;
@@ -199,13 +205,39 @@
         font-size: 18px;
         height: 45px;
         line-height: 45px;
-
         border-bottom: 1px solid $line-gray;
         &:last-child {
           border:  none;
         }
       }
-
+    }
+    .mark-menu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 240px;
+      background-color: white;
+      margin-left: -120px;
+      border-radius: 8px;
+      color: $font-dark;
+      border: 1px solid $border-gray;
+      max-height: 305px;
+      overflow: auto;
+      .mark {
+        text-align: left;
+        font-size: 12px;
+        margin-left: 5px;
+        line-height: 20px;
+        height: 60px;
+        border-bottom: 1px solid $line-gray;
+        .name {
+          font-size: 15px;
+          font-weight: 600;
+        }
+        &:last-child {
+          border:  none;
+        }
+      }
     }
   }
   </style>
@@ -227,9 +259,10 @@
           author: '',
           authorId: '',
           date: '',
-          ftNode: '',
-          markList: []
+          ftNode: ''
         },
+        markList: {},
+        menuActive: false,
         markActive: false,
         menuInfo: {
           zan: false,
@@ -247,6 +280,16 @@
       this.fetchMenuData()
 //      this.getNextNode()
       this.prepareRec()
+    },
+    computed: {
+      markMenuMargin: function () {
+        if (this.markList && this.markList.story) {
+          console.log('cunzai' + JSON.stringify(this.markList.story))
+          return -20 + this.markList.story.length * -30
+        } else {
+          return -20
+        }
+      }
     },
     methods: {
       goBack () {
@@ -434,6 +477,12 @@
             id: this.$route.params.id
           }
         })
+      },
+      showButton () {
+        this.menuActive = !this.menuActive
+      },
+      closeMenu () {
+        this.menuActive = false
       }
 //      getNextNode () {
 //        Axios.get('/story/getNextNode', {
@@ -446,4 +495,6 @@
 //      }
     }
   }
+
 </script>
+

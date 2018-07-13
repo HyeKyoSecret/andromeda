@@ -1060,13 +1060,13 @@ router.post('/user/changeMark', (req, res) => {
     if (rootReg.test(id)) {
       Root.findOne({id: id}, (err, root) => {
         if (err) {
-          res.send({error: true, type:'DB', message: '发生错误，请稍后再试'})
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
         } else {
           if (root) {
             let content = root.content
             let brief = []
             if (content.length >= 30) {
-              brief = content.slice(0,30)
+              brief = content.slice(0, 30)
             } else {
               brief = content
             }
@@ -1077,34 +1077,39 @@ router.post('/user/changeMark', (req, res) => {
                 } else {
                   if (duser) {
                     if (duser.mark.length) {
-                      duser.mark.forEach((mark, index, array) => {
-                        if (mark && mark.rootId === id) {
+                      let markData
+                      let flag
+                      for (let i = 0; i < duser.mark.length; i++) {
+                        if (duser.mark[i] && duser.mark[i].rootId === id) {
+                          flag = true
                           if (markActive) {
-                            mark.story.push({
+                            duser.mark[i].story.push({
                               id: id,
                               brief: brief
                             })
+                            markData = duser.mark[i]
                           } else {
-                            mark.story.splice(index, 1)
-                          }
-                          User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$set: {'mark': array}})
-                            .exec((err2) => {
-                              if (err2) {
-                                res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                              } else {
-                                res.send({error: false})
-                              }
-                            })
-                        } else {
-                          if (markActive) {
-                            let k =
-                            {
-                              rootId: id,
-                              story: {
-                                id: id,
-                                brief: brief
+                            if (duser.mark[i] && duser.mark[i].story) {
+                              for (let j = 0; j < duser.mark[i].story.length; j++) {
+                                if (duser.mark[i].story[j].id === id) {
+                                  duser.mark[i].story.splice(j, 1)
+                                  break
+                                }
                               }
                             }
+                            markData = duser.mark[i]
+                          }
+                          break
+                        } else {
+                          if (i === duser.mark.length - 1 && markActive) {
+                            let k =
+                              {
+                                rootId: id,
+                                story: {
+                                  id: id,
+                                  brief: brief
+                                }
+                              }
                             User.updateOne({username: user}, {$addToSet: {'mark': k}})
                               .exec((err3) => {
                                 if (err3) {
@@ -1113,22 +1118,29 @@ router.post('/user/changeMark', (req, res) => {
                                   res.send({error: false})
                                 }
                               })
-                          } else {
-                            // 这种情况是有问题的，但用户并无影响。查开发手册
-                            res.send({error: false})
                           }
                         }
-                      })
+                      }
+                      if (flag) {
+                        User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$set: {'mark': markData}})
+                          .exec((err2) => {
+                            if (err2) {
+                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                            } else {
+                              res.send({error: false})
+                            }
+                          })
+                      }
                     } else {
                       if (markActive) {
                         let k =
-                        {
-                          rootId: id,
-                          story: {
-                            id: id,
-                            brief: brief
+                          {
+                            rootId: id,
+                            story: {
+                              id: id,
+                              brief: brief
+                            }
                           }
-                        }
                         User.updateOne({username: user}, {$addToSet: {'mark': k}})
                           .exec((err3) => {
                             if (err3) {
@@ -1146,7 +1158,7 @@ router.post('/user/changeMark', (req, res) => {
                 }
               })
           } else {
-            res.send({error: true, type:'value', message: '数据错误'})
+            res.send({error: true, type: 'value', message: '数据错误'})
           }
         }
       })
@@ -1162,7 +1174,7 @@ router.post('/user/changeMark', (req, res) => {
               let content = doc.content
               let brief = []
               if (content.length >= 30) {
-                brief = content.slice(0,30)
+                brief = content.slice(0, 30)
               } else {
                 brief = content
               }
@@ -1173,34 +1185,40 @@ router.post('/user/changeMark', (req, res) => {
                   } else {
                     if (duser) {
                       if (duser.mark.length) {
-                        duser.mark.forEach((mark, index, array) => {
-                          if (mark && mark.rootId === rId) {
+                        let markData
+                        let flag
+                        for (let i = 0; i < duser.mark.length; i++) {
+                          if (duser.mark[i] && duser.mark[i].rootId === rId) {
+                            flag = true
                             if (markActive) {
-                              mark.story.push({
+                              duser.mark[i].story.push({
                                 id: id,
                                 brief: brief
                               })
+                              markData = duser.mark[i]
                             } else {
-                              mark.story.splice(index, 1)
-                            }
-                            User.updateOne({$and: [{username: user}, {'mark.rootId': rId}]}, {$set: {'mark': array}})
-                              .exec((err2) => {
-                                if (err2) {
-                                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                                } else {
-                                  res.send({error: false})
-                                }
-                              })
-                          } else {
-                            if (markActive) {
-                              let k =
-                              {
-                                rootId: rId,
-                                story: {
-                                  id: id,
-                                  brief: brief
+                              console.log(duser.mark[i])
+                              if (duser.mark[i] && duser.mark[i].story) {
+                                for (let j = 0; j < duser.mark[i].story.length; j++) {
+                                  if (duser.mark[i].story[j].id === id) {
+                                    duser.mark[i].story.splice(j, 1)
+                                    break
+                                  }
                                 }
                               }
+                              markData = duser.mark[i]
+                            }
+                            break
+                          } else {
+                            if (i === duser.mark.length - 1 && markActive) {
+                              let k =
+                                {
+                                  rootId: rId,
+                                  story: {
+                                    id: id,
+                                    brief: brief
+                                  }
+                                }
                               User.updateOne({username: user}, {$addToSet: {'mark': k}})
                                 .exec((err3) => {
                                   if (err3) {
@@ -1209,22 +1227,30 @@ router.post('/user/changeMark', (req, res) => {
                                     res.send({error: false})
                                   }
                                 })
-                            } else {
-                              // 这种情况是有问题的，但用户并无影响。查开发手册
-                              res.send({error: false})
                             }
                           }
-                        })
+                        }
+                        if (flag) {
+                          User.updateOne({$and: [{username: user}, {'mark.rootId': rId}]}, {$set: {'mark': markData}})
+                            .exec((err2) => {
+                              if (err2) {
+                                res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                              } else {
+                                console.log('更新执行完成' + markData)
+                                res.send({error: false})
+                              }
+                            })
+                        }
                       } else {
                         if (markActive) {
                           let k =
-                          {
-                            rootId: rId,
-                            story: {
-                              id: id,
-                              brief: brief
+                            {
+                              rootId: rId,
+                              story: {
+                                id: id,
+                                brief: brief
+                              }
                             }
-                          }
                           User.updateOne({username: user}, {$addToSet: {'mark': k}})
                             .exec((err3) => {
                               if (err3) {
@@ -1331,7 +1357,7 @@ router.get('/user/getMark', (req, res) => {
         })
     }
   } else {
-    res.send({error: true, type: 'user', message: '数据错误，请尝试重新登录'})
+    res.send({error: true, type: 'user', message: '数据错误，ddd请尝试重新登录'})
   }
 })
 module.exports = router

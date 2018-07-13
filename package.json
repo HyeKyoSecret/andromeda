@@ -20,6 +20,7 @@
     "vue-style-loader": "^3.0.3"
   },
   "devDependencies": {
+    "alloyfinger": "^0.1.15",
     "autoprefixer": "^7.1.2",
     "axios": "^0.18.0",
     "babel-core": "^6.22.1",

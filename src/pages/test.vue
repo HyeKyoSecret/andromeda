@@ -1,8 +1,6 @@
 <template>
   <div class="aa">
-    <div class="b">开始自闭</div>
-    <div><mt-switch v-model="writePermit" class="switch"></mt-switch>
-    </div>
+    <v-touch v-on:press="longTap">Swipe me!</v-touch>
   </div>
 </template>
 <script>
@@ -13,16 +11,10 @@
         hello: 123
       }
     },
-    created: function () {
-      console.log('创建' + this.$route.name + this.hello + '***' + this.$route.meta.keepAlive)
-      let date = new Date()
-      this.time = date.getTime()
-    },
-    activated: function () {
-      console.log('激活')
-    },
-    deactivated: function () {
-      console.log('离开')
+    methods: {
+      longTap: function () {
+        console.log('longTap!')
+      }
     }
   }
 </script>

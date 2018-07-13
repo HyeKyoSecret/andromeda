@@ -56,14 +56,16 @@
       <div class="button">开头</div>
       <!--<div class="button">锚定节点</div>-->
       <!--<div class="button">热门节点</div>-->
-      <div class="button">书签</div>
+      <div class="button" @click="showMarkMenu">书签</div>
     </div>
-    <div class="mark-menu" v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story">
-      <div class="mark" v-for="item in markList.story">
-        <div class="name">未命名</div>
-        <div class="content">爱总忽然退潮心慌乱触礁沉没在深海里</div>
-        <div class="time">2018.7.22 19:34</div>
-      </div>
+    <div class="mark-menu" v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markMenu">
+      <div class="complete"><span @click="closeMarkMenu">取消</span></div>
+      <v-touch tag="div" v-on:tap="goStory(item.id)" @press="changeMarkInfo(index, item.id)" class="mark" v-for="(item, index) in markList.story" :key="item.id">
+        <div class="change-input" v-if="changeInputActive[index]"><input type="text" v-model="markName"></div>
+        <div class="name" v-else>{{item.id}}</div>
+        <div class="content">{{item.brief}}</div>
+        <div class="time">{{changeInputActive[index]}}{{markName}}</div>
+      </v-touch>
     </div>
     <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
   </div>
@@ -215,27 +217,68 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 240px;
+      width: 260px;
       background-color: white;
-      margin-left: -120px;
+      margin-left: -130px;
       border-radius: 8px;
       color: $font-dark;
       border: 1px solid $border-gray;
-      max-height: 305px;
+      max-height: 345px;
       overflow: auto;
+      moz-user-select: -moz-none;
+      -moz-user-select: none;
+      -o-user-select: none;
+      -khtml-user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      .complete {
+        color: $main-color;
+        font-size: 14px;
+        width: 260px;
+        height: 30px;
+        text-align: right;
+        background: white;
+        border-radius: 8px;
+        span {
+          width: 30px;
+          display: inline-block;
+          margin: 3px 8px 3px 0;
+        }
+        position: fixed;
+      }
       .mark {
         text-align: left;
         font-size: 12px;
         margin-left: 5px;
+        margin-right: 5px;
         line-height: 20px;
-        height: 60px;
-        border-bottom: 1px solid $line-gray;
+        height: 62px;
+        border-top: 1px solid $line-gray;
+        color: $font-dark;
+        &:first-child {
+          margin-top: 30px;
+        }
         .name {
           font-size: 15px;
           font-weight: 600;
+          margin-top: 2px;
         }
-        &:last-child {
-          border:  none;
+        .content {
+          display: -webkit-box;
+          display: -moz-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 1;
+          -moz-box-orient: vertical;
+          -moz-line-clamp: 1;
+          overflow: hidden;
+        }
+        .time {
+          font-size: 12px;
+          color: $font-color;
+        }
+        &:nth-child(2){
+          margin-top: 30px;
         }
       }
     }
@@ -262,6 +305,8 @@
           ftNode: ''
         },
         markList: {},
+        markName: '',
+        markMenu: false,
         menuActive: false,
         markActive: false,
         menuInfo: {
@@ -281,12 +326,29 @@
 //      this.getNextNode()
       // this.prepareRec()
     },
+    watch: {
+      '$route' (to, from) {
+        this.getData()
+        this.getMark() // 获取书签
+        this.ftNode = this.$route.params.id
+        this.fetchMenuData()
+      }
+    },
     computed: {
       markMenuMargin: function () {
         if (this.markList && this.markList.story) {
           return -20 + this.markList.story.length * -30
         } else {
           return -20
+        }
+      },
+      changeInputActive: function () {
+        if (this.markList && this.markList.story) {
+          let array = []
+          for (let i = 0; i < this.markList.story.length; i++) {
+            array[i] = false
+          }
+          return array
         }
       }
     },
@@ -325,6 +387,9 @@
         }).then(response => {
           if (!response.data.error) {
             this.markList = response.data.result
+            if (this.markList.story) {
+              this.markList.story.reverse()
+            }
             this.markActive = response.data.mark
           } else {
             Toast({
@@ -393,14 +458,14 @@
               this.fetchMenuData()
             } else {
               Toast({
-                message: '发生错误请稍后再试',
+                message: '发生错误，请稍后再试',
                 position: 'middle',
                 duration: 1000
               })
             }
           } else {
             Toast({
-              message: '发生错误请稍后再试',
+              message: '发生错误，请稍后再试',
               position: 'middle',
               duration: 1000
             })
@@ -482,6 +547,25 @@
       },
       closeMenu () {
         this.menuActive = false
+      },
+      showMarkMenu () {
+        this.markMenu = true
+      },
+      closeMarkMenu () {
+        this.markMenu = false
+        this.menuActive = false
+      },
+      goStory (id) {
+        this.markMenu = false
+        this.menuActive = false
+        this.$router.push('/story/' + id)
+      },
+      changeMarkInfo (index, id) {
+        this.$nextTick(function () {
+          this.changeInputActive[index] = true
+          console.log(index + this.changeInputActive)
+          this.markName = 'kfg'
+        })
       }
 //      getNextNode () {
 //        Axios.get('/story/getNextNode', {

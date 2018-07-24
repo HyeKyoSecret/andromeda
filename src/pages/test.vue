@@ -1,6 +1,6 @@
 <template>
   <div class="aa">
-    <v-touch v-on:press="longTap">Swipe me!</v-touch>
+    <div v-finger:long-tap="longTap">helloWorld</div>
   </div>
 </template>
 <script>
@@ -13,7 +13,7 @@
     },
     methods: {
       longTap: function () {
-        console.log('longTap!')
+        console.log('jihuo')
       }
     }
   }

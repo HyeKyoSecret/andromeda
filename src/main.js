@@ -8,8 +8,11 @@ import App from './App.vue'
 import MintUI from 'mint-ui'
 import Axios from 'axios'
 import VueFinger from './js/vueFinger'
-import VueTouch from 'vue-touch'
-Vue.use(VueTouch, {name: 'v-touch'})
+import AlloyFinger from 'alloyfinger/alloy_finger' // 手势库
+import AlloyFingerVue from 'alloyfinger/vue/alloy_finger.vue'
+Vue.use(AlloyFingerVue, {
+  AlloyFinger
+})
 if (process.env.NODE_ENV !== 'production') {
   Axios.defaults.baseURL = 'http://localhost:8080/api'
 }

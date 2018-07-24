@@ -60,18 +60,79 @@
     </div>
     <div class="mark-menu" v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markMenu">
       <div class="complete"><span @click="closeMarkMenu">取消</span></div>
-      <v-touch tag="div" v-on:tap="goStory(item.id)" @press="changeMarkInfo(index, item.id)" class="mark" v-for="(item, index) in markList.story" :key="item.id">
-        <div class="change-input" v-if="changeInputActive[index]"><input type="text" v-model="markName"></div>
-        <div class="name" v-else>{{item.id}}</div>
-        <div class="content">{{item.brief}}</div>
-        <div class="time">{{changeInputActive[index]}}{{markName}}</div>
-      </v-touch>
+      <mt-cell-swipe
+              class="rq-mark"
+              v-for="(item, index) in markList.story" :key="item.id"
+              :right="[
+                {
+                  content: '修改',
+                  style: { background: '#96D28E', color: '#fff', lineHeight: '56px' },
+                  handler: function() {
+                    return changeMarkInfo(index)
+                  }
+                }]">
+        <slot>
+          <div class="change-input" v-if="changeInputActive[index]"><input type="text" v-model="markName"></div>
+          <div class="name" v-else>{{item.id}}</div>
+          <div class="content">{{item.brief}}</div>
+          <div class="time">{{changeInputActive[index]}}{{markName}}</div>
+        </slot>
+      </mt-cell-swipe>
     </div>
     <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
   </div>
 </template>
-<style lang='scss' scoped>
+<style lang='scss'>
   @import "../../scss/config";
+  .rq-mark {
+    text-align: left;
+    font-size: 12px;
+    margin-left: 5px;
+    margin-right: 5px;
+    line-height: 20px;
+    height: 60px;
+    border-top: 1px solid $line-gray;
+    color: $font-dark;
+    &:first-child {
+      margin-top: 30px;
+    }
+    .mint-cell-title {
+      width: 0;
+      flex: 0;
+    }
+    .mint-cell-value {
+      width: 98%;
+      height: 60px;
+      display: block;
+      .name {
+        font-size: 15px;
+        color: $font-dark;
+        font-weight: 600;
+        margin-top: 3px;
+      }
+      .content {
+        color: $font-dark;
+        font-size: 14px;
+        margin-top: 3px;
+        display: -webkit-box;
+        display: -moz-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+        -moz-box-orient: vertical;
+        -moz-line-clamp: 1;
+        overflow: hidden;
+      }
+      .time {
+        margin-top: 5px;
+        font-size: 12px;
+        color: $font-color;
+      }
+    }
+
+    &:nth-child(2){
+      margin-top: 30px;
+    }
+  }
   .read-story {
     height: 100%;
     background: $bg-gray;
@@ -215,7 +276,7 @@
     }
     .mark-menu {
       position: absolute;
-      top: 50%;
+      top: 45%;
       left: 50%;
       width: 260px;
       background-color: white;
@@ -223,7 +284,7 @@
       border-radius: 8px;
       color: $font-dark;
       border: 1px solid $border-gray;
-      max-height: 345px;
+      max-height: 330px;
       overflow: auto;
       moz-user-select: -moz-none;
       -moz-user-select: none;
@@ -245,41 +306,7 @@
           display: inline-block;
           margin: 3px 8px 3px 0;
         }
-        position: fixed;
-      }
-      .mark {
-        text-align: left;
-        font-size: 12px;
-        margin-left: 5px;
-        margin-right: 5px;
-        line-height: 20px;
-        height: 62px;
-        border-top: 1px solid $line-gray;
-        color: $font-dark;
-        &:first-child {
-          margin-top: 30px;
-        }
-        .name {
-          font-size: 15px;
-          font-weight: 600;
-          margin-top: 2px;
-        }
-        .content {
-          display: -webkit-box;
-          display: -moz-box;
-          -webkit-box-orient: vertical;
-          -webkit-line-clamp: 1;
-          -moz-box-orient: vertical;
-          -moz-line-clamp: 1;
-          overflow: hidden;
-        }
-        .time {
-          font-size: 12px;
-          color: $font-color;
-        }
-        &:nth-child(2){
-          margin-top: 30px;
-        }
+        position: absolute;
       }
     }
   }
@@ -549,6 +576,7 @@
         this.menuActive = false
       },
       showMarkMenu () {
+        this.menuActive = false
         this.markMenu = true
       },
       closeMarkMenu () {
@@ -560,12 +588,8 @@
         this.menuActive = false
         this.$router.push('/story/' + id)
       },
-      changeMarkInfo (index, id) {
-        this.$nextTick(function () {
-          this.changeInputActive[index] = true
-          console.log(index + this.changeInputActive)
-          this.markName = 'kfg'
-        })
+      changeMarkInfo (index) {
+        alert(index)
       }
 //      getNextNode () {
 //        Axios.get('/story/getNextNode', {

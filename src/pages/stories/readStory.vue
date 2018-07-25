@@ -58,8 +58,8 @@
       <!--<div class="button">热门节点</div>-->
       <div class="button" @click="showMarkMenu">书签</div>
     </div>
-    <div class="mark-menu" v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markMenu">
-      <div class="complete"><span @click="closeMarkMenu">取消</span></div>
+    <div class="complete"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markMenu"><span @click="closeMarkMenu">取消</span></div>
+    <div class="mark-menu"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markMenu">
       <mt-cell-swipe
               class="rq-mark"
               v-for="(item, index) in markList.story" :key="item.id"
@@ -72,10 +72,9 @@
             }
                 }]">
         <slot>
-          <div class="change-input" v-if="changeInputActive[index]"><input type="text" v-model="markName"></div>
-          <div class="name" v-else>{{item.name}}</div>
+          <div class="name">{{item.name}}</div>
           <div class="content">{{item.brief}}</div>
-          <div class="time">{{changeInputActive[index]}}{{markName}}</div>
+          <div class="time">{{item.date}}</div>
         </slot>
       </mt-cell-swipe>
     </div>
@@ -129,7 +128,7 @@
       }
     }
 
-    &:nth-child(2){
+    &:nth-child(1){
       margin-top: 30px;
     }
   }
@@ -276,7 +275,7 @@
     }
     .mark-menu {
       position: absolute;
-      top: 45%;
+      top: 136px;
       left: 50%;
       width: 260px;
       background-color: white;
@@ -284,7 +283,7 @@
       border-radius: 8px;
       color: $font-dark;
       border: 1px solid $border-gray;
-      max-height: 330px;
+      max-height: 328px;
       overflow: auto;
       moz-user-select: -moz-none;
       -moz-user-select: none;
@@ -293,27 +292,34 @@
       -webkit-user-select: none;
       -ms-user-select: none;
       user-select: none;
-      .complete {
-        color: $main-color;
-        font-size: 14px;
-        width: 260px;
-        height: 30px;
-        text-align: right;
-        background: white;
-        border-radius: 8px;
-        span {
-          width: 30px;
-          display: inline-block;
-          margin: 3px 8px 3px 0;
-        }
-        position: absolute;
+    }
+    .complete {
+      position: absolute;
+      z-index: 999;
+      top: 137px;
+      left: 50%;
+      width: 259px;
+      margin-left: -129px;
+      color: $main-color;
+      font-size: 14px;
+      height: 28px;
+      text-align: right;
+      background: white;
+      border-radius: 8px;
+      margin-top: 1px solid $border-gray;
+      span {
+        width: 30px;
+        display: inline-block;
+        margin: 3px 8px 3px 0;
       }
+      position: absolute;
     }
   }
   </style>
 <script>
   import Axios from 'axios'
   import notice from '../../components/notice/notice.vue'
+  import moment from 'moment'
   import { Toast, MessageBox } from 'mint-ui'
   import writeStory from '../../components/story/writeStory.vue'
   export default {
@@ -332,7 +338,6 @@
           ftNode: ''
         },
         markList: {},
-        markName: '',
         markMenu: false,
         menuActive: false,
         markActive: false,
@@ -364,18 +369,9 @@
     computed: {
       markMenuMargin: function () {
         if (this.markList && this.markList.story) {
-          return -20 + this.markList.story.length * -30
+          return (5 - this.markList.story.length) * 25
         } else {
-          return -20
-        }
-      },
-      changeInputActive: function () {
-        if (this.markList && this.markList.story) {
-          let array = []
-          for (let i = 0; i < this.markList.story.length; i++) {
-            array[i] = false
-          }
-          return array
+          return 0
         }
       }
     },
@@ -416,6 +412,9 @@
             this.markList = response.data.result
             if (this.markList.story) {
               this.markList.story.reverse()
+              for (let i = 0; i < this.markList.story.length; i++) {
+                this.markList.story[i].date = moment(this.markList.story[i].date).format('YYYY年MM月DD日 HH:mm')
+              }
             }
             this.markActive = response.data.mark
           } else {
@@ -603,6 +602,8 @@
               this.getMark()
             })
           }
+        }).catch(error => {
+          return error
         })
       }
 //      getNextNode () {

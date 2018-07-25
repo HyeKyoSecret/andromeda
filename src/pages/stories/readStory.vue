@@ -67,13 +67,13 @@
                 {
                   content: '修改',
                   style: { background: '#96D28E', color: '#fff', lineHeight: '56px' },
-                  handler: function() {
-                    return changeMarkInfo(index)
-                  }
+                  handler:  function () {
+              return changeMarkInfo(item.id)
+            }
                 }]">
         <slot>
           <div class="change-input" v-if="changeInputActive[index]"><input type="text" v-model="markName"></div>
-          <div class="name" v-else>{{item.id}}</div>
+          <div class="name" v-else>{{item.name}}</div>
           <div class="content">{{item.brief}}</div>
           <div class="time">{{changeInputActive[index]}}{{markName}}</div>
         </slot>
@@ -91,7 +91,7 @@
     margin-right: 5px;
     line-height: 20px;
     height: 60px;
-    border-top: 1px solid $line-gray;
+    border-top: 1px solid $border-gray;
     color: $font-dark;
     &:first-child {
       margin-top: 30px;
@@ -588,8 +588,22 @@
         this.menuActive = false
         this.$router.push('/story/' + id)
       },
-      changeMarkInfo (index) {
-        alert(index)
+      changeMarkInfo (id) {
+        MessageBox.prompt('请输入新的书签名', '').then(({ value, action }) => {
+          if (action === 'confirm') {
+            Axios.post('/user/changeMarkInfo', {
+              id: id,
+              value: value
+            }).then(response => {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+              this.getMark()
+            })
+          }
+        })
       }
 //      getNextNode () {
 //        Axios.get('/story/getNextNode', {

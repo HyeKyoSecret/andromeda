@@ -1357,7 +1357,89 @@ router.get('/user/getMark', (req, res) => {
         })
     }
   } else {
-    res.send({error: true, type: 'user', message: '数据错误，ddd请尝试重新登录'})
+    res.send({error: true, type: 'user', message: '数据错误，请尝试重新登录'})
   }
+})
+router.post('/user/changeMarkInfo', (req, res) => {
+  const rootReg = /^R([0-9]){7}$/
+  const storyReg = /^S([0-9]){7}$/
+  let id = req.body.id
+  let value = req.body.value
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    if (rootReg.test(id)) {
+      User.findOne({$and: [{'username': user}, {'mark.rootId': id}]})
+        .exec((err, doc) => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            let obj = doc.mark
+            for (let i = 0; i < obj.length; i++) {
+              if (obj[i].rootId === id) {
+                for (let j = 0; j < obj[i].story.length; j++) {
+                  if (obj[i].story[j].id === id) {
+                    obj[i].story[j].name = value // 修改书签名
+                    break
+                  }
+                }
+              }
+            }
+            User.updateOne({$and: [{'username': user}, {'mark.rootId': id}]}, {$set: {'mark': obj}})
+              .exec((err2) => {
+                if (err2) {
+                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                } else {
+                  res.send({error: false, message: '修改成功'})
+                }
+              })
+          }
+        })
+    } else if (storyReg.test(id)) {
+      Story.findOne({id: id})
+        .populate('root')
+        .exec((err, story) => {
+          if (err) {
+            res.send({error: false, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            User.findOne({$and: [{'username': user}, {'mark.rootId': story.root.id}]})
+              .exec((err, doc) => {
+                if (err) {
+                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                } else {
+                  let obj = doc.mark
+                  for (let i = 0; i < obj.length; i++) {
+                    if (obj[i].rootId === story.root.id) {
+                      for (let j = 0; j < obj[i].story.length; j++) {
+                        if (obj[i].story[j].id === id) {
+                          obj[i].story[j].name = value // 修改书签名
+                          break
+                        }
+                      }
+                    }
+                  }
+                  User.updateOne({$and: [{'username': user}, {'mark.rootId': story.root.id}]}, {$set: {'mark': obj}})
+                    .exec((err2) => {
+                      if (err2) {
+                        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                      } else {
+                        res.send({error: false, message: '修改成功'})
+                      }
+                    })
+                }
+              })
+          }
+        })
+    } else {
+      res.send({error: true, type: 'value', message: '数据错误'})
+    }
+  } else {
+    res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})
+  }
+
 })
 module.exports = router

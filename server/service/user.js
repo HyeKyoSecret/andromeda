@@ -1308,9 +1308,9 @@ router.get('/user/getMark', (req, res) => {
                     result = mark
                   }
                 })
-                res.send({error: false, result: result, mark: markExist})
+                res.send({error: false, result: result, mark: markExist, root: id})
               } else {
-                res.send({error: false, result: [], mark: markExist})
+                res.send({error: false, result: [], mark: markExist, root: id})
               }
             } else {
               res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})
@@ -1341,9 +1341,9 @@ router.get('/user/getMark', (req, res) => {
                             result = mark
                           }
                         })
-                        res.send({error: false, result: result, mark: markExist})
+                        res.send({error: false, result: result, mark: markExist, root: rId})
                       } else {
-                        res.send({error: false, result: [], mark: markExist})
+                        res.send({error: false, result: [], mark: markExist, root: rId})
                       }
                     } else {
                       res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})

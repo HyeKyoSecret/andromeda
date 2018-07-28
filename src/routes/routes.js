@@ -108,8 +108,14 @@ export default [
     meta: { requiresAuth: true }
   },
   {
-    path: '/story/:id',         // 阅读
-    component: resolve => require(['../pages/stories/readStory.vue'], resolve)
+    path: '/story/:id/',         // 阅读
+    component: resolve => require(['../pages/stories/readStory.vue'], resolve),
+    children: [
+      {
+        path: 'comment',
+        component: resolve => require(['../pages/comment/comment.vue'], resolve)
+      }
+    ]
   },
   {
     path: '/buildStoryRecommend',         // 阅读

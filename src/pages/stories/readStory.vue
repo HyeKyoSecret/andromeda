@@ -40,7 +40,7 @@
       <div class="write-continue">
         <div><img src="../../img/icon/writecontinue.png" @click="writeStory"/></div>
       </div>
-      <div class="button">
+      <div class="button" @click="openComment">
         <img src="../../img/icon/yellowcomment.png" />
         <div>评论</div>
       </div>
@@ -53,7 +53,7 @@
       <!--<div class="button">刚才阅读</divh>-->
       <!--<div class="button">最浅未读</div>-->
       <!--<div class="button">最深以读</div>-->
-      <div class="button">开头</div>
+      <div class="button" v-if="jumpMenuRootCheck" @click="goStory(markRoot)">开头</div>
       <!--<div class="button">锚定节点</div>-->
       <!--<div class="button">热门节点</div>-->
       <div class="button" @click="showMarkMenu">书签</div>
@@ -72,13 +72,14 @@
             }
                 }]">
         <slot>
-          <div class="name">{{item.name}}</div>
-          <div class="content">{{item.brief}}</div>
-          <div class="time">{{item.date}}</div>
+          <div class="name" @click="goStory(item.id)">{{item.name}}</div>
+          <div class="content" @click="goStory(item.id)">{{item.brief}}</div>
+          <div class="time" @click="goStory(item.id)">{{item.date}}</div>
         </slot>
       </mt-cell-swipe>
     </div>
     <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
+    <router-view></router-view>
   </div>
 </template>
 <style lang='scss'>
@@ -112,6 +113,7 @@
       .content {
         color: $font-dark;
         font-size: 14px;
+        line-height: 19px;
         margin-top: 3px;
         display: -webkit-box;
         display: -moz-box;
@@ -312,7 +314,6 @@
         display: inline-block;
         margin: 3px 8px 3px 0;
       }
-      position: absolute;
     }
   }
   </style>
@@ -337,6 +338,7 @@
           date: '',
           ftNode: ''
         },
+        markRoot: '',
         markList: {},
         markMenu: false,
         menuActive: false,
@@ -373,6 +375,10 @@
         } else {
           return 0
         }
+      },
+      jumpMenuRootCheck: function () {
+        const rootReg = /^R([0-9]){7}$/
+        return !rootReg.test(this.$route.params.id)
       }
     },
     methods: {
@@ -410,6 +416,7 @@
         }).then(response => {
           if (!response.data.error) {
             this.markList = response.data.result
+            this.markRoot = response.data.root
             if (this.markList.story) {
               this.markList.story.reverse()
               for (let i = 0; i < this.markList.story.length; i++) {
@@ -605,6 +612,9 @@
         }).catch(error => {
           return error
         })
+      },
+      openComment () {
+        this.$router.push(this.$route.path + '/comment')
       }
 //      getNextNode () {
 //        Axios.get('/story/getNextNode', {

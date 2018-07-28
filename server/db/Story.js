@@ -32,7 +32,11 @@ const StorySchema = new Schema({
   author: {
     type: Schema.Types.ObjectId,
     ref: 'User'
-  }
+  },
+  comment: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment'
+  }]
 })
 StorySchema.pre('save', function (next) {
   'use strict'

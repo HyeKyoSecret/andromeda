@@ -1,36 +1,16 @@
 <template>
-  <div class="aa">
-    <div v-finger:long-tap="longTap">helloWorld</div>
+  <div>
+    <textarea>Tt, which, botanically, is a drupe, not a nut. The spelling cocoanut is an archaic form of the word.[3] The term is derived from 16th-century Portuguese and Spanish coco, meaning "head" or "skull",[4] from the three small holes on the coconut shell that resemble human facial features.</textarea>
   </div>
 </template>
 <script>
+  import autosize from 'autosize'
   export default {
-    data () {
-      return {
-        time: '',
-        hello: 123
-      }
-    },
-    methods: {
-      longTap: function () {
-        console.log('jihuo')
-      }
+    mounted: function () {
+      autosize(document.querySelectorAll('textarea'))
     }
   }
 </script>
-<style lang="scss" scoped>
-  @import '../scss/style.css';
-  .aa {
-    height: 80px;
-    width: 210px;
-    margin-left: 100px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    div {
-      font-size: 21px;
-      flex: 1;
-    }
+<style>
 
-  }
 </style>

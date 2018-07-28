@@ -1,13 +1,6 @@
 <template>
   <div class="comment">
-    <div class="notice">
-      <span class="icon">
-        <img src="../../img/icon/back.png">
-      </span>
-      <span class="title">
-        评论
-      </span>
-    </div>
+    <notice title="评论"></notice>
     <div class="comment-number">
       评论（874）
     </div>
@@ -37,6 +30,11 @@
         </div>
       </div>
     </div>
+    <div class="comment-input">
+      <textarea v-model="comment" rows="1" placeholder="写下你的评论。。。" @focus="showButton"></textarea>
+      <span class="fake submit" v-if="fakeSubmit && !commentCheck">发送</span>
+      <span class="submit" v-if="commentCheck" @click="submitComment">发送</span>
+    </div>
   </div>
 </template>
 <style lang='scss' scoped>
@@ -49,30 +47,6 @@
     height: 100%;
     width: 100%;
     background: white;
-    .notice {
-      background: $main-color;
-      height: 42px;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      span {
-        text-align: center;
-        font-size: 16px;
-      }
-      .icon {
-        position: absolute;
-        left: 8px;
-        display: inline-block;
-        height: 42px;
-        width: 30px;
-        line-height: 50px;
-        img {
-          width: 12px;
-          height: 20px;
-        }
-      }
-    }
     .comment-number {
       font-size: 14px;
       color: $font-gray;
@@ -83,7 +57,6 @@
       line-height: 30px;
       font-weight: 800;
     }
-
     .all-comment {
       .one-comment {
         background-color: white;
@@ -136,5 +109,100 @@
     &:last-child .comment-content {
       border: none;
     }
+    .comment-input {
+      position: absolute;
+      bottom: 0;
+      border-top: 1px solid $border-gray;
+      width: 100%;
+      min-height: 50px;
+      background: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      textarea {
+        width: 95%;
+        outline: none;
+        border: 1px solid $border-gray;
+        max-height: 160px;
+        min-height: 28px;
+        border-radius: 2px;
+        padding-left: 5px;
+        -webkit-appearance: none;
+        font-size: 15px;
+        line-height: 28px;
+        margin: 5px;
+
+      }
+      .fake.submit {
+        background: white;
+        color: $w-gray;
+        font-weight: 500;
+      }
+      .submit {
+        background: white;
+        color: $main-color;
+        font-weight: 600;
+        text-align: center;
+        width: 40px;
+        height: 25px;
+        border: 1px solid $border-gray;
+        margin-top: -5px;
+        margin-left: 6px;
+        margin-right: 5px;
+        border-radius: 1px;
+        font-size: 14px;
+        line-height: 25px;
+      }
+    }
   }
 </style>
+<script>
+  import notice from '../../components/notice/notice.vue'
+  import Axios from 'axios'
+  import autoSize from 'autosize'
+  import { Toast } from 'mint-ui'
+  export default {
+    data () {
+      return {
+        comment: '',
+        fakeSubmit: false,
+        submit: false
+      }
+    },
+    computed: {
+      commentCheck: function () {
+        if (this.comment.length > 0 && this.comment.length <= 180) {
+          this.fakeSubmit = false
+          return true
+        } else {
+          return false
+        }
+      }
+    },
+    watch: {
+      comment: function () {
+        if (this.comment && this.comment.length > 180) {
+          Toast({
+            position: 'middle',
+            message: `已超过最大字数` + (this.comment.length - 180) + '字',
+            duration: 1000
+          })
+        }
+      }
+    },
+    mounted: function () {
+      autoSize(document.querySelectorAll('textarea'))
+    },
+    methods: {
+      showButton () {
+        this.fakeSubmit = true
+      },
+      submitComment () {
+        Axios.post('/')
+      }
+    },
+    components: {
+      notice
+    }
+  }
+</script>

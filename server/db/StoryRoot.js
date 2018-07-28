@@ -44,7 +44,11 @@ const StoryRootSchema = new Schema({
   tempTraversal: {
     preOrderTraversal: Array,
     date: { type: Date, default: Date.now }
-  }
+  },
+  comment: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment'
+  }]
 })
 StoryRootSchema.pre('save', function (next) {
   'use strict'

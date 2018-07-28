@@ -16,8 +16,10 @@ const CommentSchema = new Schema({
       type: Schema.Types.ObjectId, ref: 'User'
     }
   ],
-  commentTo: 
-  date: { type: Date, default: Date.now },
+  commentTo: {
+    type: Schema.Types.ObjectId, ref: 'Comment'
+  },
+  date: { type: Date, default: Date.now }
 })
 
 const Comment = mongoose.model('Comment', CommentSchema)

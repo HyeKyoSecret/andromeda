@@ -72,9 +72,9 @@
             }
                 }]">
         <slot>
-          <div class="name" @click="goStory(item.id)">{{item.name}}</div>
-          <div class="content" @click="goStory(item.id)">{{item.brief}}</div>
-          <div class="time" @click="goStory(item.id)">{{item.date}}</div>
+          <div class="mt-name" @click="goStory(item.id)">{{item.name}}</div>
+          <div class="mt-content" @click="goStory(item.id)">{{item.brief}}</div>
+          <div class="mt-time" @click="goStory(item.id)">{{item.date}}</div>
         </slot>
       </mt-cell-swipe>
     </div>
@@ -104,13 +104,13 @@
       width: 98%;
       height: 60px;
       display: block;
-      .name {
+      .mt-name {
         font-size: 15px;
         color: $font-dark;
         font-weight: 600;
         margin-top: 3px;
       }
-      .content {
+      .mt-content {
         color: $font-dark;
         font-size: 14px;
         line-height: 19px;
@@ -123,7 +123,7 @@
         -moz-line-clamp: 1;
         overflow: hidden;
       }
-      .time {
+      .mt-time {
         margin-top: 5px;
         font-size: 12px;
         color: $font-color;
@@ -297,7 +297,7 @@
     }
     .complete {
       position: absolute;
-      z-index: 999;
+      z-index: 50;
       top: 137px;
       left: 50%;
       width: 259px;

@@ -8,6 +8,7 @@ const CommentSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User'
   },
+  about: String,
   content: {
     type: String
   },
@@ -18,6 +19,10 @@ const CommentSchema = new Schema({
   ],
   commentTo: {
     type: Schema.Types.ObjectId, ref: 'Comment'
+  },
+  display: {
+    type: Boolean,
+    default: true
   },
   date: { type: Date, default: Date.now }
 })

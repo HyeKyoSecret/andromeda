@@ -122,6 +122,14 @@ const UserSchema = new Schema({
       }]
     }
   ],
+  commentTo: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment'
+  }],
+  commentFrom: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment'
+  }],
   headImg: String
 })
 UserSchema.pre('save', function (next) {

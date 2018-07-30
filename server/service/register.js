@@ -6,8 +6,7 @@ const User = require('../db/User')
 const router = express.Router()
 const md5 = require('md5')
 const svgCaptcha = require('svg-captcha')
-const path = require('path')
-const gm = require('gm').subClass({imageMagick: true})
+// const gm = require('gm').subClass({imageMagick: true})
 const tool = require('../tool')
 router.post('/register', (req, res) => {
   let username = req.body.username
@@ -282,6 +281,5 @@ router.get('/register/quitLogin', (req, res) => {
     }
   })
 })
-
 
 module.exports = router

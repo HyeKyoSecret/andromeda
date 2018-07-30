@@ -33,7 +33,7 @@
     <div class="comment-input">
       <textarea v-model="comment" rows="1" placeholder="写下你的评论。。。" @focus="showButton"></textarea>
       <span class="fake submit" v-if="fakeSubmit && !commentCheck">发送</span>
-      <span class="submit" v-if="commentCheck" @click="submitComment">发送</span>
+      <span class="submit" v-if="commentCheck" @click="submitComment()">发送</span>
     </div>
   </div>
 </template>
@@ -166,7 +166,8 @@
       return {
         comment: '',
         fakeSubmit: false,
-        submit: false
+        submit: false,
+        commentList: []
       }
     },
     computed: {
@@ -193,12 +194,42 @@
     mounted: function () {
       autoSize(document.querySelectorAll('textarea'))
     },
+    created: function () {
+      this.getData()
+    },
     methods: {
       showButton () {
         this.fakeSubmit = true
       },
-      submitComment () {
-        Axios.post('/')
+      submitComment (to) {
+        Axios.post('/comment/storyComment', {
+          id: this.$route.params.id,
+          content: this.comment,
+          to: to
+        }).then(response => {
+          Toast({
+            position: 'middle',
+            message: response.data.message,
+            duration: 1000
+          })
+        })
+      },
+      getData () {
+        Axios.get('/comment/getComment', {
+          params: {
+            id: this.$route.params.id
+          }
+        }).then(response => {
+          if (!response.data.error) {
+            this.commentList = response.data.result
+          } else {
+            Toast({
+              position: 'middle',
+              message: response.data.message,
+              duration: 1000
+            })
+          }
+        })
       }
     },
     components: {

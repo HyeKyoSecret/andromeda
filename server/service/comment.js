@@ -7,6 +7,8 @@ const rootReg = /^R([0-9]){7}$/
 const storyReg = /^S([0-9]){7}$/
 const mongoose = require('mongoose')
 const router = express.Router()
+const moment = require('moment')
+const tool = require('../tool')
 router.post('/comment/storyComment', (req, res) => {
   const id = req.body.id
   const content = req.body.content
@@ -88,7 +90,7 @@ router.post('/comment/storyComment', (req, res) => {
     })
 })
 router.get('/comment/getComment', (req, res) => {
-  const id = req.body.id
+  const id = req.query.id
   let result = []
   let exe = function () {
     if (rootReg.test(id)) {
@@ -98,7 +100,19 @@ router.get('/comment/getComment', (req, res) => {
     }
   }
   exe().findOne({id: id})
-    .populate('comment')
+    .populate({
+      path: 'comment',
+      populate: {
+        path: 'people'
+      }
+    })
+    .populate({
+      path: 'comment',
+      populate: {
+        path: 'commentTo',
+        populate: 'people'
+      }
+    })
     .exec((err, doc) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -106,11 +120,17 @@ router.get('/comment/getComment', (req, res) => {
         doc.comment.forEach((comment) => {
           if (comment.display) {
             result.push({
-              people: comment.people,
-              content: comment.content
+              id: comment._id,
+              headImg: tool.formImg(comment.people.headImg),
+              people: comment.people.username,
+              content: comment.content,
+              zan: comment.zan ? comment.zan.length : 0,
+              commentTo: comment.commentTo ? comment.commentTo.people.nickname : null,
+              date: moment(comment.date).fromNow()
             })
           }
         })
+        res.send({error: false, result: result})
       }
     })
 })

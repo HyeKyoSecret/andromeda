@@ -1,5 +1,5 @@
 <template>
-  <div class="request-template" v-swipe="{methods: swipe}">
+  <div class="request-template">
     <div v-if="requestList.request.length">
       <div class="label">待验证请求</div>
       <div v-for='(item, index) in requestList.request' class="request-template">
@@ -221,7 +221,6 @@
           })
       },
       deleteAdd (index, fromId) {
-        console.log(index + fromId)
         MessageBox.confirm('确定删除吗？').then(action => {
           if (action === 'confirm') {
             Axios.post('/user/delPendingAdd', {

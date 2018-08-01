@@ -2,36 +2,36 @@
   <div class="comment">
     <notice title="评论"></notice>
     <div class="comment-number">
-      评论（874）
+      评论（{{commentList.length}}）
     </div>
     <div class="all-comment">
-      <div class="one-comment">
+      <div class="one-comment" v-for="(item, index) in commentList">
         <div class="critic-pic">
-          <img src="../../img/photo/2b_head.png">
+          <img :src="item.headImg" @error="setErrorImg(index)">
         </div>
         <div class="comment-content">
           <div class="critic-name">
-            <span class="critic">2B</span>
-            <span class="to">
+            <span class="critic">{{item.people}}</span>
+            <span class="to" v-if="item.commentTo">
               <img src="../../img/icon/gray_triangle.png">
             </span>
-            <span class="re-critic">9S</span>
+            <span class="re-critic" v-if="item.commentTo">{{item.commentTo}}</span>
           </div>
           <div class="content">
-            9s说的对。9s说的对。9s说的对。9s说的对。9s说的对。9s说的对。9s说的对。9s说的对。9s说的对。9s说的对。9s说的对。9s说的对。
+            {{item.content}}
           </div>
           <div class="information">
             <span class="thumb-up">
-              <img src="../../img/icon/gray_thumb.png">119
+              <img src="../../img/icon/gray_thumb.png">{{item.zan}}
             </span>
-            <span class="reply">回复</span>
-            <span class="time">03/01</span>
+            <span class="reply" @click="replyComment(index, item.id)">回复</span>
+            <span class="time">{{item.date}}</span>
           </div>
         </div>
       </div>
     </div>
     <div class="comment-input">
-      <textarea v-model="comment" rows="1" placeholder="写下你的评论。。。" @focus="showButton"></textarea>
+      <textarea id="textArea" v-model="comment" rows="1" placeholder="写下你的评论。。。" @focus="showButton"></textarea>
       <span class="fake submit" v-if="fakeSubmit && !commentCheck">发送</span>
       <span class="submit" v-if="commentCheck" @click="submitComment()">发送</span>
     </div>
@@ -87,6 +87,14 @@
             font-size: 14px;
             color: $font-dark;
             margin-top: 5px;
+            max-height: 60px;
+            display: -webkit-box;
+            display: -moz-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+            -moz-box-orient: vertical;
+            -moz-line-clamp: 3;
+            overflow: hidden;
           }
           .information {
             margin-top: 10px;
@@ -212,6 +220,7 @@
             message: response.data.message,
             duration: 1000
           })
+          this.getData()
         })
       },
       getData () {
@@ -230,6 +239,13 @@
             })
           }
         })
+      },
+      replyComment (i) {
+        this.comment = '对' + this.commentList[i].people + '说： '
+        document.getElementById('textArea').focus()
+      },
+      setErrorImg (x) {
+        this.commentList[x].headImg = require('../../img/images/defaultHeadImg.png')
       }
     },
     components: {

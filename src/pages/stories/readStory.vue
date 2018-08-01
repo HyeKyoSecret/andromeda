@@ -50,7 +50,7 @@
       </div>
     </div>
     <div class="jump-menu" v-if="menuActive">
-      <!--<div class="button">刚才阅读</divh>-->
+      <!--<div class="button">刚才阅读</div>-->
       <!--<div class="button">最浅未读</div>-->
       <!--<div class="button">最深以读</div>-->
       <div class="button" v-if="jumpMenuRootCheck" @click="goStory(markRoot)">开头</div>
@@ -117,10 +117,10 @@
         margin-top: 3px;
         display: -webkit-box;
         display: -moz-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 1;
-        -moz-box-orient: vertical;
-        -moz-line-clamp: 1;
+         -webkit-box-orient: vertical;
+         -webkit-line-clamp: 1;
+         -moz-box-orient: vertical;
+         -moz-line-clamp: 1;
         overflow: hidden;
       }
       .mt-time {
@@ -288,11 +288,11 @@
       max-height: 328px;
       overflow: auto;
       moz-user-select: -moz-none;
-      -moz-user-select: none;
-      -o-user-select: none;
-      -khtml-user-select: none;
-      -webkit-user-select: none;
-      -ms-user-select: none;
+       -moz-user-select: none;
+       -o-user-select: none;
+       -khtml-user-select: none;
+       -webkit-user-select: none;
+       -ms-user-select: none;
       user-select: none;
     }
     .complete {

@@ -62,7 +62,6 @@
         background-color: white;
         display: flex;
         padding: 10px 10px 10px 10px;
-
         .critic-pic {
           flex: 1;
           img {

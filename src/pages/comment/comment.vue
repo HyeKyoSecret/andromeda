@@ -34,6 +34,7 @@
       <textarea id="textArea" v-model="comment" rows="1" placeholder="写下你的评论。。。" @focus="showButton"></textarea>
       <span class="fake submit" v-if="fakeSubmit && !commentCheck">发送</span>
       <span class="submit" v-if="commentCheck" @click="submitComment()">发送</span>
+      <span class="submit" @click>发送</span>
     </div>
   </div>
 </template>
@@ -240,7 +241,7 @@
         })
       },
       replyComment (i) {
-        this.comment = '对' + this.commentList[i].people + '说： '
+        this.comment = '对' + this.commentList[i].people + '说：'
         document.getElementById('textArea').focus()
       },
       setErrorImg (x) {

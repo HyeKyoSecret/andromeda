@@ -1357,7 +1357,7 @@ router.get('/user/getMark', (req, res) => {
         })
     }
   } else {
-    res.send({error: true, type: 'user', message: '数据错误，请尝试重新登录'})
+    res.send({error: false, result: 'notShow'})
   }
 })
 router.post('/user/changeMarkInfo', (req, res) => {

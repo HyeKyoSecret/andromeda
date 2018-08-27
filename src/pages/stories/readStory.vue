@@ -1,7 +1,7 @@
 <template>
   <div class="read-story">
     <notice v-bind:title="storyInfo.title" v-bind:more="moreList"></notice>
-    <div class="marker" @click="changeMark">
+    <div class="marker" @click="changeMark" v-if="markList !== 'notShow'">
       <img src="../../img/icon/marker_unselected.png" v-if="!markActive"/>
       <img src="../../img/icon/marker_selected.png" v-else/>
     </div>

@@ -35,7 +35,7 @@ router.post('/comment/storyComment', (req, res) => {
           people: people._id,
           about: id,
           content: content,
-          to: to
+          commentTo: to || null
         })
         newComment.save(function (err2, comment) {
           if (err2) {
@@ -92,6 +92,13 @@ router.post('/comment/storyComment', (req, res) => {
 router.get('/comment/getComment', (req, res) => {
   const id = req.query.id
   let result = []
+  let author = false
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
   let exe = function () {
     if (rootReg.test(id)) {
       return Root
@@ -106,15 +113,19 @@ router.get('/comment/getComment', (req, res) => {
         path: 'people'
       }
     })
+    .populate('author')
     .populate({
       path: 'comment',
       populate: {
         path: 'commentTo',
-        populate: 'people'
+        populate: {
+          path: 'people'
+        }
       }
     })
     .exec((err, doc) => {
       if (err) {
+        console.log(err)
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
       } else {
         doc.comment.forEach((comment) => {
@@ -122,7 +133,7 @@ router.get('/comment/getComment', (req, res) => {
             result.push({
               id: comment._id,
               headImg: tool.formImg(comment.people.headImg),
-              people: comment.people.username,
+              people: comment.people.nickname,
               content: comment.content,
               zan: comment.zan ? comment.zan.length : 0,
               commentTo: comment.commentTo ? comment.commentTo.people.nickname : null,
@@ -130,7 +141,10 @@ router.get('/comment/getComment', (req, res) => {
             })
           }
         })
-        res.send({error: false, result: result})
+        if (doc) {
+          author = doc.author.username === user
+        }
+        res.send({error: false, result: result, author: author})
       }
     })
 })

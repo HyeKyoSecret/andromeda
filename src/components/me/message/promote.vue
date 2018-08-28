@@ -170,7 +170,7 @@
             })
           }
         }).catch(cancel => {
-          return
+          return null
         })
       },
       goStory (id) {

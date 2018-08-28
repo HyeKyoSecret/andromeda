@@ -24,7 +24,7 @@
             <span class="thumb-up">
               <img src="../../img/icon/gray_thumb.png">{{item.zan}}
             </span>
-            <span class="reply" @click="replyComment(index, item.id)">回复</span>
+            <span class="reply" @click="replyComment(index, item.id)" v-if="!author">回复</span>
             <span class="time">{{item.date}}</span>
           </div>
         </div>
@@ -33,8 +33,7 @@
     <div class="comment-input">
       <textarea id="textArea" v-model="comment" rows="1" placeholder="写下你的评论。。。" @focus="showButton"></textarea>
       <span class="fake submit" v-if="fakeSubmit && !commentCheck">发送</span>
-      <span class="submit" v-if="commentCheck" @click="submitComment()">发送</span>
-      <span class="submit" @click>发送</span>
+      <span class="submit" v-if="commentCheck" @click="submitComment(tempId)">发送</span>
     </div>
   </div>
 </template>
@@ -63,6 +62,9 @@
         background-color: white;
         display: flex;
         padding: 10px 10px 10px 10px;
+        &:last-child{
+          padding-bottom: 100px;
+        }
         .critic-pic {
           flex: 1;
           img {
@@ -113,15 +115,17 @@
           }
         }
       }
+
     }
     &:last-child .comment-content {
       border: none;
     }
     .comment-input {
-      position: absolute;
+      position: fixed;
       bottom: 0;
       border-top: 1px solid $border-gray;
       width: 100%;
+      max-width: 700px;
       min-height: 50px;
       background: #ffffff;
       display: flex;
@@ -175,7 +179,9 @@
         comment: '',
         fakeSubmit: false,
         submit: false,
-        commentList: []
+        commentList: [],
+        tempId: '',
+        tempWord: ''
       }
     },
     computed: {
@@ -197,6 +203,10 @@
             duration: 1000
           })
         }
+        if (!this.tempWord || this.tempWord !== `${this.comment.split('：')[0]}：`) {   // 检查是否有回复人
+          this.tempWord = ''
+          this.tempId = ''
+        }
       }
     },
     mounted: function () {
@@ -212,7 +222,7 @@
       submitComment (to) {
         Axios.post('/comment/storyComment', {
           id: this.$route.params.id,
-          content: this.comment,
+          content: to ? this.comment.split('：', 2)[1] : this.comment,
           to: to
         }).then(response => {
           Toast({
@@ -221,6 +231,9 @@
             duration: 1000
           })
           this.getData()
+          this.comment = ''
+          this.tempWord = ''
+          this.tempId = ''
         })
       },
       getData () {
@@ -231,6 +244,7 @@
         }).then(response => {
           if (!response.data.error) {
             this.commentList = response.data.result
+            this.author = response.data.author
           } else {
             Toast({
               position: 'middle',
@@ -240,8 +254,10 @@
           }
         })
       },
-      replyComment (i) {
-        this.comment = '对' + this.commentList[i].people + '说：'
+      replyComment (i, id) {
+        this.tempWord = '对' + this.commentList[i].people + '说：'
+        this.comment = this.tempWord
+        this.tempId = id
         document.getElementById('textArea').focus()
       },
       setErrorImg (x) {

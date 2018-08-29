@@ -125,14 +125,13 @@ router.get('/comment/getComment', (req, res) => {
     })
     .exec((err, doc) => {
       if (err) {
-        console.log(err)
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
       } else {
         doc.comment.forEach((comment) => {
           if (comment.display) {
             result.push({
               id: comment._id,
-              headImg: tool.formImg(comment.people.headImg),
+              headImg: comment.people ? comment.people.headImg ? tool.formImg(comment.people.headImg) : 'default' : 'default',
               people: comment.people.nickname,
               content: comment.content,
               zan: comment.zan ? comment.zan.length : 0,

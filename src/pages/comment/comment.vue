@@ -21,8 +21,9 @@
             {{item.content}}
           </div>
           <div class="information">
-            <span class="thumb-up">
-              <img src="../../img/icon/gray_thumb.png">{{item.zan}}
+            <span class="thumb-up" >
+              <img src="../../img/icon/gray_thumb.png" v-if="!item.hasZan" @click="addZan(index)">
+              <img src="../../img/icon/yellowthumb.png" v-else @click="cancelZan">{{item.zan}}
             </span>
             <span class="reply" @click="replyComment(index, item.id)" v-if="!author">回复</span>
             <span class="time">{{item.date}}</span>
@@ -172,7 +173,7 @@
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
   import autoSize from 'autosize'
-  import { Toast } from 'mint-ui'
+  import { Toast, MessageBox } from 'mint-ui'
   export default {
     data () {
       return {
@@ -216,6 +217,36 @@
       this.getData()
     },
     methods: {
+      addZan (i) {
+        Axios.post('/comment/addZan', {
+          id: this.commentList[i].id
+        }).then(response => {
+          if (!response.data.error) {
+            this.commentList[i].hasZan = true
+          } else {
+            if (response.data.askLogin) {
+              MessageBox({
+                title: '提示',
+                message: '确定前往登录吗?',
+                showCancelButton: true
+              }).then(action => {
+                this.$router.push('/login')
+              }).catch(e => {
+                return 0
+              })
+            } else {
+              Toast({
+                position: 'middle',
+                message: response.data.message,
+                duration: 1000
+              })
+            }
+          }
+        })
+      },
+      cancelZan (i) {
+
+      },
       showButton () {
         this.fakeSubmit = true
       },

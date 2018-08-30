@@ -114,6 +114,7 @@ router.get('/comment/getComment', (req, res) => {
       }
     })
     .populate('author')
+    .populate('zan')
     .populate({
       path: 'comment',
       populate: {
@@ -129,6 +130,12 @@ router.get('/comment/getComment', (req, res) => {
       } else {
         doc.comment.forEach((comment) => {
           if (comment.display) {
+            let hasZan = false
+            for(let i = 0; i < comment.zan.length; i++) {   // 检查是否赞过
+              if (comment.zan[i].username === user) {
+                hasZan = true
+              }
+            }
             result.push({
               id: comment._id,
               headImg: comment.people ? comment.people.headImg ? tool.formImg(comment.people.headImg) : 'default' : 'default',
@@ -136,7 +143,8 @@ router.get('/comment/getComment', (req, res) => {
               content: comment.content,
               zan: comment.zan ? comment.zan.length : 0,
               commentTo: comment.commentTo ? comment.commentTo.people.nickname : null,
-              date: moment(comment.date).fromNow()
+              date: moment(comment.date).fromNow(),
+              hasZan: hasZan
             })
           }
         })
@@ -146,5 +154,46 @@ router.get('/comment/getComment', (req, res) => {
         res.send({error: false, result: result, author: author})
       }
     })
+})
+router.post('/comment/addZan', (req, res) => {
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    let id = mongoose.Types.ObjectId(req.body.id)
+    User.findOne({username: user}, (err, people) => {
+      if (err) {
+        res.send({error: true, message: '发生错误', type: 'DB'})
+      } else {
+        Comment.findOne({_id: id})
+          .exec((err, doc) => {
+            if (err) {
+              res.send({error: true, message: '发生错误', type: 'DB'})
+            } else {
+              if (doc) {
+                doc.zan.push(people._id)
+                doc.save(err2 => {
+                  if(err2) {
+                    res.send({error: true, message: '发生错误', type: 'DB'})
+                  } else {
+                    User.updateOne({_id: doc.people}, {
+                      $addToSet: {'promote': {'description': 'zan', 'content_1': people.username, 'content_2': '赞了你的评论'}}
+                    })
+                    res.send({error: false, result: 'success'})
+                  }
+                })
+              } else {
+                res.send({error: true, message: '发生错误', type: 'value'})
+              }
+            }
+          })
+      }
+    })
+  } else {
+    res.send({error: true, askLogin: true})
+  }
 })
 module.exports = router

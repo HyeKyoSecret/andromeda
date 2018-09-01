@@ -23,7 +23,7 @@
           <div class="information">
             <span class="thumb-up" >
               <img src="../../img/icon/gray_thumb.png" v-if="!item.hasZan" @click="addZan(index)">
-              <img src="../../img/icon/yellowthumb.png" v-else @click="cancelZan">{{item.zan}}
+              <img src="../../img/icon/yellowthumb.png" v-else @click="cancelZan(index)">{{item.zan}}
             </span>
             <span class="reply" @click="replyComment(index, item.id)" v-if="!author">回复</span>
             <span class="time">{{item.date}}</span>
@@ -223,6 +223,7 @@
         }).then(response => {
           if (!response.data.error) {
             this.commentList[i].hasZan = true
+            this.commentList[i].zan += 1
           } else {
             if (response.data.askLogin) {
               MessageBox({
@@ -245,7 +246,32 @@
         })
       },
       cancelZan (i) {
-
+        Axios.post('/comment/cancelZan', {
+          id: this.commentList[i].id
+        }).then(response => {
+          if (!response.data.error) {
+            this.commentList[i].hasZan = false
+            this.commentList[i].zan -= 1
+          } else {
+            if (response.data.askLogin) {
+              MessageBox({
+                title: '提示',
+                message: '确定前往登录吗?',
+                showCancelButton: true
+              }).then(action => {
+                this.$router.push('/login')
+              }).catch(e => {
+                return 0
+              })
+            } else {
+              Toast({
+                position: 'middle',
+                message: response.data.message,
+                duration: 1000
+              })
+            }
+          }
+        })
       },
       showButton () {
         this.fakeSubmit = true

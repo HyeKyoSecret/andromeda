@@ -54,7 +54,7 @@ router.post('/comment/storyComment', (req, res) => {
                       } else {
                         if (!to) {
                           User.updateOne({username: node.author.username}, {
-                            $addToSet: {'commentFrom': comment._id, 'promote': {'description': 'comment', 'content_1': people.username, 'content_2': '评论了你', 'content_3': comment.content}}
+                            $addToSet: {'commentFrom': comment._id, 'promote': {'description': 'comment', 'content_1': people.nickname, 'content_2': '评论了你', 'content_3': comment.content}}
                           }).exec(err5 => {
                             if (err5) {
                               res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -69,7 +69,7 @@ router.post('/comment/storyComment', (req, res) => {
                                 res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                               } else {
                                 User.updateOne({username: doc.people}, {
-                                  $addToSet: {'commentFrom': comment._id, 'promote': {'description': 'comment', 'content_1': people.username, 'content_2': '评论了你', 'content_3': comment.content}}
+                                  $addToSet: {'commentFrom': comment._id, 'promote': {'description': 'comment', 'content_1': people.nickname, 'content_2': '评论了你', 'content_3': comment.content}}
                                 }).exec(err7 => {
                                   if (err7) {
                                     res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -114,7 +114,12 @@ router.get('/comment/getComment', (req, res) => {
       }
     })
     .populate('author')
-    .populate('zan')
+    .populate({
+      path: 'comment',
+      populate: {
+        path: 'zan'
+      }
+    })
     .populate({
       path: 'comment',
       populate: {
@@ -174,17 +179,23 @@ router.post('/comment/addZan', (req, res) => {
               res.send({error: true, message: '发生错误', type: 'DB'})
             } else {
               if (doc) {
-                doc.zan.push(people._id)
-                doc.save(err2 => {
-                  if(err2) {
-                    res.send({error: true, message: '发生错误', type: 'DB'})
-                  } else {
-                    User.updateOne({_id: doc.people}, {
-                      $addToSet: {'promote': {'description': 'zan', 'content_1': people.username, 'content_2': '赞了你的评论'}}
-                    })
-                    res.send({error: false, result: 'success'})
-                  }
-                })
+                if (doc.zan.some(function (id) {
+                  return id.toString() === people._id.toString()  // 过滤掉自己的
+                })) {
+                  res.send({error: false})
+                } else {
+                  doc.zan.push(people._id)
+                  doc.save(err2 => {
+                    if(err2) {
+                      res.send({error: true, message: '发生错误', type: 'DB'})
+                    } else {
+                      User.updateOne({_id: mongoose.Types.ObjectId(doc.people)}, {
+                        $addToSet: {'promote': {'description': 'zan', 'content_1': people.nickname, 'content_2': '赞了你的评论'}}
+                      })
+                      res.send({error: false, result: 'success'})
+                    }
+                  })
+                }
               } else {
                 res.send({error: true, message: '发生错误', type: 'value'})
               }
@@ -194,6 +205,31 @@ router.post('/comment/addZan', (req, res) => {
     })
   } else {
     res.send({error: true, askLogin: true})
+  }
+})
+router.post('/comment/cancelZan', (req, res) => {
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    let id = mongoose.Types.ObjectId(req.body.id)
+    User.findOne({username: user}, (err, people) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误'})
+      } else {
+        Comment.updateOne({_id: id}, {$pull: {'zan': people._id}})
+          .exec((err2) => {
+            if (err2) {
+              res.send({error: true, type: 'DB', message: '发生错误'})
+            } else {
+              res.send({error: false, result: 'success'})
+            }
+          })
+      }
+    })
   }
 })
 module.exports = router

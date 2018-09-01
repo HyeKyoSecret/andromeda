@@ -28,6 +28,15 @@
     margin-top:  10px;
     width: 100%;
     min-height: calc(100vh - 82px);
+    .promoteList {
+      margin-top: 5px;
+      &:last-child {
+        content: '';
+        display: block;
+        height: 100px;
+        width: 100%;
+      }
+    }
     .rq-content {
       width: 100%;
       display: flex;
@@ -99,7 +108,7 @@
             overflow: hidden;
           }
           .info {
-            flex: 4.5;
+            flex: 4;
             text-align: center;
             .novel-name {
               color: $icon-blue;
@@ -111,7 +120,7 @@
       }
     }
     .mint-cell-title {
-      flex: 0.7;
+      flex: 1.4;
       text-align: center;
       margin-left: 5px;
     }

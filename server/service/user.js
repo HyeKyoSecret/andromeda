@@ -607,10 +607,15 @@ router.post('/user/searchFriend', (req, res) => {
 })
 router.post('/user/changeBirthday', (req, res) => {
   'use strict'
-  let id = req.body.id
   let date = req.body.date
-  if (req.session.userId === id || (req.cookies.And && req.cookies.And.userId === id)) {
-    User.updateOne({id: id}, {$set: {'birthday': date}})
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    User.updateOne({username: user}, {$set: {'birthday': date}})
       .exec((err) => {
         if (err) {
           res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -624,10 +629,15 @@ router.post('/user/changeBirthday', (req, res) => {
 })
 router.post('/user/changeSex', (req, res) => {
   'use strict'
-  let id = req.body.id
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
   let value = req.body.value
-  if (req.session.userId === id || (req.cookies.And && req.cookies.And.userId === id)) {
-    User.updateOne({id: id}, {$set: {'sex': value}}, {upsert: true})
+  if (user) {
+    User.updateOne({username: user}, {$set: {'sex': value}}, {upsert: true})
       .exec((err) => {
         if (err) {
           res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})

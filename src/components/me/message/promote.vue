@@ -1,9 +1,8 @@
 <template>
-  <div class="promote-template" v-swipe="{methods: swipe}">
+  <div class="promote-template">
     <div v-for='(item, index) in promoteList' class="promoteList">
-      <div class="rq-content" v-if="item.vis">
-        <mt-cell-swipe class='rq'
-                       :title= item.content_1
+      <div class="pr-content" v-if="item.vis">
+        <mt-cell-swipe class='pr'
                        :right="[
           {
             content: '删除',
@@ -14,6 +13,7 @@
           }
         ]">
           <div class='add-request'>
+            <span class="title" @click.self="showHello">{{item.content_1}}</span>
             <span class="info">{{item.content_2}} <label class='novel-name' v-if="item.description === 'recommend'" @click="goStory(item.content_4)">《{{item.content_3}}》</label></span>
             <span class="date">{{item.date}}</span>
           </div>
@@ -37,7 +37,7 @@
         width: 100%;
       }
     }
-    .rq-content {
+    .pr-content {
       width: 100%;
       display: flex;
       align-items: center;
@@ -46,7 +46,7 @@
         border: none;
         /*margin-bottom: 70px;*/
       }
-      .rq {
+      .pr {
         width: 100%;
         height: 50px;
         background: white;
@@ -120,12 +120,12 @@
       }
     }
     .mint-cell-title {
-      flex: 1.4;
+      flex: 0;
       text-align: center;
       margin-left: 5px;
     }
     .mint-cell-value {
-      flex: 5;
+      flex: 4.5;
     }
   }
 
@@ -154,6 +154,11 @@
         } else if (e.direction === 'Right') {
           this.$router.push({name: 'message_request', params: { user: this.$route.params.user }})
         }
+      },
+      showHello (e) {
+        e.preventDefault()
+        e.stopPropagation()
+        console.log('hello')
       },
       getData () {
         Axios.get('/user/getPromote')

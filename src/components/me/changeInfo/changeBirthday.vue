@@ -28,8 +28,7 @@
       },
       changeBirthday () {
         Axios.post('/user/changeBirthday', {
-          date: this.pickerValue,
-          id: this.id
+          date: this.pickerValue
         }).then(response => {
           if (!response.data.error) {
             this.$emit('refresh')

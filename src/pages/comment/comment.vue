@@ -63,8 +63,8 @@
         background-color: white;
         display: flex;
         padding: 10px 10px 10px 10px;
-        &:last-child{
-          padding-bottom: 100px;
+        &:last-child {
+         //
         }
         .critic-pic {
           flex: 1;

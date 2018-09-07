@@ -1,5 +1,5 @@
 <template>
-  <div class="promote-template" v-swipe="{methods: swipe}">
+  <div class="promote-template">
     <div v-for='(item, index) in promoteList' class="promoteList">
       <div class="rq-content" v-if="item.vis">
         <mt-cell-swipe class='rq'
@@ -30,12 +30,9 @@
     min-height: calc(100vh - 82px);
     .promoteList {
       margin-top: 5px;
-      &:last-child {
-        content: '';
-        display: block;
-        height: 100px;
-        width: 100%;
-      }
+      /*&:last-child {*/
+        /*padding-bottom: 100px;*/
+      /*}*/
     }
     .rq-content {
       width: 100%;

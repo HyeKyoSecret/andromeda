@@ -136,7 +136,7 @@ router.get('/comment/getComment', (req, res) => {
         doc.comment.forEach((comment) => {
           if (comment.display) {
             let hasZan = false
-            for(let i = 0; i < comment.zan.length; i++) {   // 检查是否赞过
+            for  (let i = 0; i < comment.zan.length; i++) {   // 检查是否赞过
               if (comment.zan[i].username === user) {
                 hasZan = true
               }

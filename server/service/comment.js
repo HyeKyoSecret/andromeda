@@ -189,9 +189,6 @@ router.post('/comment/addZan', (req, res) => {
                     if(err2) {
                       res.send({error: true, message: '发生错误', type: 'DB'})
                     } else {
-                      User.updateOne({_id: mongoose.Types.ObjectId(doc.people)}, {
-                        $addToSet: {'promote': {'description': 'zan', 'content_1': people.nickname, 'content_2': '赞了你的评论'}}
-                      })
                       res.send({error: false, result: 'success'})
                     }
                   })

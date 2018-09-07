@@ -17,7 +17,7 @@
             </span>
             <span class="re-critic" v-if="item.commentTo">{{item.commentTo}}</span>
           </div>
-          <div class="content">
+          <div class="content" :class="{notshow: commentList[index].notShow}":id="item.id">
             {{item.content}}
           </div>
           <div class="information">
@@ -27,6 +27,7 @@
             </span>
             <span class="reply" @click="replyComment(index, item.id)" v-if="!author">回复</span>
             <span class="time">{{item.date}}</span>
+            <span class="showBtn">展开</span>
           </div>
         </div>
       </div>
@@ -86,11 +87,23 @@
               width: 10px;
             }
           }
-          .content {
+          .content{
+            font-size: 14px;
+            line-height: 1.3em;
+            color: $font-dark;
+            margin-top: 5px;
+            word-break: break-all;
+            overflow: visible;
+            max-height: 300px;
+            display: inline-block;
+          }
+          .content.notshow {
             font-size: 14px;
             color: $font-dark;
             margin-top: 5px;
             max-height: 60px;
+            line-height: 1.3em;
+            word-break: break-all;
             display: -webkit-box;
             display: -moz-box;
             -webkit-box-orient: vertical;
@@ -112,6 +125,10 @@
                 height: 14px;
                 width: 14px;
               }
+            }
+            .showBtn {
+              float: right;
+              color: $main-color;
             }
           }
         }
@@ -182,7 +199,8 @@
         submit: false,
         commentList: [],
         tempId: '',
-        tempWord: ''
+        tempWord: '',
+        author: ''
       }
     },
     computed: {
@@ -289,9 +307,17 @@
           })
           this.getData()
           this.comment = ''
+          document.getElementById('textArea').style.height = 28 + 'px'
           this.tempWord = ''
           this.tempId = ''
         })
+      },
+      countLines (ele) {
+        let styles = window.getComputedStyle(ele, null)
+        let lh = parseInt(styles.lineHeight, 10)
+        let h = parseInt(styles.height, 10)
+        let lc = Math.round(h / lh)
+        return lc
       },
       getData () {
         Axios.get('/comment/getComment', {
@@ -301,6 +327,18 @@
         }).then(response => {
           if (!response.data.error) {
             this.commentList = response.data.result
+            this.$nextTick(function () {
+              for (let i = 0; i < this.commentList.length; i++) {
+                let f = document.getElementById(this.commentList[i].id)
+                this.commentList[i].lc = this.countLines(f)
+              }
+              this.commentList.forEach(comment => {
+                if (comment.lc > 3) {
+                  comment.notShow = true
+                }
+              })
+              console.log(JSON.stringify(this.commentList))
+            }.bind(this))
             this.author = response.data.author
           } else {
             Toast({

@@ -30,9 +30,9 @@
     min-height: calc(100vh - 82px);
     .promoteList {
       margin-top: 5px;
-      /*&:last-child {*/
-        /*padding-bottom: 100px;*/
-      /*}*/
+      &:last-child {
+        padding-bottom: 100px;
+      }
     }
     .pr-content {
       width: 100%;
@@ -41,7 +41,6 @@
       border-bottom: 1px solid $border-gray;
       &:last-child {
         border: none;
-        /*margin-bottom: 70px;*/
       }
       .pr {
         width: 100%;

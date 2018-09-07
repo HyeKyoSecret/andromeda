@@ -27,7 +27,7 @@
             </span>
             <span class="reply" @click="replyComment(index, item.id)" v-if="!author">回复</span>
             <span class="time">{{item.date}}</span>
-            <span class="showBtn">展开</span>
+            <span class="showBtn" v-if="item.lc > 3" @click="showComment(index)">{{item.notShow ? '展开' : '收起'}}</span>
           </div>
         </div>
       </div>
@@ -65,7 +65,7 @@
         display: flex;
         padding: 10px 10px 10px 10px;
         &:last-child {
-         //
+          padding-bottom: 100px;
         }
         .critic-pic {
           flex: 1;
@@ -187,6 +187,7 @@
   }
 </style>
 <script>
+  // import Vue from 'Vue'
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
   import autoSize from 'autosize'
@@ -235,6 +236,10 @@
       this.getData()
     },
     methods: {
+      showComment (i) {
+        this.commentList[i].notShow = !this.commentList[i].notShow
+        this.$set(this.commentList, i, this.commentList[i])
+      },
       addZan (i) {
         Axios.post('/comment/addZan', {
           id: this.commentList[i].id
@@ -316,8 +321,7 @@
         let styles = window.getComputedStyle(ele, null)
         let lh = parseInt(styles.lineHeight, 10)
         let h = parseInt(styles.height, 10)
-        let lc = Math.round(h / lh)
-        return lc
+        return Math.round(h / lh)
       },
       getData () {
         Axios.get('/comment/getComment', {
@@ -331,13 +335,16 @@
               for (let i = 0; i < this.commentList.length; i++) {
                 let f = document.getElementById(this.commentList[i].id)
                 this.commentList[i].lc = this.countLines(f)
+                if (this.commentList[i].lc > 3) {
+                  this.commentList[i].notShow = true
+                  this.$set(this.commentList, i, this.commentList[i])
+                }
               }
               this.commentList.forEach(comment => {
                 if (comment.lc > 3) {
                   comment.notShow = true
                 }
               })
-              console.log(JSON.stringify(this.commentList))
             }.bind(this))
             this.author = response.data.author
           } else {

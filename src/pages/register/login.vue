@@ -112,7 +112,7 @@
                     position: 'middle',
                     duration: 1000
                   })
-                  this.$router.push({path: '/'})
+                  this.$router.go(-1)
                 }
               } catch (e) {
                 this.getCaptcha()

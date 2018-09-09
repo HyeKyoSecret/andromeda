@@ -8,6 +8,11 @@ import App from './App.vue'
 import MintUI from 'mint-ui'
 import Axios from 'axios'
 import VueFinger from './js/vueFinger'
+import AlloyFinger from 'alloyfinger/alloy_finger' // 手势库
+import AlloyFingerVue from 'alloyfinger/vue/alloy_finger.vue'
+Vue.use(AlloyFingerVue, {
+  AlloyFinger
+})
 if (process.env.NODE_ENV !== 'production') {
   Axios.defaults.baseURL = 'http://localhost:8080/api'
 }
@@ -15,8 +20,16 @@ Axios.defaults.withCredentials = true
 Vue.use(MintUI)
 Vue.use(VueRouter)
 Vue.use(VueFinger)
+const scrollBehavior = (to, from, savedPosition) => {
+  if (savedPosition) {
+    return savedPosition
+  } else {
+    return { x: 0, y: 0 }
+  }
+}
 const router = new VueRouter({
   mode: 'history',
+  scrollBehavior,
   routes
 })
 router.beforeEach((to, from, next) => {
@@ -48,6 +61,7 @@ router.beforeEach((to, from, next) => {
     next() // 确保一定要调用 next()
   }
 })
+
 /* eslint-disable */
 new Vue({
   router,

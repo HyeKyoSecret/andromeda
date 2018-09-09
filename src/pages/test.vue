@@ -1,40 +1,24 @@
 <template>
   <div>
-    <div class="abc">
-      <button @click="openPicker">打开</button>
-      <mt-datetime-picker
-        ref="picker"
-        type="date"
-        :startDate = startDate
-        :endDate = endDate
-        v-model="pickerValue">
-      </mt-datetime-picker>
+    <div class="abs">
+      <div class="bounce" v-for="n in 5">
+        f3445
+      </div>
     </div>
-    <footMenu class="hehe">
-    </footMenu>
   </div>
 </template>
 <script>
-//  import Axios from 'axios'
-  import FootMenu from '../components/foot-menu.vue'
-  export default {
-    data () {
-      return {
-        startDate: new Date('1960', '1', '1'),
-        endDate: new Date('2008', '12', '31'),
-        pickerValue: ''
-      }
-    },
-    components: {
-      FootMenu
-    },
-    methods: {
-      openPicker () {
-        this.$refs.picker.open()
+
+</script>
+<style lang="scss">
+  .abs {
+    .bounce {
+      width: 100px;
+      height: 100px;
+      border: 1px solid black;
+      &:last-child {
+        background: firebrick;
       }
     }
   }
-</script>
-<style lang="scss" scoped>
-  @import "../scss/style.css";
 </style>

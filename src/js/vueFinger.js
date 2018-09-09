@@ -62,7 +62,7 @@ vueFinger.install = function (Vue, options) {
   }
   self.start = function (e) {
     if (!e.touches) return
-    // e.preventDefault()
+    e.preventDefault()
     self.config.now = Date.now()
     self.config.x1 = e.touches[0].pageX
     self.config.y1 = e.touches[0].pageY
@@ -70,8 +70,8 @@ vueFinger.install = function (Vue, options) {
     self.config.touchStart(e)
     if (self.config.preTapPosition.x !== null) {
       self.config.isDoubleTap = (self.config.delta > 0 && self.config.delta <= 250 &&
-      Math.abs(self.config.preTapPosition.x - self.config.x1) < 30 &&
-      Math.abs(self.config.preTapPosition.y - self.config.y1) < 30)
+        Math.abs(self.config.preTapPosition.x - self.config.x1) < 30 &&
+        Math.abs(self.config.preTapPosition.y - self.config.y1) < 30)
     }
     self.config.preTapPosition.x = self.config.x1
     self.config.preTapPosition.y = self.config.y1
@@ -92,7 +92,7 @@ vueFinger.install = function (Vue, options) {
   }
   self.move = function (e) {
     if (!e.touches) return
-    // e.preventDefault()
+    e.preventDefault()
     var preV = self.config.preV
     var len = e.touches.length
     var currentX = e.touches[0].pageX
@@ -126,12 +126,12 @@ vueFinger.install = function (Vue, options) {
     self.config.y2 = currentY
     if (e.touches.length > 1) {
       self._cancelLongTap()
-      // e.preventDefault()
+      e.preventDefault()
     }
   }
   self.end = function (e) {
     if (!e.touches) return
-    // e.preventDefault()
+    e.preventDefault()
     self._cancelLongTap()
     if (e.touches.length < 2) {
       self.config.multipointEnd(e)

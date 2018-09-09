@@ -6,7 +6,8 @@ const User = require('../db/User')
 const router = express.Router()
 const md5 = require('md5')
 const svgCaptcha = require('svg-captcha')
-
+// const gm = require('gm').subClass({imageMagick: true})
+const tool = require('../tool')
 router.post('/register', (req, res) => {
   let username = req.body.username
   let nickname = req.body.nickname
@@ -69,7 +70,6 @@ router.post('/register/checkUserRepeated', (req, res) => {
   'use strict'
   let username = req.body.username
   User.findOne({username: username}, (error, doc) => {
-    'use strict'
     if (error) {
       console.log(error)
     } else {
@@ -86,7 +86,6 @@ router.post('/register/checkNickRepeated', (req, res) => {
   'use strict'
   let nickname = req.body.nickname
   User.findOne({nickname: nickname}, (error, doc) => {
-    'use strict'
     if (error) {
       console.log(error)
     } else {
@@ -115,7 +114,6 @@ router.post('/register/login', (req, res) => {
   'use strict'
   let username = req.body.username
   let password = req.body.password
-  console.log('接受' + username + password)
   User.findOne({username: username}, (err, user) => {
     if (err) {
       res.send({permit: false, message: '服务器忙，请稍后再试'})
@@ -176,7 +174,8 @@ router.get('/register/checkLogin', (req, res) => {
               login: true,
               user: user.id,
               nickName: user.nickname,
-              sign: user.sign
+              sign: user.sign,
+              headImg: tool.formImg(user.headImg)
             })
           } else {
             res.send({
@@ -202,7 +201,8 @@ router.get('/register/checkLogin', (req, res) => {
             login: true,
             user: result.id,
             nickName: result.nickname,
-            sign: result.sign
+            sign: result.sign,
+            headImg: tool.formImg(result.headImg)
           })
         } else {
           res.send({
@@ -236,7 +236,8 @@ router.get('/register/checkUser', (req, res) => {
       user: '',
       nickName: '',
       sign: '',
-      userId: ''
+      userId: '',
+      headImg: ''
     }
     User.findOne({id: user})
       .exec((err, account) => {
@@ -248,6 +249,7 @@ router.get('/register/checkUser', (req, res) => {
             userInfo.nickName = account.nickname
             userInfo.sign = account.sign
             userInfo.userId = account.id
+            userInfo.headImg = tool.formImg(account.headImg)
             if (account.username === loginUser) {
               res.send({user: userInfo, customer: false}) // 是本人，非访客模式
             } else {
@@ -278,38 +280,6 @@ router.get('/register/quitLogin', (req, res) => {
       res.send({error: false})
     }
   })
-})
-router.get('/register/test', (req, res) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000')
-  res.send({result: 555})
-})
-router.get('/register/get-cookie', (req, res) => {
-  req.session.time = Date.now()
-  res.header('Access-Control-Allow-Origin', 'http://localhost:80')
-  res.json({ result: 'ok' })
-})
-router.get('/register/test-cookie', (req, res) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:80')
-  if (req.session.time) {
-    console.log('session.time: ' + req.session.time)
-    console.log(req.cookies)
-    res.json({ result: 'ok' })
-  } else {
-    res.json({ result: 'error' })
-  }
-})
-router.get('/register/a', function (req, res) {
-  res.send({result: 666})
-})
-
-router.get('/register/b', function (req, res) {
-  console.log('req.cookies.And' + req.cookies.And)
-  if (req.cookies.And) {
-    console.log('后台判断cookies存在' + req.cookies.And.user)
-    res.send('yes')
-  } else {
-    res.send('no')
-  }
 })
 
 module.exports = router

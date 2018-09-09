@@ -17,11 +17,14 @@
         </div>
       </div>
     </div>
-    <div>
-      <router-link tag="div" v-for="item in storyList" :to="item.path" :key='item.path' class="one-recommendation" >
+    <div v-infinite-scroll="getData"
+         infinite-scroll-disabled= false
+         infinite-scroll-distance="10"
+         infinite-scroll-immediate-check= true>
+      <router-link tag="div" v-for="(item, index) in storyList" :to="item.path" :key='item.path' class="one-recommendation" >
         <div class="story-information">
           <div class="cover">
-            <div><img src="../../img/photo/LegendofZelda.png" /></div>
+            <div><img :src='item.cover' @error="setErrorImg(index)"/></div>
             <div class="book-number">
               <span><img src="../../img/icon/graybook.png" /></span>
               <span class="number">4399</span>
@@ -66,7 +69,11 @@
     },
     methods: {
       getData () {
-        Axios.get('/story/getDefaultDiscovery')
+        Axios.get('/story/getDefaultDiscovery', {
+          params: {
+            storyLength: parseInt(this.storyList.length / 8)
+          }
+        })
           .then(response => {
             if (response.data.error) {
               Toast({
@@ -75,17 +82,26 @@
                 duration: 1000
               })
             } else {
-              response.data.result.forEach((o) => {
-                this.storyList.push({
-                  storyName: o.storyName,
-                  content: o.content,
-                  author: o.author,
-                  date: o.date,
-                  path: `/story/${o.path}`
-                })
+              let existStory = this.storyList.some(function (story) {
+                return story.path && response.data.result[0] && story.path.split('/story/')[1].toString() === response.data.result[0].path.toString()
               })
+              if (!existStory) {
+                response.data.result.forEach((o) => {
+                  this.storyList.push({
+                    storyName: o.storyName,
+                    content: o.content,
+                    author: o.author,
+                    date: o.date,
+                    path: `/story/${o.path}`,
+                    cover: o.cover
+                  })
+                })
+              }
             }
           })
+      },
+      setErrorImg (x) {
+        this.storyList[x].cover = require('../../img/photo/defaultPic.png')
       }
     }
   }

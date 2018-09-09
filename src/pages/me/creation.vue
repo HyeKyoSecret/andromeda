@@ -1,48 +1,20 @@
 <template>
   <div class="my-creation">
     <notice v-bind:title="title"></notice>
-    <div class="create-new-story" v-if="isUser">
-      撰写新的故事
+    <div class="button-bar">
+      <div class="button">
+        <div ><span class="root" :class="{active: myRootActive}" @click="myRoot">我发起的</span></div>
+        <div ><span class="story" :class="{active: myStoryActive}" @click="myStory">我参与的</span></div>
+      </div>
     </div>
-    <div>
-      <router-link :to="item.path" tag='div' class="one-story" v-for="item in story" :key="item.name" v-bind:zty="12345">
-        <div class="story-information">
-          <div class="cover">
-            <div><img src="../../img/photo/LegendofZelda.png" /></div>
-            <div class="story-quantity">
-              <span><img src="../../img/icon/graybook.png" /></span>
-              <span class="number">4399</span>
-            </div>
-            <div class="story-quantity">
-              <span><img src="../../img/icon/gray_flag.png" /></span>
-              <span class="number">14392</span>
-            </div>
-          </div>
-          <div class="right-part">
-            <div class="story-name">
-              <span class="name">{{item.name}}</span>
-              <span class="owner" v-if="item.isRoot">题主</span>
-            </div>
-            <div class="info-quantity">
-              <span><img src="../../img/icon/gray_pen.png" /></span>
-              <span>{{item.num}}篇</span>
-            </div>
-            <div class="info-quantity">
-              <span><img src="../../img/icon/gray_thumb.png" /></span>
-              <span>122次</span>
-            </div>
-            <div class="last-write-time">
-              最后创作时间：{{item.latestDate}}
-            </div>
-          </div>
-        </div>
-      </router-link>
-    </div>
+        <creation :story="myRootActive ? root : story"  v-on:loadMore="fetchData"></creation>
+    <router-view v-on:refreshImg="refreshImage"></router-view>
     <foot-menu></foot-menu>
   </div>
 </template>
 <script>
   import FootMenu from '../../components/foot-menu.vue'
+  import creation from '../../components/me/creation/creation.vue'
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
   import { Toast, Indicator } from 'mint-ui'
@@ -50,78 +22,115 @@
   export default {
     components: {
       FootMenu,
-      notice
+      notice,
+      creation
     },
     data () {
       return {
         isUser: false,
         title: '我的创作',
-        story: []
+        story: [],
+        root: [],
+        myRootActive: true,
+        myStoryActive: false
       }
     },
     created: function () {
-      this.fetchData()
+      this.fetchData('root')
+      this.fetchData('story')
     },
     methods: {
-      fetchData () {
-        Indicator.open({
-          text: '加载中...',
-          spinnerType: 'fading-circle'
-        })
-        Axios.get('/user/getMyCreation', {
-          params: {
-            user: this.$route.params.user
-          },
-          timeout: 5000
-        }).then((response) => {
-          Indicator.close()
-          if (response.data.permit) {
-            for (let i = 0; i < response.data.result.length; i++) {
-              this.story.push({
-                name: response.data.result[i].root,
-                num: response.data.result[i].data.length,
-                latestDate: moment(response.data.result[i].timeStamp).format('YYYY年M月D日'),
-                isRoot: response.data.result[i].label,
-                path: this.getPath(response.data.result[i]),
-                data: response.data.data
+      fetchData (type) {
+        if (this.$route.name === 'creation') {
+          Indicator.open({
+            text: '加载中...',
+            spinnerType: 'fading-circle'
+          })
+          Axios.get('/user/getMyCreation', {
+            params: {
+              type: type,
+              val: parseInt(this[type].length / 6),
+              user: this.$route.params.user
+            },
+            timeout: 10000
+          }).then((response) => {
+            Indicator.close()
+            if (response.data.permit) {
+              let exist = this[type].some(function (story) {
+                return response.data.result[0] && response.data.result[0].root === story.name
               })
-            }
-          } else {
-            if (response.data.type === '404') {
-              // 用户名错误
-              this.$emit('error')
+              if (!exist) {
+                for (let i = 0; i < response.data.result.length; i++) {
+                  this[type].push({
+                    name: response.data.result[i].root,
+                    num: response.data.result[i].count ? response.data.result[i].count : response.data.result[i].data.length,
+                    latestDate: moment(response.data.result[i].timeStamp).format('YYYY年M月D日 HH:mm'),
+                    isRoot: response.data.result[i].label,
+                    path: this.getPath(response.data.result[i]),
+                    cover: response.data.result[i].cover,
+                    nodeCounts: response.data.result[i].nodeCounts,
+                    zanCounts: response.data.result[i].zanCounts,
+                    readCounts: response.data.result[i].readCounts
+                  })
+                }
+              }
             } else {
-              // 数据库错误
+              if (response.data.type === '404') {
+                // 用户名错误
+                this.$emit('error')
+              } else {
+                // 数据库错误
+                Toast({
+                  message: '发生错误，请稍后再试',
+                  position: 'middle',
+                  duration: 1000
+                })
+              }
+            }
+          }).catch((error) => {
+            Indicator.close()
+            if (error) {
+              console.log(error)
               Toast({
-                message: '发生错误，请稍后再试',
+                message: '请求超时',
                 position: 'middle',
                 duration: 1000
               })
             }
-          }
-        }).catch((error) => {
-          Indicator.close()
-          if (error) {
-            Toast({
-              message: '请求超时，请稍后再试',
-              position: 'middle',
-              duration: 1000
-            })
-          }
-        })
+          })
+          Axios.get('/register/checkUser', {
+            params: {
+              user: this.$route.params.user
+            }
+          }).then(response => {
+            if (response.data.customer) {
+              this.title = response.data.sex + '的创作'
+            }
+          })
+        }
       },
       getPath (val) {
-        let path
-        if (!val.label) {
-          if (val.data.length === 1) {
-            path = `/story/${val.data[0]}`
-          } else {
-            path = `myCreation/${val.root}`
+        return `creation/myCreation/${val.root}`
+      },
+      setErrorImg (x) {
+        this.story[x].cover = require('../../img/photo/default2.png')
+      },
+      myRoot () {
+        this.myRootActive = true
+        this.myStoryActive = false
+      },
+      myStory () {
+        this.myRootActive = false
+        this.myStoryActive = true
+      },
+      refreshImage (name, path) {
+        // 同步修改封面
+        for (let i = 0; i < this.root.length; i++) {
+          if (this.root[i].name === name) {
+            this.root[i].cover = path
+            break
           }
-        } else {
-          path = `myCreation/${val.root}`
         }
-        return path
       }
     }
   }
@@ -137,91 +146,47 @@
     /*height: 100%;*/
     min-height: 100%;
     background: $bg-gray;
-    .create-new-story {
-      margin: 10px 25% 20px 25%;
-      background-color: $icon-red;
-      height: 30px;
-      color: white;
-      text-align: center;
-      line-height:30px;
-      border-radius: 5px;
-      font-size:16px;
-    }
-    .one-story {
-      height: 140px;
+    .button-bar {
       width: 100%;
-      background-color: white;
-      margin-bottom: 8px;
-      &:last-child {
-        margin-bottom: 100px;
-      }
-      .story-information {
-        margin-left: 10px;
-        margin-right: 10px;
-        height: 100px;
+      background: white;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .button {
+        width: 90%;
+        height: 26px;
+        margin: 0 auto;
         display: flex;
-        align-items:flex-start;
-        .cover {
-          margin-top: 10px;
+        align-items: center;
+        justify-content: center;
+        div {
           flex: 1;
-          img {
-            height: 88px;
-            width: 66px;
+          text-align: center;
+          line-height: 26px;
+          span {
+            display: inline-block;
+            width: 80px;
+            height: 26px;
+            color: white;
+            border-radius: 5px;
+            box-sizing: border-box;
           }
-          .story-quantity {
-            height: 18px;
-            img{
-              height: 15px;
-              width: 15px;
-              margin-left: 5px;
-              vertical-align: text-bottom;
-            }
-            .number {
-              margin-left: 3px;
-              color: $font-gray;
-              font-size: 12px;
-            }
+          .root.active {
+            background: $icon-red;
+            opacity: 1;
           }
-        }
-        .right-part {
-          margin-top: 8px;
-          flex: 3;
-          .story-name {
-            color: $font-dark;
-            font-size: 15px;
-            font-weight: 600;
-            display: flex;
-            .name {
-              flex:3;
-              text-align: left;
-            }
-            .owner {
-              margin-left: 50px;
-              flex: 1;
-              text-align: center;
-              height: 20px;
-              border:1px solid $icon-red;
-              border-radius: 5px;
-              font-size: 14px;
-              color: $icon-red;
-              font-weight: normal;
-            }
+          .story.active {
+            background: $icon-blue;
+            opacity: 1;
           }
-          .info-quantity {
-            margin-top: 10px;
-            font-size: 14px;
-            color: $font-gray;
-            img {
-              width:18px;
-              height:18px;
-              vertical-align: text-bottom;
-              margin-right: 5px;
-            }
+          .root{
+            background: $icon-red;
+            opacity: 0.3;
           }
-          .last-write-time {
-            margin-top: 20px;
-            color: $font-gray;
-            font-size: 14px;
+          .story{
+            background: $icon-blue;
+            opacity: 0.3;
           }
         }
       }
@@ -229,5 +194,11 @@
   }
   .mint-indicator {
     z-index: 999;
+  }
+  .fade-enter-active, .fade-leave-active {
+    transition: opacity .4s;
+  }
+  .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+    opacity: 0;
   }
 </style>

@@ -9,81 +9,131 @@ const router = express.Router()
 const moment = require('moment')
 const rootReg = /^R([0-9]){7}$/
 const storyReg = /^S([0-9]){7}$/
+const formidable = require('formidable')
+const path = require('path')
+const fs = require('fs')
+const tool = require('../tool')
+const gm = require('gm').subClass({imageMagick: true})
 moment.locale('zh-cn')
 router.post('/story/buildRoot', (req, res) => {
-  let rootName = req.body.rootName
-  let rootContent = req.body.rootContent
-  let writePermit = req.body.writePermit
-  let recommend = req.body.recommend
-  console.log('后台' + 'rootName' + rootName + 'rootContent' + rootContent + '推荐列表' + recommend)
+  const form = new formidable.IncomingForm()
+  const imgPath = path.resolve(__dirname, '../picture/cover/')   // 图片保存路径
+  // const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径/
+  const proPath = path.join(__dirname, '../../dist/static/thumb/cover/')    // 生产环境图片路径
+  const thumbPath = path.join(__dirname, '../../static/thumb/cover/')
+  function copyIt (from, to) {    // 复制文件
+    fs.writeFileSync(to, fs.readFileSync(from))
+    // fs.createReadStream(src).pipe(fs.createWriteStream(dst))  大文件复制
+  }
+  if (!fs.existsSync('../picture')) {
+    fs.mkdirSync('../picture')
+  }
+  if (!fs.existsSync(imgPath)) {
+    fs.mkdirSync(imgPath)
+  }
+  if (!fs.existsSync(proPath)) {
+    fs.mkdirSync(proPath)
+  }
+  if (!fs.existsSync(thumbPath)) {
+    fs.mkdirSync(thumbPath)
+  }
+  form.uploadDir = imgPath
+  form.keepExtensions = true    // 保存扩展名
+  form.maxFieldsSize = 20 * 1024 * 1024   // 上传文件的最大大小
   let author = req.session.user || (req.cookies.And && req.cookies.And.user)
   if (author) {
-    let rootStory = {
-      // name: rootName.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),     // 过滤大于小于美元符号
-      name: rootName,
-      content: rootContent,
-      // content: rootContent.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),
-      writePermit: writePermit
-    }
-    User.findOne({username: author}, (err, user) => {
-      'use strict'
+    form.parse(req, function (err, fields, files) {
       if (err) {
-        res.send({permit: false, message: '服务器忙，请稍后再试'})
+        console.log(err)
       } else {
-        rootStory.author = user._id
-        Root.findOne({name: rootStory.name})
-          .exec((err2, oldRoot) => {
-            if (err2) {
-              console.log(err2)
-            } else {
-              if (oldRoot) {
-                res.send({permit: false, message: '故事名重复'})
-              } else {
-                console.log('故事名查重检查完毕')
-                let newRoot = new Root(rootStory)
-                newRoot.save((err3, root) => {
-                  if (err3) {
-                    console.log(err3)
-                    res.send({permit: false, message: '服务器忙，请稍后再试'})
+        let fileName
+        if (files.file) {
+          fileName = tool.getFileName(files.file.path)
+        } else {
+          fileName = ''
+        }
+        let savePath = path.join(imgPath, fileName)
+        let usePath = path.join(proPath, fileName)
+        let thumbSavePath = path.join(thumbPath, fileName)
+        let rootStory = {
+          // name: rootName.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),     // 过滤大于小于美元符号
+          name: fields.name,
+          content: fields.content,
+          // content: rootContent.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),
+          writePermit: fields.writePermit,
+          recommend: fields.recommend,
+          coverImg: savePath
+        }
+        User.findOne({username: author}, (err, user) => {
+          'use strict'
+          if (err) {
+            res.send({permit: false, message: '服务器忙，请稍后再试'})
+          } else {
+            rootStory.author = user._id
+            Root.findOne({name: rootStory.name})
+              .exec((err2, oldRoot) => {
+                if (err2) {
+                  console.log(err2)
+                } else {
+                  if (oldRoot) {
+                    res.send({permit: false, message: '故事名重复'})
                   } else {
-                    console.log('保存完毕，进入我的创作更新')
-                    user.update({$push: {'myCreation.root': root._id}})
-                      .exec(err => {
-                        if (err) {
-                          res.send({permit: false, message: '服务器忙，请稍后再试'})
-                        }
-                        user.update({$set: {'myCreationDraft.root.name': '', 'myCreationDraft.root.content': '', 'myCreationDraft.root.writePermit': true}})
-                          .exec(saveError => {
-                            if (saveError) {
-                              res.send({permit: false, message: '发生错误，请稍后再试'})
-                            } else {
-                              console.log('我的创作更新完毕，进入推荐人流程')
-                              if (recommend.length > 0) {
-                                for (let i = 0; i < recommend.length; i++) {
-                                  User.update({id: recommend[i].id}, {$push:
-                                      {'promote': {'description': 'recommend', 'content_1': author, 'content_2': '向您推荐了', 'content_3': root.name, 'content_4': root.id}}
-                                  }).exec((err) => {
-                                    if (err) {
-                                      res.send({permit: false, message: '服务器忙，请稍后再试'})
-                                    }
-                                    if (i === recommend.length - 1) {
-                                      console.log('有推荐人的')
-                                      res.send({permit: true, message: '发布成功'})
-                                    }
-                                  })
-                                }
-                              } else {
-                                console.log('无推荐人的发布成功前')
-                                res.send({permit: true, message: '发布成功'})
-                              }
+                    let newRoot = new Root(rootStory)
+                    newRoot.save((err3, root) => {
+                      if (err3) {
+                        console.log(err3)
+                        res.send({permit: false, message: '服务器忙，请稍后再试'})
+                      } else {
+                        user.update({$push: {'myCreation.root': root._id}})
+                          .exec(err => {
+                            if (err) {
+                              res.send({permit: false, message: '服务器忙，请稍后再试'})
                             }
+                            user.update({$set: {'myCreationDraft.root.name': '', 'myCreationDraft.root.content': '', 'myCreationDraft.root.writePermit': true}})
+                              .exec(saveError => {
+                                if (saveError) {
+                                  res.send({permit: false, message: '发生错误，请稍后再试'})
+                                } else {
+                                  if (rootStory.recommend) {
+                                    for (let i = 0; i < rootStory.recommend.length; i++) {
+                                      User.update({id: rootStory.recommend[i].id}, {$push:
+                                          {'promote': {'description': 'recommend', 'content_1': author, 'content_2': '向您推荐了', 'content_3': root.name, 'content_4': root.id}}
+                                      }).exec((err) => {
+                                        if (err) {
+                                          res.send({permit: false, message: '服务器忙，请稍后再试'})
+                                        }
+                                        if (i === rootStory.recommend.length - 1) {
+                                          gm(savePath)
+                                            .thumb(300, 400, thumbSavePath, 80, function (err) {
+                                              if (err) {
+                                                res.send({permit: false, type: 'gm', message: '发生错误'})
+                                              } else {
+                                                copyIt(thumbSavePath, usePath)     // 拷贝文件
+                                                res.send({permit: true, message: '发布成功'})                                              }
+                                            })
+                                        }
+                                      })
+                                    }
+                                  } else {
+                                    gm(savePath)
+                                      .thumb(300, 400, thumbSavePath, 80, function (err) {
+                                        if (err) {
+                                          res.send({permit: false, type: 'gm', message: '发生错误'})
+                                        } else {
+                                          copyIt(thumbSavePath, usePath)     // 拷贝文件
+                                          res.send({permit: true, message: '发布成功'})                                              }
+                                      })
+                                  }
+                                }
+                              })
                           })
-                      })
+                      }
+                    })
                   }
-                })
-              }
-            }
-          })
+                }
+              })
+          }
+        })
       }
     })
   } else {
@@ -93,13 +143,13 @@ router.post('/story/buildRoot', (req, res) => {
 router.get('/story/getStory', (req, res) => {
   'use strict'
   let id = req.query.id
-
   let result = {
     title: '',
     content: '',
     author: '',
     date: ''
   }
+  let user = req.session.userId ? req.session.userId : req.cookies.And ? req.cookies.And.userId : null
   if (rootReg.test(id)) {
     Root.findOne({id: id})
       .populate('author')
@@ -113,7 +163,23 @@ router.get('/story/getStory', (req, res) => {
             result.author = root.author.nickname
             result.authorId = root.author.id
             result.date = moment(root.date).format('YYYY年M月D日 HH:mm')
-            res.send({permit: true, result: result})
+            User.findOne({id: user})
+              .exec((err, doc) => {
+                if (err) {
+                  res.send({permit: false, type: 'DB', message: '发生错误，请稍后再试'})
+                } else {
+                  if (doc) {
+                    Root.updateOne({id: id}, {$addToSet: {'readCounts': doc._id}})
+                      .exec(err => {
+                        if (!err) {
+                          res.send({permit: true, result: result})
+                        }
+                      })
+                  } else {
+                    res.send({permit: true, result: result})
+                  }
+                }
+              })
           } else {
             res.send({permit: false})
           }
@@ -133,7 +199,23 @@ router.get('/story/getStory', (req, res) => {
             result.author = story.author.nickname
             result.authorId = story.author.id
             result.date = moment(story.date).format('YYYY年M月D日 HH:mm')
-            res.send({permit: true, result: result})
+            User.findOne({id: user})
+              .exec((err, doc) => {
+                if (err) {
+                  res.send({permit: false, type: 'DB', message: '发生错误，请稍后再试'})
+                } else {
+                  if (doc) {
+                    Story.updateOne({id: id}, {$addToSet: {'readCounts': doc._id}})
+                      .exec(err => {
+                        if (!err) {
+                          res.send({permit: true, result: result})
+                        }
+                      })
+                  } else {
+                    res.send({permit: true, result: result})
+                  }
+                }
+              })
           } else {
             res.send({permit: false})
           }
@@ -534,7 +616,6 @@ router.post('/story/xuildStory', (req, res) => {
                                 }
 
                                 search().catch((err) => {
-                                  'use strict'
                                   console.log('执行出现了错误' + err)
                                   res.send('error')
                                 })
@@ -667,7 +748,6 @@ router.post('/story/buildStory', (req, res) => {
                             }
 
                             search().catch((err) => {
-                              'use strict'
                               if (err) {
                                 res.send({error: true, type: 'story', message: '服务器忙，请稍后再试'})
                               }
@@ -704,7 +784,6 @@ router.post('/story/buildStory', (req, res) => {
           } else if (ftNode.split('')[0] === 'S') { // 从ftNode id上判断前驱节点是否是普通故事节点
             Story.findOne({id: ftNode})
               .exec((err, odstory) => {
-                'use strict'
                 if (err) {
                   res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                 } else {
@@ -1242,73 +1321,16 @@ router.post('/story/cancelSubscribe', (req, res) => {
   }
   exe()
 })
-router.get('/story/getStack', (req, res) => {
-  'use strict'
-  let fid = 'R10006'
-  let stack = []
-  let p
-  Root.findOne({id: fid}, (err, root) => {
-    if (err) {
-      console.log(err)
-    }
-    let getObj = function (id) {
-      return new Promise((resolve, reject) => {
-        Story.findOne({_id: id})
-          .exec((err, story) => {
-            if (err) {
-              console.log(err)
-            }
-            if (story) {
-              resolve(story)
-            } else {
-              Root.findOne({_id: id}, (err, root) => {
-                if (err) {
-                  console.log(err)
-                }
-                if (root) {
-                  resolve(root)
-                } else {
-                  resolve(null)
-                }
-              })
-            }
-          })
-      })
-    }
-
-    let exe = async function (root) {
-      p = root._id
-      let _temp
-      let count = 0
-      while (p || stack.length) {
-        if (p) {
-          count = count + 1
-          _temp = await getObj(p)
-          stack.push({
-            _id: _temp._id,
-            id: _temp.id,
-            content: _temp.content
-          })
-          p = _temp.lc
-        } else {
-          stack.pop()
-          p = _temp.rb
-          if (!p && stack.length > 1) {
-            _temp = await getObj(stack[stack.length - 1]._id)
-            p = _temp.rb
-            stack.pop()
-          }
-        }
-      }
-    }
-    exe(root)
-  })
-})
 router.get('/story/getDefaultDiscovery', (req, res) => {
   'use strict'
   let result = []
+  let existLength = req.query.storyLength * 8
   Root.find({})
-    .populate('author')
+    .populate({
+      path: 'author'
+    })
+    .limit(8)
+    .skip(existLength)
     .exec((err, root) => {
       if (err) {
         res.send({error: true, type: 'database', message: '发生错误请稍后再试'})
@@ -1321,31 +1343,11 @@ router.get('/story/getDefaultDiscovery', (req, res) => {
               content: sRoot.content,
               author: sRoot.author ? sRoot.author.nickname : '',
               date: moment(sRoot.date).format('YYYY.MM.DD HH:mm'),
-              path: sRoot.id
+              path: sRoot.id,
+              cover: tool.formImg(sRoot.coverImg)
             })
           })
-          Story.find({})
-            .populate('root')
-            .populate('author')
-            .exec((error, story) => {
-              if (error) {
-                res.send({error: true, type: 'database', message: '发生错误请稍后再试'})
-              }
-              if (story) {
-                story.forEach((sStory) => {
-                  result.push({
-                    storyName: sStory.root.name,
-                    content: sStory.content,
-                    author: sStory.author.nickname,
-                    date: moment(sStory.date).format('YYYY.MM.DD HH:mm'),
-                    path: sStory.id
-                  })
-                })
-                res.send({result: result})
-              } else {
-                res.send({result: result})
-              }
-            })
+          res.send({result: result})
         } else {
           res.send({result: result})
         }
@@ -1641,5 +1643,61 @@ router.get('/story/prepareTraversal', (req, res) => {
     })
   }
   exe()
+})
+router.post('/story/updateCover', function (req, res) {
+  const form = new formidable.IncomingForm()
+  const imgPath = path.resolve(__dirname, '../picture/cover/')   // 图片保存路径
+  // const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径/
+  const proPath = path.join(__dirname, '../../dist/static/thumb/cover/')    // 生产环境图片路径
+  const thumbPath = path.join(__dirname, '../../static/thumb/cover/')
+  function copyIt (from, to) {    // 复制文件
+    fs.writeFileSync(to, fs.readFileSync(from))
+    // fs.createReadStream(src).pipe(fs.createWriteStream(dst))  大文件复制
+  }
+  if (!fs.existsSync(imgPath)) {
+    fs.mkdirSync(imgPath)
+  }
+  if (!fs.existsSync(proPath)) {
+    fs.mkdirSync(proPath)
+  }
+  if (!fs.existsSync(thumbPath)) {
+    fs.mkdirSync(thumbPath)
+  }
+  form.uploadDir = imgPath
+  form.keepExtensions = true    // 保存扩展名
+  form.maxFieldsSize = 20 * 1024 * 1024   // 上传文件的最大大小
+  form.parse(req, function (err, fields, files) {
+    if (err) {
+      res.send({error: true, type: 'db', message: '发生错误，修改失败'})
+    }
+    let fileName
+    if (files.file) {
+      fileName = tool.getFileName(files.file.path)
+    } else {
+      fileName = ''
+    }
+    let savePath = path.join(imgPath, fileName)
+    let usePath = path.join(proPath, fileName)
+    let thumbSavePath = path.join(thumbPath, fileName)
+    Root.findOneAndUpdate({name: fields.rootName}, {$set: {'coverImg': savePath}})
+      .exec((err, root) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，上传失败'})
+        } else {
+          gm(savePath)
+            .thumb(300, 400, thumbSavePath, 80, function (err) {
+              if (err) {
+                res.send({error: false, type: 'gm', message: '发生错误'})
+              } else {
+                copyIt(thumbSavePath, usePath)     // 拷贝文件
+                if (root) {
+                  tool.clearFiles(root.coverImg)
+                }
+                res.send({error: false, message: '修改成功', result: tool.formImg(savePath)})
+              }
+            })
+        }
+      })
+  })
 })
 module.exports = router

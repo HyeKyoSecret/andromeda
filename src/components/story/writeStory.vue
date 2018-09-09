@@ -10,7 +10,7 @@
       <span class="fake-commit" v-if='!writeCheck'>发布</span>
       <span class="commit" @click="buildStory" v-else="">发布</span>
     </div>
-    <div class="context">
+    <div class="story-content">
       <textarea  name="context" placeholder="在这里书写您的故事" v-model="storyContent"></textarea>
     </div>
   </div>
@@ -131,6 +131,7 @@
     top: 0;
     left: 0;
     width: 100%;
+    z-index: 999;
     .notice {
       width: 100%;
       background: $main-color;
@@ -178,7 +179,7 @@
         height: 20px;
       }
     }
-    .context  {
+    .story-content {
       width: 100%;
       display:flex;
       align-items: center;

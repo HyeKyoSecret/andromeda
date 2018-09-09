@@ -35,12 +35,12 @@
             path: '/people/message/request'
           },
           {
-            name: '提示',
+            name: '通知',
             className: 'promote',
             path: '/people/message/promote'
           },
           {
-            name: '通知',
+            name: '公告',
             className: 'announcement',
             path: '/people/message/announcement'
           }

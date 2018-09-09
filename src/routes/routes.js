@@ -15,12 +15,13 @@ export default [
   },
   {
     path: '/people/:user?/',
+    name: 'people',
     component: resolve => require(['../pages/me/me.vue'], resolve),
     children: [
       {
         path: 'message',
         component: resolve => require(['../pages/me/message.vue'], resolve),
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, keepAlive: false },
         children: [
           {
             path: 'words',
@@ -46,28 +47,44 @@ export default [
       },
       {
         path: 'creation',
+        name: 'creation',
         component: resolve => require(['../pages/me/creation.vue'], resolve),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, keepAlive: true },
+        beforeEnter: (to, from, next) => {
+          if (from.name !== 'myCreation') {
+            to.meta.keepAlive = false
+            next()
+          } else {
+            if (!to.meta.keepAlive) {
+              to.meta.keepAlive = true
+            }
+            next()
+          }
+        },
+        children: [
+          {
+            path: 'myCreation/:rootName',
+            name: 'myCreation',
+            alias: 'creationNode',
+            component: resolve => require(['../pages/me/myCreationNode.vue'], resolve),
+            meta: { requiresAuth: true }
+          }
+        ]
       },
       {
         path: 'subscribe',
         component: resolve => require(['../pages/me/subscribe.vue'], resolve),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, keepAlive: false }
       },
       {
         path: 'friendList',
         component: resolve => require(['../pages/me/friendList.vue'], resolve),
-        meta: { requiresAuth: true }
-      },
-      {
-        path: 'myCreation/:rootName',
-        alias: 'creationNode',
-        component: resolve => require(['../pages/me/myCreationNode.vue'], resolve),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, keepAlive: false }
       },
       {
         path: 'changeInfo',
-        component: resolve => require(['../pages/me/changeInfo.vue'], resolve)
+        component: resolve => require(['../pages/me/changeInfo.vue'], resolve),
+        meta: { requiresAuth: true, keepAlive: false }
       }
     ]
   },
@@ -81,7 +98,9 @@ export default [
   },
   {
     path: '/test',
-    component: resolve => require(['../pages/test.vue'], resolve)
+    name: 'test',
+    component: resolve => require(['../pages/test.vue'], resolve),
+    meta: { keepAlive: true }
   },
   {
     path: '/buildStory',         // 创建新故事
@@ -89,8 +108,15 @@ export default [
     meta: { requiresAuth: true }
   },
   {
-    path: '/story/:id',         // 阅读
-    component: resolve => require(['../pages/stories/readStory.vue'], resolve)
+    path: '/story/:id/',         // 阅读
+    component: resolve => require(['../pages/stories/readStory.vue'], resolve),
+    children: [
+      {
+        path: 'comment',
+        component: resolve => require(['../pages/comment/comment.vue'], resolve),
+        meta: { requiresAuth: true }
+      }
+    ]
   },
   {
     path: '/buildStoryRecommend',         // 阅读
@@ -98,7 +124,8 @@ export default [
   },
   {
     path: '/discover',
-    component: resolve => require(['../pages/discover/discover.vue'], resolve)
+    component: resolve => require(['../pages/discover/discover.vue'], resolve),
+    meta: { keepAlive: false }
   },
   {
     path: '/start',

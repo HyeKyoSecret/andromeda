@@ -1,15 +1,22 @@
 <template>
   <div class="build-story-recommend" v-if="storyRecommendVis">
     <div class="notice">
-      <span class="cancel" :class="{extend: recommendList.length}" @click="back">
+      <span class="cancel" :class="{extend: recommendList.length}" @click="back" v-if="buildPermit">
+        上一步
+      </span>
+      <span class="cancel fake" :class="{extend: recommendList.length}" v-else>
         上一步
       </span>
       <span class="title">
           选择好友推荐
       </span>
-        <span class="finish" :class="{extend: recommendList.length}" @click="buildStory">
+        <span class="finish" :class="{extend: recommendList.length}" @click="buildStory" v-if="buildPermit">
         发布
-          <label v-if="recommendList.length">({{recommendList.length}}/10)</label>
+        <label v-if="recommendList.length">({{recommendList.length}}/10)</label>
+      </span>
+      <span class="fake finish" :class="{extend: recommendList.length}" v-else>
+        发布
+        <label v-if="recommendList.length">({{recommendList.length}}/10)</label>
       </span>
     </div>
     <div class="search">
@@ -18,30 +25,32 @@
       <span class="delete" v-if="deleteBtn" @click="deleteSearch"><img src="../../img/icon/delete.png"></span>
       <span class="cancel" v-if="cancelBtn" @click="cancelSearch">取消</span>
     </div>
+    <!--进度条-->
+    <slot v-if="!buildPermit"></slot>
     <div class="search-board" v-if="searchBoard">
       <div class="friend-list">
         <div class="one-friend" v-for="(item, index) in searchList" @click="addSearchFriend(index)">
           <div class="icon">
             <img src="../../img/icon/greenbingo_unselected.png" v-if="!item.active"/>
             <img src="../../img/icon/greenbingo.png" v-else/></div>
-          <div class="head"><img src="../../img/photo/2b_head.png" /></div>
+          <div class="head"><img :src="item.headImg" @error="setErrorImg(index, 'search')"/></div>
           <div class="name">{{item.name}}</div>
         </div>
       </div>
     </div>
     <!--<div class="star-friend">-->
-      <!--<span><img src="../../img/icon/gray_star.png" /></span>-->
+      <!--<span><thumb src="../../thumb/icon/gray_star.png" /></span>-->
       <!--<span>星标好友</span>-->
     <!--</div>-->
     <!--<div class="friend-list">-->
       <!--<div class="one-friend">-->
-        <!--<div class="icon"><img src="../../img/icon/greenbingo.png" /></div>-->
-        <!--<div class="head"><img src="../../img/photo/2b_head.png" /></div>-->
+        <!--<div class="icon"><thumb src="../../thumb/icon/greenbingo.png" /></div>-->
+        <!--<div class="head"><thumb src="../../thumb/photo/2b.png" /></div>-->
         <!--<div class="name">2B</div>-->
       <!--</div>-->
       <!--<div class="one-friend">-->
-        <!--<div class="icon"><img src="../../img/icon/greenbingo.png" /></div>-->
-        <!--<div class="head"><img src="../../img/photo/2b_head.png" /></div>-->
+        <!--<div class="icon"><thumb src="../../thumb/icon/greenbingo.png" /></div>-->
+        <!--<div class="head"><thumb src="../../thumb/photo/2b.png" /></div>-->
         <!--<div class="name">2B</div>-->
       <!--</div>-->
     <!--</div>-->
@@ -50,7 +59,7 @@
         <div class="icon">
           <img src="../../img/icon/greenbingo_unselected.png" v-if="!item.active"/>
           <img src="../../img/icon/greenbingo.png" v-else/></div>
-        <div class="head"><img src="../../img/photo/2b_head.png" /></div>
+        <div class="head"><img :src="item.headImg" @error="setErrorImg(index, 'friend')"/></div>
         <div class="name">{{item.name}}</div>
       </div>
     </div>
@@ -60,7 +69,7 @@
         <div class="icon">
           <img src="../../img/icon/greenbingo.png" />
         </div>
-        <div class="head"><img src="../../img/photo/2b_head.png" /></div>
+        <div class="head"><img :src="item.headImg" @error="setErrorImg(index, 'recommend')"/></div>
         <div class="name">{{item.name}}</div>
       </div>
     </div>
@@ -87,6 +96,11 @@
         font-size: 14px;
       }
       .cancel {
+        margin-left: 5px;
+        flex: 1.6;
+      }
+      .cancel.fake{
+        color: $font-color;
         margin-left: 5px;
         flex: 1.6;
       }
@@ -231,6 +245,7 @@
         storyRecommendVis: false
       }
     },
+    props: ['buildPermit'],
     created: function () {
       this.getData()
     },
@@ -240,6 +255,15 @@
       }
     },
     methods: {
+      setErrorImg (index, val) {
+        if (val === 'friend') {
+          this.friendList[index].headImg = require('../../img/images/defaultHeadImg.png')
+        } else if (val === 'search') {
+          this.searchList[index].headImg = require('../../img/images/defaultHeadImg.png')
+        } else if (val === 'recommend') {
+          this.recommendList[index].headImg = require('../../img/images/defaultHeadImg.png')
+        }
+      },
       openRecommend () {
         this.storyRecommendVis = true
       },

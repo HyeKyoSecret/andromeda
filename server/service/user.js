@@ -7,132 +7,11 @@ const Root = require('../db/StoryRoot')
 const Story = require('../db/Story')
 const moment = require('moment')
 const router = express.Router()
-router.get('/user/getMyCreation', (req, res) => {
-  'use strict'
-  let user = req.query.user
-  let rootList = []
-  let storyList = []
-  let result = []
-  function bubbleSort (arr) {   // 排序算法
-    for (let i = 0; i < arr.length - 1; i++) {
-      for (let j = 0; j < arr.length - 1 - i; j++) {
-        if (arr[j]['timeStamp'] < arr[j + 1]['timeStamp']) {
-          let tmp = arr[j]
-          arr[j] = arr[j + 1]
-          arr[j + 1] = tmp
-        }
-      }
-    }
-    return arr
-  }
-  if (user) {
-    let userReg = /^U([0-9]){7}$/
-    if (userReg.test(user)) {
-      User.findOne({id: user})
-        .populate({
-          path: 'myCreation.root',
-          options: {
-            sort: {date: -1}
-          }
-        })
-        .populate({
-          path: 'myCreation.story',
-          populate: { path: 'root' },
-          options: {
-            sort: {date: -1}
-          }
-        })
-        .exec((err, user) => {
-          if (err) {
-            res.send({permit: false})
-          } else {
-            if (user) {
-              if (user.myCreation.root) {   // 存在根节点
-                user.myCreation.root.forEach((root) => {
-                  rootList.push({
-                    root: root.name,
-                    timeStamp: root.date.getTime(),
-                    data: [root.id],
-                    label: 'root'
-                  })
-                })
-              }
-              if (user.myCreation.story) {   // 存在普通故事节点
-                user.myCreation.story.forEach((story) => {
-                  storyList.push({
-                    root: story.root.name,
-                    id: story.id,
-                    timeStamp: story.date.getTime(),
-                    label: 'story'
-                  })
-                })
-                let map = {}
-                let dest = []
-                for (let i = 0; i < storyList.length; i++) {
-                  let ai = storyList[i]
-                  if (!map[ai.root]) {
-                    dest.push({
-                      root: ai.root,
-                      data: [ai.id],
-                      timeStamp: ai.timeStamp
-                    })
-                    map[ai.root] = ai
-                  } else {
-                    for (let j = 0; j < dest.length; j++) {
-                      let dj = dest[j]
-                      if (dj.root === ai.root) {
-                        dj.data.push(ai.id)
-                        break
-                      }
-                    }
-                  }
-                }
-                for (let i = 0; i < dest.length; i++) {
-                  rootList.push({
-                    root: dest[i].root,
-                    data: dest[i].data,
-                    timeStamp: dest[i].timeStamp
-                  })
-                }
-                let temp = {}
-                for (let i = 0; i < rootList.length; i++) {
-                  let ai = rootList[i]
-                  if (!temp[ai.root]) {
-                    result.push({
-                      root: ai.root,
-                      data: ai.data,
-                      label: ai.label,
-                      date: ai.date,
-                      timeStamp: ai.timeStamp
-                    })
-                    temp[ai.root] = ai
-                  } else {
-                    for (let j = 0; j < result.length; j++) {
-                      let dj = result[j]
-                      if (dj.root === ai.root) {
-                        dj.timeStamp = ai.timeStamp
-                        for (let k = 0; k < ai.data.length; k++) {
-                          dj.data.push(ai.data[k])
-                        }
-                        break
-                      }
-                    }
-                  }
-                }
-              }
-              res.send({permit: true, result: bubbleSort(result)})
-            } else {
-              res.send({permit: false, type: '404'})
-            }
-          }
-        })
-    } else {
-      res.send({permit: false, type: '404'})
-    }
-  } else {
-    console.log('不是user')
-  }
-})
+const formidable = require('formidable')
+const path = require('path')
+const fs = require('fs')
+const tool = require('../tool')
+const gm = require('gm').subClass({imageMagick: true})
 router.get('/user/getMySubscription', (req, res) => {
   'use strict'
   // let sysUser
@@ -155,7 +34,8 @@ router.get('/user/getMySubscription', (req, res) => {
           result.push({
             id: sub[i].id,
             name: sub[i].name,
-            follower: sub[i].subscribe.length
+            follower: sub[i].subscribe ? sub[i].subscribe.length : 0,
+            coverImg: tool.formImg(sub[i].coverImg)
           })
         }
         res.send({error: false, result: result})
@@ -447,7 +327,7 @@ router.get('/user/acceptFriend', (req, res) => {
         User.updateOne({$and: [{id: id}, {'pending.addFriend.from': fromUser._id}]}, {
           $push: {'friendList': {'friend': fromUser._id}},
           $set: {'pending.addFriend.$.state': 'resolve'}
-        }, {upsert: true}, (error) => {
+        }, (error) => {
           if (error) {
             res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
           }
@@ -458,7 +338,7 @@ router.get('/user/acceptFriend', (req, res) => {
               'promote': {'description': 'friendRequest', 'content_1': user.nickname, 'content_2': '接受了您的好友请求'}
             },
             $pull: {'pending.request': {'to': user._id}}
-          }, {upsert: true}, (error2) => {
+          }, (error2) => {
             if (error2) {
               console.log(error2)
               res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
@@ -468,7 +348,6 @@ router.get('/user/acceptFriend', (req, res) => {
           })
         })
       } else {
-        console.log('存在')
         // 更新对方的好友列表
         User.updateOne({$and: [{id: fromId}, {'pending.request.to': user._id}]}, {
           $push: {
@@ -476,7 +355,7 @@ router.get('/user/acceptFriend', (req, res) => {
             'promote': {'description': 'friendRequest', 'content_1': user.nickname, 'content_2': '接受了您的好友请求'}
           },
           $pull: {'pending.request': {'to': user._id}}
-        }, {upsert: true}, (error2) => {
+        }, (error2) => {
           if (error2) {
             console.log(error2)
             res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
@@ -674,6 +553,7 @@ router.get('/user/getFriendList', (req, res) => {
   }
   User.findOne({username: loginUser})
     .populate('friendList.friend')
+    .populate()
     .exec((err, doc) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -683,7 +563,8 @@ router.get('/user/getFriendList', (req, res) => {
             result.push({
               name: friend.friend.nickname,
               id: friend.friend.id,
-              active: false
+              active: false,
+              headImg: tool.formImg(friend.friend.headImg)
             })
           })
           res.send({error: false, result: result})
@@ -699,6 +580,7 @@ router.post('/user/searchFriend', (req, res) => {
   let result = []
   User.findOne({id: user})
     .populate('friendList.friend')
+    .sort({'username': 1})
     .exec((err, doc) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -711,7 +593,8 @@ router.post('/user/searchFriend', (req, res) => {
               result.push({
                 name: item.friend.nickname,
                 id: item.friend.id,
-                active: false
+                active: false,
+                headImg: tool.formImg(item.friend.headImg)
               })
             }
           })
@@ -724,10 +607,15 @@ router.post('/user/searchFriend', (req, res) => {
 })
 router.post('/user/changeBirthday', (req, res) => {
   'use strict'
-  let id = req.body.id
   let date = req.body.date
-  if (req.session.userId === id || (req.cookies.And && req.cookies.And.userId === id)) {
-    User.updateOne({id: id}, {$set: {'birthday': date}})
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    User.updateOne({username: user}, {$set: {'birthday': date}})
       .exec((err) => {
         if (err) {
           res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -741,10 +629,15 @@ router.post('/user/changeBirthday', (req, res) => {
 })
 router.post('/user/changeSex', (req, res) => {
   'use strict'
-  let id = req.body.id
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
   let value = req.body.value
-  if (req.session.userId === id || (req.cookies.And && req.cookies.And.userId === id)) {
-    User.updateOne({id: id}, {$set: {'sex': value}}, {upsert: true})
+  if (user) {
+    User.updateOne({username: user}, {$set: {'sex': value}}, {upsert: true})
       .exec((err) => {
         if (err) {
           res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -789,7 +682,7 @@ router.post('/user/changeSign', (req, res) => {
     res.send({error: true, type: 'word', message: '签名格式有误，请检查后输入'})
   }
 })
-router.get('/user/getSign', (req, res) => {
+router.get('/user/getSign', (req, res) => { // 获得签名
   'use strict'
   let id = req.query.id
   User.findOne({id: id})
@@ -800,5 +693,763 @@ router.get('/user/getSign', (req, res) => {
         res.send({error: false, sign: doc.sign})
       }
     })
+})
+router.post('/user/uploadHeadImg', function (req, res) {
+  const form = new formidable.IncomingForm()
+  const imgPath = path.resolve(__dirname, '../picture/head/')   // 图片保存路径
+  // const targetPath = path.join(__dirname, './../tempPic/')      // 暂存路径/
+  const proPath = path.join(__dirname, '../../dist/static/thumb/head/')    // 生产环境图片路径
+  const thumbPath = path.join(__dirname, '../../static/thumb/head/')
+  function copyIt (from, to) {    // 复制文件
+    fs.writeFileSync(to, fs.readFileSync(from))
+    // fs.createReadStream(src).pipe(fs.createWriteStream(dst))  大文件复制
+  }
+  if (!fs.existsSync(imgPath)) {
+    fs.mkdirSync(imgPath)
+  }
+  if (!fs.existsSync(proPath)) {
+    fs.mkdirSync(proPath)
+  }
+  if (!fs.existsSync(thumbPath)) {
+    fs.mkdirSync(thumbPath)
+  }
+  form.uploadDir = imgPath
+  form.keepExtensions = true    // 保存扩展名
+  form.maxFieldsSize = 20 * 1024 * 1024   // 上传文件的最大大小
+  form.parse(req, function (err, fields, files) {
+    if (err) {
+      console.log(err)
+    }
+    let fileName
+    if (files.file) {
+      fileName = tool.getFileName(files.file.path)
+    } else {
+      fileName = ''
+    }
+    let savePath = path.join(imgPath, fileName)
+    let usePath = path.join(proPath, fileName)
+    let thumbSavePath = path.join(thumbPath, fileName)
+    User.findOneAndUpdate({id: fields.id}, {$set: {'headImg': savePath}})
+      .exec((err, user) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，上传失败'})
+        } else {
+          // fs.renameSync(files.file.path, savePath)
+          gm(savePath)
+            .thumb(160, 160, thumbSavePath, 100, function (err) {
+              if (err) {
+                res.send({error: false, type: 'gm', message: '发生错误'})
+              } else {
+                copyIt(thumbSavePath, usePath)     // 拷贝文件
+                tool.clearFiles(user.headImg)
+                res.send({error: false, message: '上传成功'})
+              }
+            })
+        }
+      })
+  })
+})
+router.get('/user/getHeadImg', (req, res) => {
+  let user = req.cookies.And.user
+  User.findOne({username: user}, (err, result) => {
+    if (err) {
+      console.log(err)
+    } else {
+      let img = result.headImg.split('/')
+      img.splice(0, 5)
+      let headImg = img.join('/')
+      res.send({result: headImg})
+    }
+  })
+})
+router.get('/user/getMyCreation', (req, res) => {
+  'use strict'
+  let user = req.query.user
+  let type = req.query.type
+  let rootList = []
+  let storyList = []
+  let val = req.query.val
+  function bubbleSort (arr) {   // 排序算法，从大到小
+    for (let i = 0; i < arr.length - 1; i++) {
+      for (let j = 0; j < arr.length - 1 - i; j++) {
+        if (arr[j]['timeStamp'] < arr[j + 1]['timeStamp']) {
+          let tmp = arr[j]
+          arr[j] = arr[j + 1]
+          arr[j + 1] = tmp
+        }
+      }
+    }
+    return arr
+  }
+  if (user) {
+    let userReg = /^U([0-9]){7}$/
+    if (userReg.test(user)) {
+      if (type === 'root') {
+        User.findOne({id: user})
+          .populate({
+            path: 'myCreation.root',
+            populate: {
+              path: 'root'
+            },
+            options: {
+              limit: 6,
+              skip: 6 * val,
+              sort: { date: -1 }
+            }
+          })
+          .populate({
+            path: 'myCreation.story',
+            populate: {
+              path: 'root'
+            },
+            options: {
+              sort: { date: -1 }
+            }
+          })
+          .exec((err, user) => {
+            if (err) {
+              res.send({permit: false})
+            } else {
+              if (user) {
+                if (user.myCreation.root.length) {   // 存在根节点
+                  user.myCreation.root.forEach((root, index, array) => {
+                    tool.getRootInfo(root.id, function (count) {
+                      rootList.push({
+                        root: root.name,
+                        count: 1, // 我参与创作的数量
+                        timeStamp: root.date.getTime(),
+                        data: [root.id],
+                        cover: tool.formImg(root.coverImg),
+                        nodeCounts: count.nodeCounts,
+                        zanCounts: count.zanCounts,
+                        readCounts: count.readCounts,
+                        label: 'root'
+                      })
+                      if (user.myCreation.story.length) {
+                        for (let i = 0; i < user.myCreation.story.length; i++) {
+                          for (let j = 0; j < rootList.length; j++) {
+                            if (user.myCreation.story[i].root.name === rootList[j].root) {
+                              rootList[j].count ++
+                              if (user.myCreation.story[i].date.getTime() > rootList[j].timeStamp) {
+                                rootList[j].timeStamp = user.myCreation.story[i].date.getTime()
+                              }
+                            }
+                          }
+                        }
+                      }
+                      if (rootList.length === array.length) {
+                        res.send({permit: true, result: bubbleSort(rootList)})
+                      }
+                    })
+                  })
+                } else {
+                  res.send({permit: true, result: rootList})
+                }
+              } else {
+                res.send({permit: false, type: '404'})
+              }
+            }
+          })
+      } else if (type === 'story') {
+        User.findOne({id: user})
+          .populate({
+            path: 'myCreation.story',
+            populate: {
+              path: 'root'
+            },
+            options: {
+              sort: { date: -1 }
+            }
+          })
+          .populate({
+            path: 'myCreation.root'
+          })
+          .exec((err, user) => {
+            if (err) {
+              res.send({permit: false})
+            } else {
+              if (user) {
+                if (user.myCreation.story.length) {   // 存在普通故事节点
+                  user.myCreation.story.forEach((story, index, array) => {
+                    tool.getRootInfo(story.root.id, function (count) {
+                      storyList.push({
+                        root: story.root ? story.root.name : '',
+                        rootId: story.root ? story.root.id : '',
+                        id: story.id,
+                        timeStamp: story.date.getTime(),
+                        cover: tool.formImg(story.root.coverImg),
+                        nodeCounts: count.nodeCounts,
+                        zanCounts: count.zanCounts,
+                        readCounts: count.readCounts,
+                        label: 'story'
+                      })
+                      if (storyList.length === array.length) {
+                        let map = {}
+                        let dest = []       // 将story归类
+                        for (let i = 0; i < storyList.length; i++) {
+                          let ai = storyList[i]
+                          if (!map[ai.root]) {
+                            dest.push({
+                              root: ai.root,
+                              rootId: ai.rootId,
+                              data: [ai.id],
+                              cover: ai.cover,
+                              nodeCounts: ai.nodeCounts,
+                              zanCounts: ai.zanCounts,
+                              readCounts: ai.readCounts,
+                              timeStamp: ai.timeStamp
+                            })
+                            map[ai.root] = ai
+                          } else {
+                            for (let j = 0; j < dest.length; j++) {
+                              let dj = dest[j]
+                              if (dj.root === ai.root) {
+                                dj.data.push(ai.id)
+                                break
+                              }
+                            }
+                          }
+                        }
+                        if (user.myCreation.root.length) {
+                          for (let i = 0; i < user.myCreation.root.length; i++) {
+                            for (let j = 0; j < dest.length; j++) {
+                              if (user.myCreation.root[i].id === dest[j].rootId) {
+                                dest.splice(j, 1)
+                              }
+                            }
+                          }
+                        }
+                        res.send({permit: true, result: bubbleSort(dest)})
+                      }
+                    })
+                  })
+                } else {
+                  res.send({permit: true, result: rootList})
+                }
+              }
+            }
+          })
+      }
+    } else {
+      res.send({permit: false, type: '404'})
+    }
+  } else {
+    res.send({permit: false, type: '404'})
+  }
+})
+router.get('/user/getMyCreationNode', (req, res) => {
+  let user = req.query.user
+  let root = req.query.root
+  let result = {
+    user: false,
+    id: '',
+    rootName: '',
+    rootContent: '',
+    headImg: '',
+    date: '',
+    story: []
+  }
+  let loginUser = req.session.userId || req.cookies.And ? req.cookies.And.userId : undefined
+  User.findOne({id: user})
+    .populate({
+      path: 'myCreation.root',
+      options: {
+        sort: { date: -1 }
+      }
+    })
+    .populate({
+      path: 'myCreation.story',
+      populate: {
+        path: 'root'
+      },
+      options: {
+        sort: { date: -1 }
+      }
+    })
+    .exec((err, user) => {
+      if (err) {
+        res.send({error: true, message: '发生错误，请稍后再试', type: 'DB'})
+      } else {
+        if (user) {
+          if (user.myCreation && user.myCreation.root) {
+            for (let i = 0; i < user.myCreation.root.length; i++) {
+              if (user.myCreation.root[i].name === root) {
+                let o = user.myCreation.root[i]
+                result.id = o.id
+                result.rootName = o.name
+                result.rootContent = o.content
+                result.coverImg = tool.formImg(o.coverImg)
+                result.date = moment(o.date).format('YYYY年M月D日 HH:mm')
+                result.user = loginUser === user.id
+                result.zan = o.zan ? o.zan.length : 0
+                if (user.myCreation && user.myCreation.story) {
+                  for (let i = 0; i < user.myCreation.story.length; i++) {
+                    if (user.myCreation.story[i].root.name === root) {
+                      let o = user.myCreation.story[i]
+                      result.story.push({
+                        id: o.id,
+                        content: o.content,
+                        date: moment(o.date).format('YYYY年M月D日 HH:mm'),
+                        zan: o.zan ? o.zan.length : 0
+                      })
+                    }
+                  }
+                }
+              }
+            }
+            if (!result.id) {
+              if (user.myCreation.story) {
+                for (let i = 0; i < user.myCreation.story.length; i++) {
+                  if (user.myCreation.story[i].root.name === root) {
+                    let o = user.myCreation.story[i]
+                    result.id = o.root.id
+                    result.rootName = o.root.name
+                    result.rootContent = o.root.content
+                    result.coverImg = tool.formImg(o.root.coverImg)
+                    result.date = moment(o.root.date).format('YYYY年M月D日 HH:mm')
+                    result.user = false
+                    result.zan = o.root.zan ? o.root.zan.length : 0
+                    result.story.push({
+                      id: o.id,
+                      content: o.content,
+                      date: moment(o.date).format('YYYY年M月D日 HH:mm'),
+                      zan: o.zan ? o.zan.length : 0
+                    })
+                  }
+                }
+                res.send({error: false, result: result})
+              } else {
+                res.send({error: true})
+              }
+            } else {
+              res.send({error: false, result: result})
+            }
+          } else {
+            if (user.myCreation && user.myCreation.story) {
+              for (let i = 0; i < user.myCreation.story.length; i++) {
+                if (user.myCreation.story[i].root.name === root) {
+                  let o = user.myCreation.story[i]
+                  result.id = o.root.id
+                  result.rootName = o.root.name
+                  result.rootContent = o.root.content
+                  result.coverImg = tool.formImg(o.root.coverImg)
+                  result.date = moment(o.root.date).format('YYYY年M月D日 HH:mm')
+                  result.user = false
+                  result.zan = o.root.zan ? o.root.zan.length : 0
+                  result.story.push({
+                    id: o.id,
+                    content: o.content,
+                    date: moment(o.date).format('YYYY年M月D日 HH:mm'),
+                    zan: o.zan ? o.zan.length : 0
+                  })
+                }
+              }
+              res.send({error: false, result: result})
+            } else {
+              res.send({error: true})
+            }
+          }
+        } else {
+          res.send({error: true, message: '找不到资源', type: 'user'})
+        }
+      }
+    })
+})
+router.post('/user/changeMark', (req, res) => {
+  let rootReg = /^R([0-9]){7}$/
+  let storyReg = /^S([0-9]){7}$/
+  let markActive = req.body.markActive
+  let id = req.body.id
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    if (rootReg.test(id)) {
+      Root.findOne({id: id}, (err, root) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+        } else {
+          if (root) {
+            let content = root.content
+            let brief = []
+            if (content.length >= 30) {
+              brief = content.slice(0, 30)
+            } else {
+              brief = content
+            }
+            User.findOne({username: user})
+              .exec((err, duser) => {
+                if (err) {
+                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                } else {
+                  if (duser) {
+                    if (duser.mark.length) {
+                      let markData
+                      let flag
+                      for (let i = 0; i < duser.mark.length; i++) {
+                        if (duser.mark[i] && duser.mark[i].rootId === id) {
+                          flag = true
+                          if (markActive) {
+                            duser.mark[i].story.push({
+                              id: id,
+                              brief: brief
+                            })
+                            markData = duser.mark[i]
+                          } else {
+                            if (duser.mark[i] && duser.mark[i].story) {
+                              for (let j = 0; j < duser.mark[i].story.length; j++) {
+                                if (duser.mark[i].story[j].id === id) {
+                                  duser.mark[i].story.splice(j, 1)
+                                  break
+                                }
+                              }
+                            }
+                            markData = duser.mark[i]
+                          }
+                          break
+                        } else {
+                          if (i === duser.mark.length - 1 && markActive) {
+                            let k =
+                              {
+                                rootId: id,
+                                story: {
+                                  id: id,
+                                  brief: brief
+                                }
+                              }
+                            User.updateOne({username: user}, {$addToSet: {'mark': k}})
+                              .exec((err3) => {
+                                if (err3) {
+                                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                } else {
+                                  res.send({error: false})
+                                }
+                              })
+                          }
+                        }
+                      }
+                      if (flag) {
+                        User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$set: {'mark': markData}})
+                          .exec((err2) => {
+                            if (err2) {
+                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                            } else {
+                              res.send({error: false})
+                            }
+                          })
+                      }
+                    } else {
+                      if (markActive) {
+                        let k =
+                          {
+                            rootId: id,
+                            story: {
+                              id: id,
+                              brief: brief
+                            }
+                          }
+                        User.updateOne({username: user}, {$addToSet: {'mark': k}})
+                          .exec((err3) => {
+                            if (err3) {
+                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                            } else {
+                              res.send({error: false})
+                            }
+                          })
+                      } else {
+                        // 这种情况是有问题的，但用户并无影响。查开发手册
+                        res.send({error: false})
+                      }
+                    }
+                  }
+                }
+              })
+          } else {
+            res.send({error: true, type: 'value', message: '数据错误'})
+          }
+        }
+      })
+    } else if (storyReg.test(id)) {
+      Story.findOne({id: id})
+        .populate('root')
+        .exec((err, doc) => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            if (doc) {
+              let rId = doc.root.id
+              let content = doc.content
+              let brief = []
+              if (content.length >= 30) {
+                brief = content.slice(0, 30)
+              } else {
+                brief = content
+              }
+              User.findOne({username: user})
+                .exec((err3, duser) => {
+                  if (err3) {
+                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                  } else {
+                    if (duser) {
+                      if (duser.mark.length) {
+                        let markData
+                        let flag
+                        for (let i = 0; i < duser.mark.length; i++) {
+                          if (duser.mark[i] && duser.mark[i].rootId === rId) {
+                            flag = true
+                            if (markActive) {
+                              duser.mark[i].story.push({
+                                id: id,
+                                brief: brief
+                              })
+                              markData = duser.mark[i]
+                            } else {
+                              console.log(duser.mark[i])
+                              if (duser.mark[i] && duser.mark[i].story) {
+                                for (let j = 0; j < duser.mark[i].story.length; j++) {
+                                  if (duser.mark[i].story[j].id === id) {
+                                    duser.mark[i].story.splice(j, 1)
+                                    break
+                                  }
+                                }
+                              }
+                              markData = duser.mark[i]
+                            }
+                            break
+                          } else {
+                            if (i === duser.mark.length - 1 && markActive) {
+                              let k =
+                                {
+                                  rootId: rId,
+                                  story: {
+                                    id: id,
+                                    brief: brief
+                                  }
+                                }
+                              User.updateOne({username: user}, {$addToSet: {'mark': k}})
+                                .exec((err3) => {
+                                  if (err3) {
+                                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                  } else {
+                                    res.send({error: false})
+                                  }
+                                })
+                            }
+                          }
+                        }
+                        if (flag) {
+                          User.updateOne({$and: [{username: user}, {'mark.rootId': rId}]}, {$set: {'mark': markData}})
+                            .exec((err2) => {
+                              if (err2) {
+                                res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                              } else {
+                                console.log('更新执行完成' + markData)
+                                res.send({error: false})
+                              }
+                            })
+                        }
+                      } else {
+                        if (markActive) {
+                          let k =
+                            {
+                              rootId: rId,
+                              story: {
+                                id: id,
+                                brief: brief
+                              }
+                            }
+                          User.updateOne({username: user}, {$addToSet: {'mark': k}})
+                            .exec((err3) => {
+                              if (err3) {
+                                res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                              } else {
+                                res.send({error: false})
+                              }
+                            })
+                        } else {
+                          // 这种情况是有问题的，但用户并无影响。查开发手册
+                          res.send({error: false})
+                        }
+                      }
+                    } else {
+                      res.send({error: true, type: 'value', message: '数据错误，请尝试重新登录'})
+                    }
+                  }
+                })
+            } else {
+              res.send({error: true, type: 'value', message: '数据错误，请尝试重新登录'})
+            }
+          }
+        })
+    }
+  } else {
+    res.send({error: true, type: 'value', message: '数据错误'})
+  }
+})
+router.get('/user/getMark', (req, res) => {
+  let id = req.query.id
+  const rootReg = /^R([0-9]){7}$/
+  const storyReg = /^S([0-9]){7}$/
+  let result = []
+  let markExist = false
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    if (rootReg.test(id)) {
+      User.findOne({username: user})
+        .exec((err, doc) => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            if (doc) {
+              if (doc.mark.length) {
+                doc.mark.forEach((mark) => {
+                  if (mark.rootId === id) {
+                    markExist = mark.story.some(function (sid) {
+                      return sid.id === id
+                    })
+                    result = mark
+                  }
+                })
+                res.send({error: false, result: result, mark: markExist, root: id})
+              } else {
+                res.send({error: false, result: [], mark: markExist, root: id})
+              }
+            } else {
+              res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})
+            }
+          }
+        })
+    } else if (storyReg.test(id)) {
+      Story.findOne({id: id})
+        .populate('root')
+        .exec((err, story) => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            if (story) {
+              let rId = story.root.id
+              User.findOne({username: user})
+                .exec((err, doc) => {
+                  if (err) {
+                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                  } else {
+                    if (doc) {
+                      if (doc.mark.length) {
+                        doc.mark.forEach((mark) => {
+                          if (mark.rootId === rId) {
+                            markExist = mark.story.some(function (sid) {
+                              return sid.id === id
+                            })
+                            result = mark
+                          }
+                        })
+                        res.send({error: false, result: result, mark: markExist, root: rId})
+                      } else {
+                        res.send({error: false, result: [], mark: markExist, root: rId})
+                      }
+                    } else {
+                      res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})
+                    }
+                  }
+                })
+            } else {
+              res.send({error: true, type: 'value', message: '数据错误'})
+            }
+          }
+        })
+    }
+  } else {
+    res.send({error: false, result: 'notShow'})
+  }
+})
+router.post('/user/changeMarkInfo', (req, res) => {
+  const rootReg = /^R([0-9]){7}$/
+  const storyReg = /^S([0-9]){7}$/
+  let id = req.body.id
+  let value = req.body.value
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    if (rootReg.test(id)) {
+      User.findOne({$and: [{'username': user}, {'mark.rootId': id}]})
+        .exec((err, doc) => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            let obj = doc.mark
+            for (let i = 0; i < obj.length; i++) {
+              if (obj[i].rootId === id) {
+                for (let j = 0; j < obj[i].story.length; j++) {
+                  if (obj[i].story[j].id === id) {
+                    obj[i].story[j].name = value // 修改书签名
+                    break
+                  }
+                }
+              }
+            }
+            User.updateOne({$and: [{'username': user}, {'mark.rootId': id}]}, {$set: {'mark': obj}})
+              .exec((err2) => {
+                if (err2) {
+                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                } else {
+                  res.send({error: false, message: '修改成功'})
+                }
+              })
+          }
+        })
+    } else if (storyReg.test(id)) {
+      Story.findOne({id: id})
+        .populate('root')
+        .exec((err, story) => {
+          if (err) {
+            res.send({error: false, type: 'DB', message: '发生错误，请稍后再试'})
+          } else {
+            User.findOne({$and: [{'username': user}, {'mark.rootId': story.root.id}]})
+              .exec((err, doc) => {
+                if (err) {
+                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                } else {
+                  let obj = doc.mark
+                  for (let i = 0; i < obj.length; i++) {
+                    if (obj[i].rootId === story.root.id) {
+                      for (let j = 0; j < obj[i].story.length; j++) {
+                        if (obj[i].story[j].id === id) {
+                          obj[i].story[j].name = value // 修改书签名
+                          break
+                        }
+                      }
+                    }
+                  }
+                  User.updateOne({$and: [{'username': user}, {'mark.rootId': story.root.id}]}, {$set: {'mark': obj}})
+                    .exec((err2) => {
+                      if (err2) {
+                        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                      } else {
+                        res.send({error: false, message: '修改成功'})
+                      }
+                    })
+                }
+              })
+          }
+        })
+    } else {
+      res.send({error: true, type: 'value', message: '数据错误'})
+    }
+  } else {
+    res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})
+  }
+
 })
 module.exports = router

@@ -110,7 +110,27 @@ const UserSchema = new Schema({
       content_3: String,
       content_4: String
     }
-  ]
+  ],
+  mark: [
+    {
+      rootId: String,
+      story: [{
+        name: { type: String, default: '未命名' },
+        id: String,
+        brief: String,
+        date: { type: Date, default: Date.now }
+      }]
+    }
+  ],
+  commentTo: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment'
+  }],
+  commentFrom: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment'
+  }],
+  headImg: String
 })
 UserSchema.pre('save', function (next) {
   'use strict'

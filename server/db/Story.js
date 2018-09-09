@@ -13,6 +13,9 @@ const StorySchema = new Schema({
   date: { type: Date, default: Date.now },
   root: { type: Schema.Types.ObjectId, ref: 'StoryRoot' },
   content: String,
+  readCounts: [{
+    type: Schema.Types.ObjectId, ref: 'User'
+  }],
   zan: [{
     type: Schema.Types.ObjectId, ref: 'User'
   }],
@@ -29,7 +32,11 @@ const StorySchema = new Schema({
   author: {
     type: Schema.Types.ObjectId,
     ref: 'User'
-  }
+  },
+  comment: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment'
+  }]
 })
 StorySchema.pre('save', function (next) {
   'use strict'

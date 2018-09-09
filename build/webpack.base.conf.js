@@ -42,6 +42,7 @@ module.exports = {
       },
       {test: /\.css$/, loader: "style-loader!css-loader"},
       { test: /\.(scss|sass)$/, loader: 'style-loader!css-loader!sass-loader'},
+      {test: /\.less$/, loader: 'style-loader!css-loader!less-loader'},
       {
         test: /\.js$/,
         loader: 'babel-loader',
@@ -52,7 +53,7 @@ module.exports = {
         loader: 'url-loader',
         options: {
           limit: 10000,
-          name: utils.assetsPath('img/[name].[hash:7].[ext]')
+          name: utils.assetsPath('thumb/[name].[hash:7].[ext]')
         }
       },
       {

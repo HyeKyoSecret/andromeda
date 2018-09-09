@@ -9,8 +9,9 @@
       </span>
     </div>
     <div class="logo-show">
-      <div class="logo"></div>
-      <div class="logo-words"></div>
+      <div class="logo">
+        <img src="../../img/images/logo.png" alt="">
+      </div>
     </div>
     <div class="login-input">
       <div>
@@ -111,7 +112,7 @@
                     position: 'middle',
                     duration: 1000
                   })
-                  this.$router.push({path: '/'})
+                  this.$router.go(-1)
                 }
               } catch (e) {
                 this.getCaptcha()
@@ -123,6 +124,14 @@
               }
             } else {
               this.getCaptcha()
+              Toast({
+                message: '登录失败',
+                position: 'middle',
+                duration: 1000
+              })
+            }
+          }).catch(error => {
+            if (error) {
               Toast({
                 message: '登录失败',
                 position: 'middle',
@@ -171,6 +180,11 @@
     .logo-show{
       width: 100%;
       height: 130px;
+      text-align: center;
+      img {
+        margin-top: 30px;
+        width: 100px;
+      }
     }
     .login-input {
       width: 80%;
@@ -194,11 +208,12 @@
           height: 42px;
           font-size: 14px;
           overflow: hidden;
+          width: 100%;
         }
         &:last-child {
           border: none;
           input{
-            flex: 1;
+            flex: 2;
           }
           .error-icon {
             flex: 1;

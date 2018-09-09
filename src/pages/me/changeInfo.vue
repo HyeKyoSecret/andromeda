@@ -310,6 +310,7 @@
             Axios.get('/register/quitLogin')
               .then(response => {
                 if (!response.data.error) {
+                  this.$router.push('/login')
                   Toast({
                     message: '退出成功',
                     position: 'middle',

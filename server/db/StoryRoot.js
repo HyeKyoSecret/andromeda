@@ -13,6 +13,10 @@ const StoryRootSchema = new Schema({
   date: { type: Date, default: Date.now },
   name: String,
   content: String,
+  coverImg: String,
+  readCounts: [{
+    type: Schema.Types.ObjectId, ref: 'User'
+  }],
   zan: [{
     type: Schema.Types.ObjectId, ref: 'User'
   }],
@@ -40,7 +44,11 @@ const StoryRootSchema = new Schema({
   tempTraversal: {
     preOrderTraversal: Array,
     date: { type: Date, default: Date.now }
-  }
+  },
+  comment: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment'
+  }]
 })
 StoryRootSchema.pre('save', function (next) {
   'use strict'

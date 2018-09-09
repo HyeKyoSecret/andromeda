@@ -1,10 +1,31 @@
 <template>
   <div class="me">
     <notice v-bind:title="title"></notice>
+    <!--进度条-->
+    <mt-progress :value="percent" :bar-height="6" v-if="percentShow">
+      <!--<div slot="end">{{Math.ceil(percent)}}%</div>-->
+    </mt-progress>
+    <!--头像裁剪遮罩-->
+    <div class="container" v-show="panel">
+      <div>
+        <img id="image" class="img-item" :src="url" alt="Picture">
+      </div>
+      <button type="button" class="button confirm" @click="crop">确定</button>
+      <button type="button" class="button cancel" @click="cancelCrop">取消</button>
+    </div>
+    <div>
+      <!--<div class="show">-->
+        <!--<div class="picture" :style="'backgroundImage:url('+headerImage+')'">-->
+        <!--</div>-->
+      <!--</div>-->
+      <label id="input">
+        <input type="file" ref="input" id="change" accept="image" @change="change">
+      </label>
+    </div>
     <div class="me-content">
       <div class="user-main" v-if="isLogin">
         <div class="head-img">
-          <img src="../../img/photo/head.jpg">
+          <img :src="imgSrc" alt="" @click="simulateClick" @error="setErrorImg">
         </div>
         <div class="words" @click="goChangeInfo(userId)">
           <div class="name">{{nickName}}</div>
@@ -28,9 +49,9 @@
           <img src="../../img/icon/right.png">
         </div>
       </div>
-      <router-link to='/login' tag="div" class="fake-user-main" v-else>
-        <p>登录仙女座，</p>
-        <p>链接你与Ta们的故事</p>
+      <router-link to="/login" tag="div" class="fake-user-main" v-else>
+        <img src="../../img/images/logo.png" alt="">
+        <p>登录仙女座，链接你与Ta们的故事</p>
       </router-link>
         <div class="user-operation">
           <router-link :to='item.path' tag='div' class="line" v-for='item in operation' :key="item.name">
@@ -56,14 +77,18 @@
             删除好友
           </div>
         </div>
-      <router-view></router-view>
     </div>
+    <keep-alive>
+      <router-view v-if="$route.meta.keepAlive"></router-view>
+    </keep-alive>
+    <router-view v-if="!$route.meta.keepAlive"></router-view>
     <foot-menu v-if="!isLoginCustomer"></foot-menu>
   </div>
 </template>
 <style lang='scss' scoped>
   @import "../../scss/config";
   @import "../../scss/style.css";
+  @import "../../scss/cropper.css";
   .me {
     height: 100%;
     background: $bg-gray;
@@ -160,16 +185,13 @@
         padding: 11px 0 11px 0;
         flex-wrap: nowrap;
         flex-direction: column;
+        img {
+          display: block;
+          width: 60px;
+        }
         p {
-          text-align: left;
-          margin: 10px 0 0 10px;
-          font-size: 18px;
-          &:first-child {
-            margin-left: -35%;
-          }
-          &:last-child {
-            margin-left: 35%
-          }
+          margin-top: 10px;
+          font-size: 16px;
         }
       }
       .user-operation {
@@ -278,8 +300,10 @@
 <script>
   import FootMenu from '../../components/foot-menu.vue'
   import notice from '../../components/notice/notice.vue'
-  import { Toast } from 'mint-ui'
+  import { Toast, Indicator } from 'mint-ui'
+  import lrz from 'lrz'
   import Axios from 'axios'
+  import Cropper from 'cropperjs'
   export default {
     components: {
       FootMenu,
@@ -287,6 +311,13 @@
     },
     data () {
       return {
+        picValue: '',
+        cropper: '',
+        croppable: false,
+        panel: false,
+        url: '',  // 以上为头像输入所需数据
+        imgSrc: '',    // 头像
+        headImg: '',
         operation: [
           {
             name: '我的消息',
@@ -316,7 +347,7 @@
           {
             name: '我的轨迹',
             icon: require('../../img/icon/my_trail.png'),
-            path: '/people/message/words'
+            path: '/test'
           }
         ],
         cOperation: [
@@ -348,13 +379,17 @@
         ],
         sex: '',
         tempOperation: [],
-        isUser: false,
         userStatus: '',
         userId: '',
         nickName: '',
         cond1: '',
         cond2: '',
-        sign: ''
+        sign: '',
+        fpath: '',
+        fileName: '', // 文件名
+        fileExt: '',  // 文件后缀名
+        percentShow: false,
+        percent: 0
       }
     },
     watch: {
@@ -379,10 +414,130 @@
         }
       }
     },
+    mounted () {
+      // 初始化这个裁剪框
+      let self = this
+      let image = document.getElementById('image')
+      this.cropper = new Cropper(image, {
+        aspectRatio: 1,
+        viewMode: 1,
+        background: false,
+        zoomable: false,
+        ready: function () {
+          self.croppable = true
+        }
+      })
+    },
     created: function () {
       this.checkUser()
     },
     methods: {
+      simulateClick () {
+        if (this.userStatus === 'isUser') {
+          this.$refs.input.click()
+        }
+      },
+      setErrorImg () {
+        this.imgSrc = require('../../img/images/defaultHeadImg.png')
+      },
+      getObjectURL (file) {
+        let url = null
+        if (window.createObjectURL !== undefined) { //  basic
+          url = window.createObjectURL(file)
+        } else if (window.URL !== undefined) { //  mozilla(firefox)
+          url = window.URL.createObjectURL(file)
+        } else if (window.webkitURL !== undefined) { //  webkit or chrome
+          url = window.webkitURL.createObjectURL(file)
+        }
+        return url
+      },
+      change (e) {
+        let files = e.target.files || e.dataTransfer.files
+        this.fileName = files[0].name
+        this.fileExt = files[0].name.split('.')[1]
+        if (!files.length) return
+        this.panel = true
+        this.picValue = files[0]
+        let self = this
+        // 每次替换图片要重新得到新的url
+        lrz(this.picValue, {width: 900, quality: 0.75}) // 压缩图片
+          .then(function (rst) {
+            self.url = rst.base64
+            // 每次替换图片要重新得到新的url
+            if (self.cropper) {
+              self.cropper.replace(self.url)
+            }
+            self.panel = true
+          })
+      },
+      changeToFile (dataurl) {
+        let arr = dataurl.split(',')
+        let mime = arr[0].match(/:(.*?);/)[1]
+        let bstr = atob(arr[1])
+        let n = bstr.length
+        let u8arr = new Uint8Array(n)
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n)
+        }
+        return new Blob([u8arr], {type: mime})
+      },
+      crop () {
+        this.panel = false
+        let croppedCanvas
+        // var roundedCanvas
+        if (!this.croppable) {
+          return
+        }
+        //  Crop
+        croppedCanvas = this.cropper.getCroppedCanvas()
+        this.headerImage = croppedCanvas.toDataURL()
+        this.postImg()
+      },
+      cancelCrop () {
+        this.panel = false
+      },
+      postImg () {
+        this.percentShow = true
+        let file = this.changeToFile(this.headerImage)
+        let self = this
+        let config = {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          timeout: 20000, // 最大上传时间
+          onUploadProgress: function (progressEvent) {
+            self.$nextTick(() => {
+              self.percent = (progressEvent.loaded / progressEvent.total) * 100
+            })
+          }
+        }
+        let formData = new FormData()
+        formData.append('file', file, this.fileName)
+        formData.append('id', this.userId)
+        Indicator.open('头像上传中...')
+        Axios.post('/user/uploadHeadImg', formData, config).then(response => {
+          Indicator.close()
+          this.percentShow = false
+          this.percent = 0
+          Toast({
+            message: response.data.message,
+            position: 'middle',
+            duration: 1000
+          })
+          this.checkUser()
+        }).catch(error => {
+          Indicator.close()
+          if (error) {
+            Toast({
+              message: '请求超时，请检查网络环境',
+              position: 'middle',
+              duration: 1000
+            })
+            this.percentShow = false
+            this.percent = 0
+          }
+        })
+      },
       checkUser () {
         if (typeof this.$route.params.user === 'undefined') {
           Axios.get('/register/checkLogin')
@@ -396,6 +551,7 @@
                 this.sex = ''   // 置空sex
                 this.nickName = response.data.nickName
                 this.sign = response.data.sign || '这个人很懒，什么也没留下'
+                this.imgSrc = response.data.headImg
                 this.userId = response.data.user
                 this.userStatus = 'isUser'
                 let reg = new RegExp('^U')
@@ -414,7 +570,7 @@
                 Toast({
                   message: '发生错误',
                   position: 'middle',
-                  duration: 700
+                  duration: 1000
                 })
               }
             })
@@ -434,6 +590,7 @@
               this.nickName = res.data.user.nickName
               this.sign = res.data.user.sign || '这个人很懒，什么也没留下'
               this.userId = res.data.user.userId
+              this.imgSrc = res.data.user.headImg
               let reg = new RegExp('^U')
               for (let i = 0; i < this.operation.length; i++) { // 修改path
                 let splitPath = this.operation[i].path.split('/')

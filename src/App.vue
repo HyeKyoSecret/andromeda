@@ -1,8 +1,9 @@
 <template>
   <div id="app">
-    <transition name="fade">
-      <router-view v-on:error="closeSelf" v-if="!errorPage"></router-view>
-    </transition>
+      <keep-alive>
+        <router-view v-on:error="closeSelf" v-if="!errorPage && $route.meta.keepAlive"></router-view>
+      </keep-alive>
+      <router-view v-on:error="closeSelf" v-if="!errorPage && !$route.meta.keepAlive"></router-view>
     <ErrorPage v-if="errorPage"></ErrorPage>
   </div>
 </template>

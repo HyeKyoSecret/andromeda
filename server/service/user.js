@@ -194,7 +194,7 @@ router.post('/user/addFriendRequest', (req, res) => {
         }
         if (user) {
           let confirmExist = toUser.pending.addFriend.some(function (list) {
-            return list.from.toString() === user._id.toString()
+            return (list.from.toString() === user._id.toString()) && list.state !== 'resolve'
           })
           if (confirmExist) {   // 检查对方列表中是否有自己发送的请求
             if (user.pending.request.some(function (list) {  // 检查自己待验证请求列表中是否存在已发送的请求
@@ -311,60 +311,38 @@ router.get('/user/acceptFriend', (req, res) => {
   'use strict'
   const id = req.query.id
   const fromId = req.query.fromId
-  User.findOne({id: fromId}, (err, fromUser) => {
+  User.findOne({id: id}, function(err, user) {
     if (err) {
-      res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
-    }
-    User.findOne({id: id}, (err2, user) => {
-      if (err2) {
-        res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
-      }
-      if (!user.friendList.some(function (item) {
-        return item.friend.toString() === fromUser._id.toString()
-      })) {
-        console.log('查询到好友列表不存在')
-        // 更新自己好友列表
-        User.updateOne({$and: [{id: id}, {'pending.addFriend.from': fromUser._id}]}, {
-          $push: {'friendList': {'friend': fromUser._id}},
-          $set: {'pending.addFriend.$.state': 'resolve'}
-        }, (error) => {
-          if (error) {
-            res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
-          }
-          // 更新对方的好友列表
-          User.updateOne({$and: [{id: fromId}, {'pending.request.to': user._id}]}, {
-            $push: {
-              'friendList': {'friend': user._id},
-              'promote': {'description': 'friendRequest', 'content_1': user.nickname, 'content_2': '接受了您的好友请求'}
-            },
-            $pull: {'pending.request': {'to': user._id}}
-          }, (error2) => {
-            if (error2) {
-              console.log(error2)
-              res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
-            } else {
-              res.send({error: false, message: '操作成功'})
-            }
-          })
-        })
-      } else {
-        // 更新对方的好友列表
-        User.updateOne({$and: [{id: fromId}, {'pending.request.to': user._id}]}, {
-          $push: {
-            'friendList': {'friend': user._id},
-            'promote': {'description': 'friendRequest', 'content_1': user.nickname, 'content_2': '接受了您的好友请求'}
-          },
-          $pull: {'pending.request': {'to': user._id}}
-        }, (error2) => {
-          if (error2) {
-            console.log(error2)
-            res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
+      console.log('111111' + err)
+      res.send({error: true, message: '发生错误', type: 'DB'})
+    } else {
+      User.findOneAndUpdate({id: fromId}, {
+        $addToSet: {'friendList': {'friend': user._id}},
+        $push: {
+          'promote': {'description': 'friendRequest', 'content_1': user.nickname, 'content_2': '接受了你的好友请求'}
+        },
+        $pull: {'pending.request': {'to': user._id}}
+      })
+        .exec((err2, doc) => {
+          if (err2) {
+            console.log('22222222222' + err)
+            res.send({error: true, message: '发生错误', type: 'DB'})
           } else {
-            res.send({error: false, message: '操作成功'})
+            User.updateOne({id: id}, {
+              $addToSet: {'friendList': {'friend': doc._id}},
+              $pull: {'pending.addFriend': {'from': doc._id}}
+            })
+              .exec(err3 => {
+                if (err3) {
+                  console.log('333333333' + err3)
+                  res.send({error: true, message: '发生错误', type: 'DB'})
+                } else {
+                  res.send({error: false, message: '操作成功'})
+                }
+              })
           }
         })
-      }
-    })
+    }
   })
 })
 router.get('/user/getMessageData', (req, res) => {
@@ -472,7 +450,7 @@ router.get('/user/getPromote', (req, res) => {
       }
     })
 })
-router.get('/user/getUserFriendship', (req, res) => {
+router.get('/user/getUserFriendshipAndFocus', (req, res) => {
   let loginUser
   if (req.session.user) {
     loginUser = req.session.user
@@ -481,7 +459,6 @@ router.get('/user/getUserFriendship', (req, res) => {
   }
   User.findOne({id: req.query.user}, (err, user) => {  // 查询目标
     if (err) {
-      console.log(err)
       res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
     } else {
       if (user && loginUser) {
@@ -489,13 +466,13 @@ router.get('/user/getUserFriendship', (req, res) => {
           if (err2) {
             res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
           } else {
-            let cond1 = user.friendList.some(function (item) {
-              return item.friend.toString() === me._id.toString()
+            let friendCond = user.friendList.some(function (item) {
+              return item.friend && (item.friend.toString() === me._id.toString())
             })
-            let cond2 = me.friendList.some(function (item) {
-              return item.friend.toString() === user._id.toString()
+            let focusCond = me.focus.some(function (item) {
+              return item && (item.toString() === user._id.toString())
             })
-            res.send({error: false, cond1: cond1, cond2: cond2})
+            res.send({error: false, friendCond: friendCond, focusCond: focusCond})
           }
         })
       }
@@ -532,12 +509,19 @@ router.post('/user/deleteFriendRequest', (req, res) => {
     if (err) {
       res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
     } else {
-      User.updateOne({username: loginUser}, {$pull: {'friendList': {'friend': user._id}}})
-        .exec(err2 => {
+      User.findOneAndUpdate({username: loginUser}, {$pull: {'friendList': {'friend': user._id}}})
+        .exec((err2, doc) => {
           if (err2) {
             res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
           } else {
-            res.send({error: false, message: '删除成功'})
+            User.updateOne({id: id}, {$pull: {'friendList': {'friend': doc._id}}})
+              .exec(err3 => {
+                if (err3) {
+                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                } else {
+                  res.send({error: false, message: '删除成功'})
+                }
+              })
           }
         })
     }
@@ -1450,6 +1434,79 @@ router.post('/user/changeMarkInfo', (req, res) => {
   } else {
     res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})
   }
-
+})
+router.post('/user/addFocus', (req, res) => {
+  let userId = req.body.userId
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    User.findOne({id: userId})
+      .exec((err, doc) => {
+        if (err) {
+          res.send({error: true, message: '关注失败', type: 'DB'})
+        } else {
+          if (doc) {
+            User.findOneAndUpdate({username: user}, {$addToSet: {'focus': doc._id}})
+              .exec((err2, doc2) => {
+                if (err2) {
+                  res.send({error: true, message: '关注失败', type: 'DB'})
+                } else {
+                  User.updateOne({id: userId}, {$addToSet: {'follower': doc2._id}})
+                    .exec(err3 => {
+                      if (!err3) {
+                        res.send({error: false, message: '关注成功'})
+                      }
+                    })
+                }
+              })
+          } else {
+            res.send({error: true, message: '关注失败', type: 'value'})
+          }
+        }
+      })
+  } else {
+    res.send({error: true, message: '登录后才可进行操作', type: 'login'})
+  }
+})
+router.post('/user/cancelFocus', (req, res) => {
+  let userId = req.body.userId
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    User.findOne({id: userId})
+      .exec((err, doc) => {
+        if (err) {
+          res.send({error: true, message: '取消关注失败', type: 'DB'})
+        } else {
+          if (doc) {
+            User.findOneAndUpdate({username: user}, {$pull: {'focus': doc._id}})
+              .exec((err2, doc2) => {
+                if (err2) {
+                  res.send({error: true, message: '取消关注失败', type: 'DB'})
+                } else {
+                  User.updateOne({id: userId}, {$pull: {'follower': doc2._id}})
+                    .exec(err3 => {
+                      if (!err3) {
+                        res.send({error: false, message: '取消关注成功'})
+                      }
+                    })
+                }
+              })
+          } else {
+            res.send({error: true, message: '取消关注失败', type: 'value'})
+          }
+        }
+      })
+  } else {
+    res.send({error: true, message: '登录后才可进行操作', type: 'login'})
+  }
 })
 module.exports = router

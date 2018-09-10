@@ -30,10 +30,10 @@
         <div class="words" @click="goChangeInfo(userId)">
           <div class="name">{{nickName}}</div>
           <div v-if="isLoginCustomer" class="f-btn">
-            <!--<div class="focus-btn">-->
-              <!--+ 关注-->
-            <!--</div>-->
-            <div class="cancel-focus-btn">
+            <div class="focus-btn" @click.stop="addFocus" v-if="!focusCond">
+              + 关注
+            </div>
+            <div class="cancel-focus-btn" v-else @click.stop="cancelFocus">
               取消关注
             </div>
           </div>
@@ -42,7 +42,7 @@
           </div>
           <div class="info">
             <img src="../../img/icon/zan.png">
-            <div>4399</div>
+            <div>{{follower}}</div>
           </div>
         </div>
         <div class="icon" @click="goChangeInfo(userId)">
@@ -70,10 +70,10 @@
           </router-link>
         </div>
         <div v-if="isLoginCustomer">
-          <div class="add-friend" @click="addFriend" v-if="!(cond1 && cond2)">
+          <div class="add-friend" @click="addFriend" v-if="!friendCond">
             添加好友
           </div>
-          <div class="delete-friend" @click="deleteFriend" v-if="cond1 && cond2">
+          <div class="delete-friend" @click="deleteFriend" v-if="friendCond">
             删除好友
           </div>
         </div>
@@ -256,7 +256,7 @@
             font-size: 14px;
             color: #ffffff;
             text-align: center;
-            width: 80%;
+            width: 85%;
             margin: 30px auto 0 auto;
           }
           .delete-friend {
@@ -267,7 +267,7 @@
             font-size: 14px;
             color: #ffffff;
             text-align: center;
-            width: 80%;
+            width: 85%;
             margin: 30px auto 0 auto;
           }
         }
@@ -280,7 +280,7 @@
         font-size: 14px;
         color: #ffffff;
         text-align: center;
-        width: 80%;
+        width: 85%;
         margin: 30px auto 0 auto;
       }
       .delete-friend {
@@ -291,7 +291,7 @@
         font-size: 14px;
         color: #ffffff;
         text-align: center;
-        width: 80%;
+        width: 85%;
         margin: 30px auto 0 auto;
       }
     }
@@ -300,7 +300,7 @@
 <script>
   import FootMenu from '../../components/foot-menu.vue'
   import notice from '../../components/notice/notice.vue'
-  import { Toast, Indicator } from 'mint-ui'
+  import { Toast, Indicator, MessageBox } from 'mint-ui'
   import lrz from 'lrz'
   import Axios from 'axios'
   import Cropper from 'cropperjs'
@@ -382,14 +382,15 @@
         userStatus: '',
         userId: '',
         nickName: '',
-        cond1: '',
-        cond2: '',
+        friendCond: false,
+        focusCond: false,
         sign: '',
         fpath: '',
         fileName: '', // 文件名
         fileExt: '',  // 文件后缀名
         percentShow: false,
-        percent: 0
+        percent: 0,
+        follower: null
       }
     },
     watch: {
@@ -553,6 +554,7 @@
                 this.sign = response.data.sign || '这个人很懒，什么也没留下'
                 this.imgSrc = response.data.headImg
                 this.userId = response.data.user
+                this.follower = response.data.follower
                 this.userStatus = 'isUser'
                 let reg = new RegExp('^U')
                 for (let i = 0; i < this.operation.length; i++) { // 修改path
@@ -591,6 +593,7 @@
               this.sign = res.data.user.sign || '这个人很懒，什么也没留下'
               this.userId = res.data.user.userId
               this.imgSrc = res.data.user.headImg
+              this.follower = res.data.user.follower
               let reg = new RegExp('^U')
               for (let i = 0; i < this.operation.length; i++) { // 修改path
                 let splitPath = this.operation[i].path.split('/')
@@ -614,7 +617,7 @@
                     this.operation[i].path = `/people/${this.$route.params.user}${pathArray[1]}`
                   }
                 }
-                this.getFriendship()
+                this.getFriendshipAndFocus()
               } else {
                 this.userStatus = 'isUser'
               }
@@ -640,46 +643,90 @@
             Toast({
               message: response.data.message,
               position: 'middle',
-              duration: 800
+              duration: 1000
             })
           } else {
             Toast({
               message: response.data.message,
               position: 'middle',
-              duration: 800
+              duration: 1000
             })
           }
         })
       },
       deleteFriend () {
-        Axios.post('/user/deleteFriendRequest', {
-          id: this.$route.params.user
-        }).then(response => {
-          if (response.data.error) {
-            Toast({
-              message: response.data.message,
-              position: 'middle',
-              duration: 800
-            })
-          } else {
-            this.getFriendship()
-            Toast({
-              message: response.data.message,
-              position: 'middle',
-              duration: 800
-            })
-          }
+        MessageBox.confirm('确定执行此操作?').then(action => {
+          Axios.post('/user/deleteFriendRequest', {
+            id: this.$route.params.user
+          }).then(response => {
+            if (response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            } else {
+              this.getFriendship()
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            }
+          })
+        }).catch(cancel => {
+          return 0
         })
       },
-      getFriendship () {
-        Axios.get('/user/getUserFriendship', {  // 查询好友关系（按钮显示）
+      getFriendshipAndFocus () {
+        Axios.get('/user/getUserFriendshipAndFocus', {  // 查询好友关系（按钮显示）和关注关系
           params: {
             user: this.$route.params.user
           }
         }).then(response => {
           if (!response.data.error) {
-            this.cond1 = response.data.cond1
-            this.cond2 = response.data.cond2
+            this.friendCond = response.data.friendCond
+            this.focusCond = response.data.focusCond
+          }
+        })
+      },
+      addFocus () {
+        Axios.post('/user/addFocus', {
+          userId: this.$route.params.user
+        }).then(response => {
+          if (!response.data.error) {
+            this.getFriendshipAndFocus()
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
+          } else {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
+          }
+        })
+      },
+      cancelFocus () {
+        Axios.post('/user/cancelFocus', {
+          userId: this.$route.params.user
+        }).then(response => {
+          if (!response.data.error) {
+            this.getFriendshipAndFocus()
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
+          } else {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
           }
         })
       }

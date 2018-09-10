@@ -11,7 +11,11 @@
       <div class="author-info">
         <div class="like">
           <router-link :to='storyInfo.authorId' tag="span">作者:&nbsp;{{storyInfo.author}}</router-link>
-          <span ><img src="../../img/icon/redheart.png" /></span>
+          <span v-if="showFocus">
+            <img src="../../img/icon/redheart.png" v-if="hasFocus"/>
+            <img src="../../img/icon/zan.png" v-else>
+          </span>
+          <span v-else class="blank"></span>
         </div>
         <div class="time">{{storyInfo.date}}</div>
         <!--<div class="follow-number">-->
@@ -58,8 +62,8 @@
       <!--<div class="button">热门节点</div>-->
       <div class="button" @click="showMarkMenu">书签</div>
     </div>
-    <div class="complete"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markMenu"><span @click="closeMarkMenu">取消</span></div>
-    <div class="mark-menu"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markMenu">
+    <div class="complete"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markList.story.length && markMenu"><span @click="closeMarkMenu">取消</span></div>
+    <div class="mark-menu"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markList.story.length && markMenu">
       <mt-cell-swipe
               class="rq-mark"
               v-for="(item, index) in markList.story" :key="item.id"
@@ -187,6 +191,11 @@
             font-size: 16px;
             text-align: right;
 
+          }
+          .blank {
+            width: 10px;
+            height: 20px;
+            display: inline-block;
           }
         }
         .time {
@@ -338,6 +347,8 @@
           date: '',
           ftNode: ''
         },
+        hasFocus: false, // 关注红星,
+        showFocus: false,
         markRoot: '',
         markList: {},
         markMenu: false,
@@ -403,6 +414,8 @@
             this.storyInfo.author = response.data.result.author
             this.storyInfo.authorId = `/people/${response.data.result.authorId}`
             this.storyInfo.date = response.data.result.date
+            this.hasFocus = response.data.result.hasFocus
+            this.showFocus = response.data.result.showFocus
           } else {
             this.$emit('error')
           }
@@ -559,6 +572,7 @@
           id: this.$route.params.id,
           markActive: this.markActive
         }).then(response => {
+          this.getMark()
           if (response.data.error) {
             Toast({
               message: response.data.message,
@@ -582,6 +596,13 @@
         this.menuActive = false
       },
       showMarkMenu () {
+        if (!this.markList.story.length) {
+          Toast({
+            message: '无可用书签',
+            position: 'middle',
+            duration: 1000
+          })
+        }
         this.menuActive = false
         this.markMenu = true
       },

@@ -175,7 +175,8 @@ router.get('/register/checkLogin', (req, res) => {
               user: user.id,
               nickName: user.nickname,
               sign: user.sign,
-              headImg: tool.formImg(user.headImg)
+              headImg: tool.formImg(user.headImg),
+              follower: user.follower.length
             })
           } else {
             res.send({
@@ -202,7 +203,8 @@ router.get('/register/checkLogin', (req, res) => {
             user: result.id,
             nickName: result.nickname,
             sign: result.sign,
-            headImg: tool.formImg(result.headImg)
+            headImg: tool.formImg(result.headImg),
+            follower: result.follower.length
           })
         } else {
           res.send({
@@ -237,7 +239,8 @@ router.get('/register/checkUser', (req, res) => {
       nickName: '',
       sign: '',
       userId: '',
-      headImg: ''
+      headImg: '',
+      follower: 0
     }
     User.findOne({id: user})
       .exec((err, account) => {
@@ -250,6 +253,7 @@ router.get('/register/checkUser', (req, res) => {
             userInfo.sign = account.sign
             userInfo.userId = account.id
             userInfo.headImg = tool.formImg(account.headImg)
+            userInfo.follower = account.follower.length
             if (account.username === loginUser) {
               res.send({user: userInfo, customer: false}) // 是本人，非访客模式
             } else {

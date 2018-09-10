@@ -44,8 +44,7 @@
           <div class='add-request'>
             <span class="info">添加您为好友</span>
             <div class="date">{{item.date}}</div>
-            <span v-if = "item.state == 'pending'" class="btn" @click="acceptFriend(item.fromId)">通过</span>
-            <span v-else class="confirm">已通过</span>
+            <span v-if = "item.state === 'pending'" class="btn" @click="acceptFriend(item.fromId)">通过</span>
           </div>
           </mt-cell-swipe>
         </div>
@@ -70,6 +69,7 @@
       display: flex;
       align-items: center;
       border-bottom: 1px solid $border-gray;
+      margin-top: 5px;
       &:last-child {
         border: none;
         /*margin-bottom: 70px;*/

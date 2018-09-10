@@ -130,7 +130,15 @@ const UserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Comment'
   }],
-  headImg: String
+  headImg: String,
+  focus: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  follower: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 })
 UserSchema.pre('save', function (next) {
   'use strict'

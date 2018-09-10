@@ -172,6 +172,10 @@ router.get('/story/getStory', (req, res) => {
                     Root.updateOne({id: id}, {$addToSet: {'readCounts': doc._id}})
                       .exec(err => {
                         if (!err) {
+                          result.hasFocus = doc.focus.some(function (item) {
+                            return item.toString() === root.author._id.toString()
+                          })
+                          result.showFocus = result.author.username !== user
                           res.send({permit: true, result: result})
                         }
                       })
@@ -208,6 +212,10 @@ router.get('/story/getStory', (req, res) => {
                     Story.updateOne({id: id}, {$addToSet: {'readCounts': doc._id}})
                       .exec(err => {
                         if (!err) {
+                          result.hasFocus = doc.focus.some(function (item) {
+                            return item.toString() === root.author._id.toString()
+                          })
+                          result.showFocus = result.author.username !== user
                           res.send({permit: true, result: result})
                         }
                       })
@@ -1081,36 +1089,28 @@ router.post('/story/cancelZan', (req, res) => {
           if (err2) {
             res.send({login: false, success: false})
           }
-          for (let i = 0; i < userId.zan.root.length; i++) {
-            if (userId.zan.root[i].toString() === root._id.toString()) {
-              userId.zan.root.splice(i, 1)
-              break
-            }
-          }
-          userId.save((err3) => {
-            if (err3) {
-              console.log(err3)
-            }
-            res.send({login: true, success: true})
-          })
+          User.updateOne({username: user}, {$pull: {'zan.root': root._id}})
+            .exec(err3 => {
+              if (!err3) {
+                res.send({login: true, success: true})
+              } else {
+                res.send({error: true, message: '发生错误', type: 'DB'})
+              }
+            })
         })
       } else if (storyReg.test(id)) {
         Story.findOneAndUpdate({id: id}, {$pull: {'zan': userId._id}}, (err2, story) => {
           if (err2) {
             res.send({login: false, success: false})
           }
-          for (let i = 0; i < userId.zan.story.length; i++) {
-            if (userId.zan.story[i].toString() === story._id.toString()) {
-              userId.zan.story.splice(i, 1)
-              break
-            }
-          }
-          userId.save((err3) => {
-            if (err3) {
-              console.log(err3)
-            }
-            res.send({login: true, success: true})
-          })
+          User.updateOne({username: user}, {$pull: {'zan.root': story._id}})
+            .exec(err3 => {
+              if (!err3) {
+                res.send({login: true, success: true})
+              } else {
+                res.send({error: true, message: '发生错误', type: 'DB'})
+              }
+            })
         })
       } else {
         res.send({login: true, success: false})

@@ -1049,8 +1049,8 @@ router.post('/user/changeMark', (req, res) => {
   }
   if (user) {
     if (rootReg.test(id)) {
-      Root.findOne({id: id}, (err, root) => {
-        if (err) {
+      Root.findOne({id: id}, (err1, root) => {
+        if (err1) {
           res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
         } else {
           if (root) {
@@ -1062,8 +1062,8 @@ router.post('/user/changeMark', (req, res) => {
               brief = content
             }
             User.findOne({username: user})
-              .exec((err, duser) => {
-                if (err) {
+              .exec((err2, duser) => {
+                if (err2) {
                   res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                 } else {
                   if (duser) {
@@ -1114,8 +1114,8 @@ router.post('/user/changeMark', (req, res) => {
                       }
                       if (flag) {
                         User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$set: {'mark': markData}})
-                          .exec((err2) => {
-                            if (err2) {
+                          .exec((err4) => {
+                            if (err4) {
                               res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                             } else {
                               res.send({error: false})
@@ -1133,8 +1133,8 @@ router.post('/user/changeMark', (req, res) => {
                             }
                           }
                         User.updateOne({username: user}, {$addToSet: {'mark': k}})
-                          .exec((err3) => {
-                            if (err3) {
+                          .exec((err5) => {
+                            if (err5) {
                               res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                             } else {
                               res.send({error: false})

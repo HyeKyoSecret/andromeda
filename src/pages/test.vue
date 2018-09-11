@@ -1,24 +1,22 @@
 <template>
   <div>
-    <div class="abs">
-      <div class="bounce" v-for="n in 5">
-        f3445
-      </div>
-    </div>
+    <v-touch tag="div" class="hello" v-on:swipeleft="onSwipeLeft">Swipe me!</v-touch>
   </div>
 </template>
 <script>
-
-</script>
-<style lang="scss">
-  .abs {
-    .bounce {
-      width: 100px;
-      height: 100px;
-      border: 1px solid black;
-      &:last-child {
-        background: firebrick;
+  export default {
+    methods: {
+      onSwipeLeft () {
+        alert('swip')
       }
     }
   }
+</script>
+<style lang="scss">
+.hello {
+  width: 300px;
+  height: 300px;
+  background: yellow;
+  border: 1px solid black;
+}
 </style>

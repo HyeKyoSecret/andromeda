@@ -1629,7 +1629,7 @@ router.get('/story/prepareTraversal', (req, res) => {
             nodeRankWeight(0.1, candidate)    // 节点权重函数
             zanRank(candidate)
             zanRankWeight(0.2, candidate)
-            // console.log(candidate)
+            console.log(candidate)
           } else {
             // 无后续处理
           }

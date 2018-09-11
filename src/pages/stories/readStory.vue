@@ -369,7 +369,7 @@
       this.ftNode = this.$route.params.id
       this.fetchMenuData()
 //      this.getNextNode()
-      // this.prepareRec()
+      this.prepareRec()
     },
     watch: {
       '$route' (to, from) {

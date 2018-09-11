@@ -313,7 +313,6 @@ router.get('/user/acceptFriend', (req, res) => {
   const fromId = req.query.fromId
   User.findOne({id: id}, function(err, user) {
     if (err) {
-      console.log('111111' + err)
       res.send({error: true, message: '发生错误', type: 'DB'})
     } else {
       User.findOneAndUpdate({id: fromId}, {
@@ -325,7 +324,6 @@ router.get('/user/acceptFriend', (req, res) => {
       })
         .exec((err2, doc) => {
           if (err2) {
-            console.log('22222222222' + err)
             res.send({error: true, message: '发生错误', type: 'DB'})
           } else {
             User.updateOne({id: id}, {
@@ -334,7 +332,6 @@ router.get('/user/acceptFriend', (req, res) => {
             })
               .exec(err3 => {
                 if (err3) {
-                  console.log('333333333' + err3)
                   res.send({error: true, message: '发生错误', type: 'DB'})
                 } else {
                   res.send({error: false, message: '操作成功'})

@@ -1458,6 +1458,17 @@ router.get('/story/prepareTraversal', (req, res) => {
       }
     }
   }
+  function indexRank (arr) {
+    for (let i = 0; i < arr.length - 1; i++) {
+      for (let j = 0; j < arr.length - i - 1; j++) {
+        if (arr[j].index < arr[j + 1].index) {
+          let swap = arr[j]
+          arr[j] = arr[j + 1]
+          arr[j + 1] = swap
+        }
+      }
+    }
+  }
   function nodeRankWeight (weight = 0.1, candidate) {
     candidate.forEach((c, index) => {
       c.nodeWeight = weight * expFun(index + 1)
@@ -1466,6 +1477,11 @@ router.get('/story/prepareTraversal', (req, res) => {
   function zanRankWeight (weight = 0.2, candidate) {
     candidate.forEach((c, index) => {
       c.zanWeight = weight * expFun(index + 1)
+    })
+  }
+  function timeRankWeight (weight = 0.2, candidate) {
+    candidate.forEach((c, index) => {
+      c.timeWeight = weight * expFun(index + 1)
     })
   }
   const getObj = function (id) {
@@ -1604,6 +1620,7 @@ router.get('/story/prepareTraversal', (req, res) => {
               candidate.push(
                 {
                   _id: p,
+                  content: _temp.content,
                   zan: _temp.zan.length,
                   index: 0,
                   nodeNum: 0
@@ -1625,11 +1642,24 @@ router.get('/story/prepareTraversal', (req, res) => {
                 candidate[i].nodeNum = candidate[i + 1].index - candidate[i].index - 1
               }
             }
-            nodeRank(candidate)   // 节点数量排名函数
-            nodeRankWeight(0.1, candidate)    // 节点权重函数
-            zanRank(candidate)
-            zanRankWeight(0.2, candidate)
-            console.log(candidate)
+            candidate = candidate.reverse()
+            timeRankWeight(0.2, candidate) // 时序排名
+            indexRank(candidate)
+            console.log(stlist)
+            // function lalala(arr) {
+            //   for (let i = 0; i < arr.length; i++) {
+            //     if (i = 0 && stlist.length - arr[i].index > 0) {
+            //       for (let j = stlist.length - 1; j > arr[i].index; j--) {
+            //
+            //       }
+            //     }
+            //   }
+            // }
+            // nodeRank(candidate)   // 节点数量排名函数
+            // nodeRankWeight(0.1, candidate)    // 节点权重函数
+            // zanRank(candidate)
+            // zanRankWeight(0.2, candidate)
+            // console.log('abc' + JSON.stringify(candidate))
           } else {
             // 无后续处理
           }

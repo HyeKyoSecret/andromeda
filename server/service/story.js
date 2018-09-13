@@ -1436,32 +1436,10 @@ router.get('/story/prepareTraversal', (req, res) => {
   function expFun (rank) {    // 经验函数
     return 1 / Math.exp(rank - 1)
   }
-  function nodeRank (arr) {
+  function rank (arr, name) {
     for (let i = 0; i < arr.length - 1; i++) {
       for (let j = 0; j < arr.length - i - 1; j++) {
-        if (arr[j].nodeNum < arr[j + 1].nodeNum) {
-          let swap = arr[j]
-          arr[j] = arr[j + 1]
-          arr[j + 1] = swap
-        }
-      }
-    }
-  }
-  function zanRank (arr) {
-    for (let i = 0; i < arr.length - 1; i++) {
-      for (let j = 0; j < arr.length - i - 1; j++) {
-        if (arr[j].zan < arr[j + 1].zan) {
-          let swap = arr[j]
-          arr[j] = arr[j + 1]
-          arr[j + 1] = swap
-        }
-      }
-    }
-  }
-  function indexRank (arr) {
-    for (let i = 0; i < arr.length - 1; i++) {
-      for (let j = 0; j < arr.length - i - 1; j++) {
-        if (arr[j].index < arr[j + 1].index) {
+        if (arr[j][name] < arr[j + 1][name]) {
           let swap = arr[j]
           arr[j] = arr[j + 1]
           arr[j + 1] = swap
@@ -1484,9 +1462,20 @@ router.get('/story/prepareTraversal', (req, res) => {
       c.timeWeight = weight * expFun(index + 1)
     })
   }
+  function selfCreateRankWeight (weight = 0.5, candidate) {
+    candidate.forEach((c, index) => {
+      c.selfWeight = weight * expFun(index + 1)
+    })
+  }
+  function friendCreateRankWeight (weight = 0.5, candidate) {
+    candidate.forEach((c, index) => {
+      c.friendWeight = weight * expFun(index + 1)
+    })
+  }
   const getObj = function (id) {
     return new Promise((resolve, reject) => {
       Story.findOne({_id: id})
+        .populate('author')
         .exec((err, story) => {
           if (err) {
             console.log(err)
@@ -1528,6 +1517,19 @@ router.get('/story/prepareTraversal', (req, res) => {
                 resolve(null)
               }
             })
+          }
+        })
+    })
+  }
+  const getFriendList = function (user) {
+    return new Promise((resolve, reject) => {
+      User.findOne({username: user})
+        .exec((err, doc) => {
+          if (err) {
+            console.log(err)
+            reject('error')
+          } else {
+            resolve(doc.friendList)
           }
         })
     })
@@ -1607,6 +1609,48 @@ router.get('/story/prepareTraversal', (req, res) => {
       })
     }
     async function buildCandidate () {
+      async function hello (arr, stlist) {
+        return new Promise((resolve, reject) => {
+          (async function () {
+            let user
+            if (req.session.user) {
+              user = req.session.user
+            } else if (req.cookies.And) {
+              user = req.cookies.And.user
+            }
+            for (let i = 0; i < arr.length; i++) {
+              if (i === 0) {
+                for (let j = stlist.length - 1; j > arr[0].index; j--) {
+                  let q = await getObj(stlist[j])
+                  if (q.author.username === user) {
+                    arr[i].selfCreate ++
+                  }
+                  let yourFriendList = await getFriendList(user)
+                  for (let k = 0; k < yourFriendList.length; k++) {
+                    if (yourFriendList[k].friend.toString() === q.author._id.toString()) {
+                      arr[i].friendCreate ++
+                    }
+                  }
+                }
+              } else {
+                for (let j = arr[i - 1].index - 1; (arr[i - 1].index > arr[i].index) && (j > arr[i].index); j--) {
+                  let q = await getObj(stlist[j])
+                  if (q.author.username === user) {
+                    arr[i].selfCreate ++
+                  }
+                  let yourFriendList = await getFriendList(user)
+                  for (let k = 0; k < yourFriendList.length; k++) {
+                    if (yourFriendList[k].friend.toString() === q.author._id.toString()) {
+                      arr[i].friendCreate ++
+                    }
+                  }
+                }
+              }
+            }
+            resolve(arr)
+          })()
+        })
+      }
       let root = await getRootObj()
       traversal(root).then((stlist) => {
         (async function () {
@@ -1620,10 +1664,13 @@ router.get('/story/prepareTraversal', (req, res) => {
               candidate.push(
                 {
                   _id: p,
+                  id: _temp.id,
                   content: _temp.content,
                   zan: _temp.zan.length,
                   index: 0,
-                  nodeNum: 0
+                  nodeNum: 0,
+                  selfCreate: 0,
+                  friendCreate: 0
                 }
               )
               p = _temp.rb
@@ -1644,22 +1691,20 @@ router.get('/story/prepareTraversal', (req, res) => {
             }
             candidate = candidate.reverse()
             timeRankWeight(0.2, candidate) // 时序排名
-            indexRank(candidate)
-            console.log(stlist)
-            // function lalala(arr) {
-            //   for (let i = 0; i < arr.length; i++) {
-            //     if (i = 0 && stlist.length - arr[i].index > 0) {
-            //       for (let j = stlist.length - 1; j > arr[i].index; j--) {
-            //
-            //       }
-            //     }
-            //   }
-            // }
-            // nodeRank(candidate)   // 节点数量排名函数
-            // nodeRankWeight(0.1, candidate)    // 节点权重函数
-            // zanRank(candidate)
-            // zanRankWeight(0.2, candidate)
-            // console.log('abc' + JSON.stringify(candidate))
+            rank(candidate, 'index')
+            rank(await hello(candidate, stlist), 'selfCreate')
+            selfCreateRankWeight(0.5, candidate)
+            rank(candidate, 'friendCreate')
+            friendCreateRankWeight(0.5, candidate)
+            rank(candidate, 'nodeNumber')   // 节点数量排名函数
+            nodeRankWeight(0.1, candidate)    // 节点权重函数
+            rank(candidate, 'zan')
+            zanRankWeight(0.2, candidate)
+            for (let i = 0; i < candidate.length; i++) {
+              candidate[i].sumWeight = candidate[i].timeWeight + candidate[i].zanWeight + candidate[i].selfWeight + candidate[i].friendWeight + candidate[i].nodeWeight
+            }
+            rank(candidate, 'sumWeight')
+            console.log(candidate)
           } else {
             // 无后续处理
           }

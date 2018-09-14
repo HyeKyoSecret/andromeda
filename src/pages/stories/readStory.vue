@@ -5,25 +5,27 @@
       <img src="../../img/icon/marker_unselected.png" v-if="!markActive"/>
       <img src="../../img/icon/marker_selected.png" v-else/>
     </div>
-    <div class="context" @click.self="closeMenu"><p v-for="item in storyInfo.content">{{item}}</p></div>
-    <div class="related-info">
-      <!--<div class="anchor"><thumb src="../../thumb/icon/anchor.png" /></div>-->
-      <div class="author-info">
-        <div class="like">
-          <router-link :to='storyInfo.authorId' tag="span">作者:&nbsp;{{storyInfo.author}}</router-link>
-          <span v-if="showFocus">
+    <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown">
+      <div class="context" @click.self="closeMenu"><p v-for="item in storyInfo.content">{{item}}</p></div>
+      <div class="related-info">
+        <!--<div class="anchor"><thumb src="../../thumb/icon/anchor.png" /></div>-->
+        <div class="author-info">
+          <div class="like">
+            <router-link :to='storyInfo.authorId' tag="span">作者:&nbsp;{{storyInfo.author}}</router-link>
+            <span v-if="showFocus">
             <img src="../../img/icon/redheart.png" v-if="hasFocus"/>
             <img src="../../img/icon/zan.png" v-else>
           </span>
-          <span v-else class="blank"></span>
-        </div>
-        <div class="time">{{storyInfo.date}}</div>
-        <!--<div class="follow-number">-->
+            <span v-else class="blank"></span>
+          </div>
+          <div class="time">{{storyInfo.date}}</div>
+          <!--<div class="follow-number">-->
           <!--<span class="tri"><thumb src="../../thumb/icon/triangle_downward.png"/></span>-->
           <!--<span class="number">1563</span>-->
-        <!--</div>-->
+          <!--</div>-->
+        </div>
       </div>
-    </div>
+    </v-touch>
     <div class="read-foot-menu">
       <div class="button" v-if='menuInfo.zan'>
         <img v-if='menuInfo.zan' src="../../img/icon/yellowthumb.png" @click="cancelZan"/>
@@ -360,7 +362,8 @@
           subscribe: false
         },
         writeWindow: false,
-        moreList: ['report']
+        moreList: ['report'],
+        downList: []  // 下层候选节点
       }
     },
     created: function () {
@@ -369,7 +372,7 @@
       this.ftNode = this.$route.params.id
       this.fetchMenuData()
 //      this.getNextNode()
-      this.prepareRec()
+      this.getDownNode()
     },
     watch: {
       '$route' (to, from) {
@@ -393,6 +396,26 @@
       }
     },
     methods: {
+      swipeUp () {
+        if (this.downList.length > 0) {
+          this.$router.push(`/story/${this.downList[0].id}`)
+        } else {
+          Toast({
+            message: '后面没有啦',
+            position: 'middle',
+            duration: 1000
+          })
+        }
+      },
+      swipeDown () {
+        Axios.get('/story/getFrontNode', {
+          params: {
+            id: this.$route.params.id
+          }
+        }).then(response => {
+          //
+        })
+      },
       goBack () {
         this.$router.go(-1)
       },
@@ -582,10 +605,20 @@
           }
         })
       },
-      prepareRec () {
+      getDownNode () {
         Axios.get('/story/prepareTraversal', {
           params: {
             id: this.$route.params.id
+          }
+        }).then(response => {
+          if (!response.data.error) {
+            this.downList = response.data.result
+          } else {
+            Toast({
+              message: '发生错误',
+              position: 'middle',
+              duration: 1000
+            })
           }
         })
       },

@@ -1462,15 +1462,23 @@ router.get('/story/prepareTraversal', (req, res) => {
       c.timeWeight = weight * expFun(index + 1)
     })
   }
-  function selfCreateRankWeight (weight = 0.5, candidate) {
-    candidate.forEach((c, index) => {
-      c.selfWeight = weight * expFun(index + 1)
-    })
+  function selfCreateRankWeight (weight = 1, candidate) {
+    for (let i = 0; i < candidate.length; i++) {
+      if (candidate[0].selfCreate === 0) {
+        candidate[i].selfWeight = 0
+      } else {
+        candidate[i].selfWeight = weight * expFun(i + 1)
+      }
+    }
   }
   function friendCreateRankWeight (weight = 0.5, candidate) {
-    candidate.forEach((c, index) => {
-      c.friendWeight = weight * expFun(index + 1)
-    })
+    for (let i = 0; i < candidate.length; i++) {
+      if (candidate[0].friendCreate === 0) {
+        candidate[i].friendWeight = 0
+      } else {
+        candidate[i].friendWeight = weight * expFun(i + 1)
+      }
+    }
   }
   const getObj = function (id) {
     return new Promise((resolve, reject) => {
@@ -1704,7 +1712,7 @@ router.get('/story/prepareTraversal', (req, res) => {
               candidate[i].sumWeight = candidate[i].timeWeight + candidate[i].zanWeight + candidate[i].selfWeight + candidate[i].friendWeight + candidate[i].nodeWeight
             }
             rank(candidate, 'sumWeight')
-            console.log(candidate)
+            res.send({error: false, result: candidate})
           } else {
             // 无后续处理
           }
@@ -1714,6 +1722,155 @@ router.get('/story/prepareTraversal', (req, res) => {
     buildCandidate().catch(error => {
       if (error) {
         console.log(error)
+      }
+    })
+  }
+  exe()
+})
+router.get('/story/getFrontNode', (req, res) => {
+  const fid = req.query.id
+  let stack = []
+  let storyList = []
+  let p
+  let tempObj
+  const getObj = function (id) {
+    return new Promise((resolve, reject) => {
+      Story.findOne({_id: id})
+        .populate('author')
+        .exec((err, story) => {
+          if (err) {
+            console.log(err)
+          }
+          if (story) {
+            resolve(story)
+          } else {
+            Root.findOne({_id: id}, (err, root) => {
+              if (err) {
+                console.log(err)
+              }
+              if (root) {
+                resolve(root)
+              } else {
+                resolve(null)
+              }
+            })
+          }
+        })
+    })
+  }
+  const getObjById = function (id) {
+    return new Promise((resolve, reject) => {
+      Story.findOne({id: id})
+        .exec((err, story) => {
+          if (err) {
+            console.log(err)
+          }
+          if (story) {
+            resolve(story)
+          } else {
+            Root.findOne({id: id}, (err, root) => {
+              if (err) {
+                console.log(err)
+              }
+              if (root) {
+                resolve(root)
+              } else {
+                resolve(null)
+              }
+            })
+          }
+        })
+    })
+  }
+  async function exe () {
+    async function traversal (root) { // 先序遍历
+      p = root._id
+      let _temp
+      while (p || stack.length) {
+        if (p) {
+          _temp = await getObj(p)
+          storyList.push({
+            _id: _temp._id,
+            id: _temp.id,
+            content: _temp.content
+          })
+          stack.push({
+            _id: _temp._id,
+            // id: _temp.id,
+            content: _temp.content
+          })
+          p = _temp.lc
+        } else {
+          stack.pop()
+          p = _temp.rb
+          while (!p && stack.length > 1) {
+            _temp = await getObj(stack[stack.length - 1]._id)
+            p = _temp.rb
+            stack.pop()
+          }
+        }
+      }
+      return storyList
+    }
+    async function getRootObj () {
+      return new Promise((resolve, reject) => {
+        if (rootReg.test(fid)) {
+          Root.findOne({id: fid})
+            .exec((err, root) => {
+              if (err) {
+                console.log(err)
+              }
+              if (root) {
+                resolve(root)
+              } else {
+                reject(null)
+              }
+            })
+        } else if (storyReg.test(fid)) {
+          Story.findOne({id: fid})
+            .exec((err, story) => {
+              if (err) {
+                console.log(err)
+              }
+              if (story) {
+                Root.findOne({_id: story.root})
+                  .exec((err, root) => {
+                    if (err) {
+                      console.log(err)
+                    }
+                    if (root) {
+                      resolve(root)
+                    } else {
+                      reject(null)
+                    }
+                  })
+              } else {
+                reject(null)
+              }
+            })
+        } else {
+          reject(null)
+        }
+      })
+    }
+    let root = await getRootObj()
+    traversal(root).then(stlist => {
+      let loopList
+      for (let i = 0; i < stlist.length; i++) {
+        if (stlist[i].id === fid) {
+          loopList = stlist.slice(0, i)
+          break
+        }
+      }
+      loopList.reverse()
+      async function getFront () {
+        return new Promise((resolve, reject) => {
+          (async function () {
+            for (let i = 0; i < loopList.length; i++) {
+              tempObj = await getObjById(loopList[i].id)
+            }
+          })()
+        })
       }
     })
   }

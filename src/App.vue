@@ -1,9 +1,13 @@
 <template>
   <div id="app">
+    <transition name="slide-left">
       <keep-alive>
         <router-view v-on:error="closeSelf" v-if="!errorPage && $route.meta.keepAlive"></router-view>
       </keep-alive>
+    </transition>
+    <transition name="slide-left">
       <router-view v-on:error="closeSelf" v-if="!errorPage && !$route.meta.keepAlive"></router-view>
+    </transition>
     <ErrorPage v-if="errorPage"></ErrorPage>
   </div>
 </template>
@@ -71,5 +75,15 @@
   }
   .fade-enter, .fade-leave-to /* .fade-leave-active in below version 2.1.8 */ {
     opacity: 0
+  }
+  .slide-left-enter, .slide-right-leave-active {
+    opacity: 0;
+    -webkit-transform: translate(380px, 0);
+    transform: translate(380px, 0);
+  }
+  .slide-left-leave-active, .slide-right-enter {
+    opacity: 0;
+    -webkit-transform: translate(-400px, 0);
+    transform: translate(-400px, 0);
   }
 </style>

@@ -311,7 +311,7 @@ router.get('/user/acceptFriend', (req, res) => {
   'use strict'
   const id = req.query.id
   const fromId = req.query.fromId
-  User.findOne({id: id}, function(err, user) {
+  User.findOne({id: id}, function (err, user) {
     if (err) {
       res.send({error: true, message: '发生错误', type: 'DB'})
     } else {
@@ -1051,7 +1051,7 @@ router.post('/user/changeMark', (req, res) => {
     if (rootReg.test(id)) {
       Root.findOne({id: id}, (err1, root) => {
         if (err1) {
-          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试1'})
         } else {
           if (root) {
             let content = root.content
@@ -1064,7 +1064,7 @@ router.post('/user/changeMark', (req, res) => {
             User.findOne({username: user})
               .exec((err2, duser) => {
                 if (err2) {
-                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试2'})
                 } else {
                   if (duser) {
                     if (duser.mark.length) {
@@ -1096,15 +1096,16 @@ router.post('/user/changeMark', (req, res) => {
                             let k =
                               {
                                 rootId: id,
-                                story: {
+                                story: [{
                                   id: id,
                                   brief: brief
-                                }
+                                }]
                               }
                             User.updateOne({username: user}, {$addToSet: {'mark': k}})
                               .exec((err3) => {
                                 if (err3) {
-                                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                  console.log(err3)
+                                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试3'})
                                 } else {
                                   res.send({error: false})
                                 }
@@ -1113,10 +1114,10 @@ router.post('/user/changeMark', (req, res) => {
                         }
                       }
                       if (flag) {
-                        User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$set: {'mark': markData}})
+                        User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$addToSet: {'mark': markData}})
                           .exec((err4) => {
                             if (err4) {
-                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试4'})
                             } else {
                               res.send({error: false})
                             }
@@ -1127,15 +1128,15 @@ router.post('/user/changeMark', (req, res) => {
                         let k =
                           {
                             rootId: id,
-                            story: {
+                            story: [{
                               id: id,
                               brief: brief
-                            }
+                            }]
                           }
                         User.updateOne({username: user}, {$addToSet: {'mark': k}})
                           .exec((err5) => {
                             if (err5) {
-                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试5'})
                             } else {
                               res.send({error: false})
                             }

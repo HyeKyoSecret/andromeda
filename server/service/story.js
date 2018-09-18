@@ -175,7 +175,7 @@ router.get('/story/getStory', (req, res) => {
                           result.hasFocus = doc.focus.some(function (item) {
                             return item.toString() === root.author._id.toString()
                           })
-                          result.showFocus = result.author.username !== user
+                          result.showFocus = root.author.id !== user
                           res.send({permit: true, result: result})
                         }
                       })
@@ -193,6 +193,12 @@ router.get('/story/getStory', (req, res) => {
     Story.findOne({ id: id })
       .populate('root')
       .populate('author')
+      .populate({
+        path: 'root',
+        populate: {
+          path: 'author'
+        }
+      })
       .exec((err, story) => {
         if (err) {
           res.send({permit: false})
@@ -213,9 +219,9 @@ router.get('/story/getStory', (req, res) => {
                       .exec(err => {
                         if (!err) {
                           result.hasFocus = doc.focus.some(function (item) {
-                            return item.toString() === root.author._id.toString()
+                            return item.toString() === story.root.author._id.toString()
                           })
-                          result.showFocus = result.author.username !== user
+                          result.showFocus = story.author.id !== user
                           res.send({permit: true, result: result})
                         }
                       })
@@ -1617,7 +1623,7 @@ router.get('/story/prepareTraversal', (req, res) => {
       })
     }
     async function buildCandidate () {
-      async function hello (arr, stlist) {
+      async function peopleCreate (arr, stlist) {
         return new Promise((resolve, reject) => {
           (async function () {
             let user
@@ -1700,7 +1706,7 @@ router.get('/story/prepareTraversal', (req, res) => {
             candidate = candidate.reverse()
             timeRankWeight(0.2, candidate) // 时序排名
             rank(candidate, 'index')
-            rank(await hello(candidate, stlist), 'selfCreate')
+            rank(await peopleCreate(candidate, stlist), 'selfCreate')
             selfCreateRankWeight(0.5, candidate)
             rank(candidate, 'friendCreate')
             friendCreateRankWeight(0.5, candidate)
@@ -1714,7 +1720,7 @@ router.get('/story/prepareTraversal', (req, res) => {
             rank(candidate, 'sumWeight')
             res.send({error: false, result: candidate})
           } else {
-            // 无后续处理
+            res.send({error: false, result: []})
           }
         })()
       })
@@ -1733,6 +1739,8 @@ router.get('/story/getFrontNode', (req, res) => {
   let storyList = []
   let p
   let tempObj
+  let nIndex = 0
+  let frontNode
   const getObj = function (id) {
     return new Promise((resolve, reject) => {
       Story.findOne({_id: id})
@@ -1858,20 +1866,36 @@ router.get('/story/getFrontNode', (req, res) => {
       let loopList
       for (let i = 0; i < stlist.length; i++) {
         if (stlist[i].id === fid) {
-          loopList = stlist.slice(0, i)
+          loopList = stlist.slice(0, i + 1)
           break
         }
       }
       loopList.reverse()
-      async function getFront () {
-        return new Promise((resolve, reject) => {
-          (async function () {
-            for (let i = 0; i < loopList.length; i++) {
-              tempObj = await getObjById(loopList[i].id)
+      function getFront () {
+        (async function () {
+          tempObj = await getObjById(fid)
+          for (let i = 0; i < loopList.length; i++) {
+            if (tempObj) {
+              let _tp = await getObjById(loopList[i].id)
+              if (_tp.rb && _tp.rb.toString() === tempObj._id.toString()) {
+                tempObj = _tp
+                nIndex = i
+              }
             }
-          })()
-        })
+          }
+          if (loopList.length > 1) {
+            frontNode = await getObjById(loopList[nIndex + 1].id)
+          } else {
+            frontNode = null
+          }
+          let result = null
+          if (frontNode) {
+            result = frontNode.id
+          }
+          res.send({result: result})
+        })()
       }
+      getFront()
     })
   }
   exe()

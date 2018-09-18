@@ -496,7 +496,7 @@
         this.panel = true
         this.picValue = files[0]
         let self = this
-        lrz(this.picValue, {width: 900, quality: 0.75}) // 压缩图片
+        lrz(this.picValue, {width: 800, quality: 0.7}) // 压缩图片
           .then(function (rst) {
             self.url = rst.base64
             // 每次替换图片要重新得到新的url

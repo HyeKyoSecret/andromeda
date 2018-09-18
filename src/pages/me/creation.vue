@@ -1,13 +1,13 @@
 <template>
   <div class="my-creation">
-    <notice v-bind:title="title"></notice>
+    <notice v-bind:title="title" class="notice-bar"></notice>
     <div class="button-bar">
       <div class="button">
-        <div ><span class="root" :class="{active: myRootActive}" @click="myRoot">我发起的</span></div>
-        <div ><span class="story" :class="{active: myStoryActive}" @click="myStory">我参与的</span></div>
+        <div ><span class="root" :class="{active: myRootActive}" @click="myRoot">{{rtitle}}</span></div>
+        <div ><span class="story" :class="{active: myStoryActive}" @click="myStory">{{stitle}}</span></div>
       </div>
     </div>
-        <creation :story="myRootActive ? root : story"  v-on:loadMore="fetchData"></creation>
+        <creation :story="myRootActive ? root : story"  v-on:loadMore="fetchData" class="creation"></creation>
     <router-view v-on:refreshImg="refreshImage"></router-view>
     <foot-menu></foot-menu>
   </div>
@@ -29,6 +29,8 @@
       return {
         isUser: false,
         title: '我的创作',
+        rtitle: '我发起的',
+        stitle: '我参与的',
         story: [],
         root: [],
         myRootActive: true,
@@ -36,6 +38,7 @@
       }
     },
     created: function () {
+      console.log('creation')
       this.fetchData('root')
       this.fetchData('story')
     },
@@ -105,6 +108,8 @@
           }).then(response => {
             if (response.data.customer) {
               this.title = response.data.sex + '的创作'
+              this.rtitle = response.data.sex + '发起的'
+              this.stitle = response.data.sex + '参与的'
             }
           })
         }
@@ -146,7 +151,14 @@
     /*height: 100%;*/
     min-height: 100%;
     background: $bg-gray;
+    .notice-bar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+    }
     .button-bar {
+      position: fixed;
+      top: 42px;
       width: 100%;
       background: white;
       height: 40px;
@@ -190,6 +202,9 @@
           }
         }
       }
+    }
+    .creation {
+      margin-top: 90px;
     }
   }
   .mint-indicator {

@@ -1051,7 +1051,7 @@ router.post('/user/changeMark', (req, res) => {
     if (rootReg.test(id)) {
       Root.findOne({id: id}, (err1, root) => {
         if (err1) {
-          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试1'})
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
         } else {
           if (root) {
             let content = root.content
@@ -1064,7 +1064,7 @@ router.post('/user/changeMark', (req, res) => {
             User.findOne({username: user})
               .exec((err2, duser) => {
                 if (err2) {
-                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试2'})
+                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                 } else {
                   if (duser) {
                     if (duser.mark.length) {
@@ -1105,7 +1105,7 @@ router.post('/user/changeMark', (req, res) => {
                               .exec((err3) => {
                                 if (err3) {
                                   console.log(err3)
-                                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试3'})
+                                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                                 } else {
                                   res.send({error: false})
                                 }
@@ -1117,7 +1117,7 @@ router.post('/user/changeMark', (req, res) => {
                         User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$addToSet: {'mark': markData}})
                           .exec((err4) => {
                             if (err4) {
-                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试4'})
+                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                             } else {
                               res.send({error: false})
                             }
@@ -1136,7 +1136,7 @@ router.post('/user/changeMark', (req, res) => {
                         User.updateOne({username: user}, {$addToSet: {'mark': k}})
                           .exec((err5) => {
                             if (err5) {
-                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试5'})
+                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                             } else {
                               res.send({error: false})
                             }

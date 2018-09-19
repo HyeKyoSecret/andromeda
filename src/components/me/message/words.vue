@@ -1,5 +1,5 @@
 <template>
-  <div class="word-template" v-swipe="{methods: swipe}">
+  <div class="word-template">
     <div class="content">
       <div class="left">
         <img src='../../../img/photo/head.jpg'>

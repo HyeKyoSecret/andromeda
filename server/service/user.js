@@ -1067,7 +1067,7 @@ router.post('/user/changeMark', (req, res) => {
                   res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                 } else {
                   if (duser) {
-                    if (duser.mark.length) {
+                    if (duser.mark.length > 0) {
                       let markData
                       let flag
                       for (let i = 0; i < duser.mark.length; i++) {
@@ -1177,7 +1177,7 @@ router.post('/user/changeMark', (req, res) => {
                   } else {
                     if (duser) {
                       if (duser.mark.length) {
-                        let markData
+                        let markData = []
                         let flag
                         for (let i = 0; i < duser.mark.length; i++) {
                           if (duser.mark[i] && duser.mark[i].rootId === rId) {
@@ -1187,9 +1187,9 @@ router.post('/user/changeMark', (req, res) => {
                                 id: id,
                                 brief: brief
                               })
-                              markData = duser.mark[i]
+                              markData.push(duser.mark[i])
                             } else {
-                              console.log(duser.mark[i])
+                              console.log('查询到的' + duser.mark[i])
                               if (duser.mark[i] && duser.mark[i].story) {
                                 for (let j = 0; j < duser.mark[i].story.length; j++) {
                                   if (duser.mark[i].story[j].id === id) {
@@ -1198,7 +1198,7 @@ router.post('/user/changeMark', (req, res) => {
                                   }
                                 }
                               }
-                              markData = duser.mark[i]
+                              markData.push(duser.mark[i])
                             }
                             break
                           } else {
@@ -1228,7 +1228,6 @@ router.post('/user/changeMark', (req, res) => {
                               if (err2) {
                                 res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                               } else {
-                                console.log('更新执行完成' + markData)
                                 res.send({error: false})
                               }
                             })

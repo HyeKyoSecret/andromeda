@@ -1718,7 +1718,13 @@ router.get('/story/prepareTraversal', (req, res) => {
               candidate[i].sumWeight = candidate[i].timeWeight + candidate[i].zanWeight + candidate[i].selfWeight + candidate[i].friendWeight + candidate[i].nodeWeight
             }
             rank(candidate, 'sumWeight')
-            res.send({error: false, result: candidate})
+            let result = []
+            candidate.forEach((item) => {
+              result.push({
+                id: item.id
+              })
+            })
+            res.send({error: false, result: result})
           } else {
             res.send({error: false, result: []})
           }

@@ -38,6 +38,7 @@
       }
     },
     created: function () {
+      console.log('执行')
       this.fetchData('root')
       this.fetchData('story')
     },
@@ -199,6 +200,14 @@
             background: $icon-blue;
             opacity: 0.3;
           }
+        }
+      }
+    }
+    @media (min-width: 768px) {
+      .notice-bar, .button-bar {
+        max-width: 700px;
+        .foot-menu {
+          max-width: 700px;
         }
       }
     }

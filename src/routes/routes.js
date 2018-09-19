@@ -50,17 +50,17 @@ export default [
         name: 'creation',
         component: resolve => require(['../pages/me/creation.vue'], resolve),
         meta: { requiresAuth: true, keepAlive: true },
-        beforeEnter: (to, from, next) => {
-          if (from.name !== 'myCreation') {
-            to.meta.keepAlive = false
-            next()
-          } else {
-            if (!to.meta.keepAlive) {
-              to.meta.keepAlive = true
-            }
-            next()
-          }
-        },
+        // beforeEnter: (to, from, next) => {
+        //   if (from.name !== 'myCreation') {
+        //     to.meta.keepAlive = false
+        //     next()
+        //   } else {
+        //     if (!to.meta.keepAlive) {
+        //       to.meta.keepAlive = true
+        //     }
+        //     next()
+        //   }
+        // },
         children: [
           {
             path: 'myCreation/:rootName',

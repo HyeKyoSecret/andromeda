@@ -1,5 +1,5 @@
 <template>
-  <div class="announcement-template" v-swipe="{methods: swipe}">
+  <div class="announcement-template">
     <div class="content">
       <div class="left">
         <img src="../../../img/photo/head.jpg">

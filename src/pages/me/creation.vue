@@ -38,7 +38,6 @@
       }
     },
     created: function () {
-      console.log('执行')
       this.fetchData('root')
       this.fetchData('story')
     },

@@ -83,8 +83,18 @@ export default [
       },
       {
         path: 'changeInfo',
+        name: 'changeInfo',
         component: resolve => require(['../pages/me/changeInfo.vue'], resolve),
-        meta: { requiresAuth: true, keepAlive: false }
+        meta: { requiresAuth: true, keepAlive: false },
+        beforeEnter: (to, from, next) => {
+          if (from.name === 'login') {
+            next({
+              path: '/'
+            })
+          } else {
+            next()
+          }
+        }
       }
     ]
   },
@@ -94,6 +104,7 @@ export default [
   },
   {
     path: '/login',
+    name: 'login',
     component: resolve => require(['../pages/register/login.vue'], resolve)
   },
   {

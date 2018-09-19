@@ -1,5 +1,5 @@
 <template>
-  <div class="my-creation-content"
+  <mt-loadmore :top-method="loadTop" class="my-creation-content" ref="loadmore"
        v-infinite-scroll="loadMore"
        infinite-scroll-disabled = true
        infinite-scroll-distance = "10">
@@ -35,7 +35,7 @@
         </div>
       </div>
     </router-link>
-  </div>
+  </mt-loadmore>
 </template>
 <script>
   export default {
@@ -50,6 +50,9 @@
             this.$emit('loadMore', 'story')
           }
         }
+      },
+      loadTop () {
+        this.$refs.loadmore.onTopLoaded()
       },
       setErrorImg (x) {
         this.story[x].cover = require('../../../img/photo/defaultPic.png')

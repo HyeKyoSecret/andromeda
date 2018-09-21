@@ -1,5 +1,5 @@
 <template>
-    <div class="friendList">
+    <div class="focusList">
         <notice title="我的关注"></notice>
         <div class="search">
             <span class="magnifier"><img src="../../img/icon/magnifier.png" /></span>
@@ -32,7 +32,7 @@
         <!--</div>-->
         <!--</div>-->
         <div class="friend-list" v-show="flVis">
-            <div class="one-friend" v-for='(item, index) in friendList' @click='goPeoplePage(item.id)'>
+            <div class="one-friend" v-for='(item, index) in focusList' @click='goPeoplePage(item.id)'>
                 <div class="head"><img :src="item.headImg" @error="setErrorImg(index, 'friend')"/></div>
                 <div class="name">{{item.name}}</div>
             </div>
@@ -41,7 +41,7 @@
 </template>
 <style lang="scss" scoped>
     @import "../../scss/config";
-    .friendList{
+    .focusList{
         position: absolute;
         top: 0;
         left: 0;
@@ -161,7 +161,7 @@
         deleteBtn: false,  // 删除按钮
         searchBoard: false,  // 搜索版
         cancelBtn: false,
-        friendList: [],
+        focusList: [],
         searchList: [],
         flVis: true
       }
@@ -176,12 +176,12 @@
     },
     methods: {
       getData () {
-        Axios.get('/user/getFriendList', {
+        Axios.get('/user/getFocusList', {
           params: {
             user: this.$route.params.user
           }
         }).then(response => {
-          this.friendList = response.data.result
+          this.focusList = response.data.result
         })
       },
       startSearch () {
@@ -221,7 +221,7 @@
       },
       setErrorImg (index, val) {
         if (val === 'friend') {
-          this.friendList[index].headImg = require('../../img/images/defaultHeadImg.png')
+          this.focusList[index].headImg = require('../../img/images/defaultHeadImg.png')
         } else if (val === 'search') {
           this.searchList[index].headImg = require('../../img/images/defaultHeadImg.png')
         }

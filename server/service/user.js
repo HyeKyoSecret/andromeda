@@ -534,7 +534,6 @@ router.get('/user/getFriendList', (req, res) => {
   }
   User.findOne({username: loginUser})
     .populate('friendList.friend')
-    .populate()
     .exec((err, doc) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -546,6 +545,35 @@ router.get('/user/getFriendList', (req, res) => {
               id: friend.friend.id,
               active: false,
               headImg: tool.formImg(friend.friend.headImg)
+            })
+          })
+          res.send({error: false, result: result})
+        } else {
+          res.send({error: true, type: 'user', message: '发生错误，请重新登录'})
+        }
+      }
+    })
+})
+router.get('/user/getFocusList', (req, res) => {
+  let result = []
+  let loginUser
+  if (req.session.user) {
+    loginUser = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    loginUser = req.cookies.And.user
+  }
+  User.findOne({username: loginUser})
+    .populate('focus')
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      } else {
+        if (doc) {
+          doc.focus.forEach(function (item) {
+            result.push({
+              name: item.nickname,
+              id: item.id,
+              headImg: tool.formImg(item.headImg)
             })
           })
           res.send({error: false, result: result})

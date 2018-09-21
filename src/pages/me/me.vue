@@ -337,7 +337,7 @@
           {
             name: '我的关注',
             icon: require('../../img/icon/my_focus.png'),
-            path: '/people/message/words'
+            path: '/people/focusList'
           },
           {
             name: '我的好友',
@@ -364,7 +364,7 @@
           {
             name: '的关注',
             icon: require('../../img/icon/my_focus.png'),
-            path: '/people/message/words'
+            path: '/people/focusList'
           },
           {
             name: '共同好友',
@@ -666,7 +666,7 @@
                 duration: 1000
               })
             } else {
-              this.getFriendship()
+              this.getFriendshipAndFocus()
               Toast({
                 message: response.data.message,
                 position: 'middle',

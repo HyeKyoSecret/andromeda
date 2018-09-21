@@ -963,6 +963,7 @@ router.get('/user/getMyCreationNode', (req, res) => {
                 result.date = moment(o.date).format('YYYY年M月D日 HH:mm')
                 result.user = loginUser === user.id
                 result.zan = o.zan ? o.zan.length : 0
+                result.writePermit = o.writePermit
                 if (user.myCreation && user.myCreation.story) {
                   for (let i = 0; i < user.myCreation.story.length; i++) {
                     if (user.myCreation.story[i].root.name === root) {

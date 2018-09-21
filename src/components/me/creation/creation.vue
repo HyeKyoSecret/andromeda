@@ -40,7 +40,7 @@
 <script>
   export default {
     name: 'creation',
-    props: ['story'],
+    props: ['story', 'type'],
     methods: {
       loadMore () {
         if (this.story.length > 0) {
@@ -52,6 +52,11 @@
         }
       },
       loadTop () {
+        if (this.type) {
+          this.$emit('refresh', 'root')
+        } else {
+          this.$emit('refresh', 'story')
+        }
         this.$refs.loadmore.onTopLoaded()
       },
       setErrorImg (x) {

@@ -66,7 +66,7 @@
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
   import lrz from 'lrz'
-  import { Toast, Indicator } from 'mint-ui'
+  import { Toast, Indicator, MessageBox } from 'mint-ui'
   export default {
     components: {
       notice,
@@ -93,28 +93,28 @@
       }
     },
     watch: {
-      // writePermit: function (curVal) {
-      //   if (curVal !== false) {
-      //     MessageBox.confirm('开放自由续写后将无法再关闭，确认开放吗?').then(action => {
-      //       Axios.post('/story/changeWritePermit', {
-      //         rootName: this.result.root.name,
-      //         writePermit: curVal
-      //       }).then((response) => {
-      //         if (response.data === 'error') {
-      //           Toast({
-      //             message: '网络错误，请稍后再试',
-      //             position: 'middle',
-      //             duration: 1000
-      //           })
-      //         } else {
-      //           this.writeAuthorized = true
-      //         }
-      //       })
-      //     }).catch(action => {
-      //       this.writePermit = false
-      //     })
-      //   }
-      // }
+      writePermit: function (curVal) {
+        if (curVal !== false) {
+          MessageBox.confirm('开放自由续写后将无法再关闭，确认开放吗?').then(action => {
+            Axios.post('/story/changeWritePermit', {
+              rootName: this.$route.params.rootName,
+              writePermit: curVal
+            }).then((response) => {
+              if (response.data === 'error') {
+                Toast({
+                  message: '网络错误，请稍后再试',
+                  position: 'middle',
+                  duration: 1000
+                })
+              } else {
+                this.writeAuthorized = true
+              }
+            })
+          }).catch(action => {
+            this.writePermit = false
+          })
+        }
+      }
     },
     created: function () {
       this.getMyCreationNode()
@@ -269,6 +269,8 @@
         }).then(response => {
           if (!response.data.error) {
             this.result = response.data.result
+            this.writeAuthorized = response.data.result.writePermit
+            this.writePermit = response.data.result.writePermit
             this.imgSrc = response.data.result.coverImg
           } else {
             this.$emit('error')

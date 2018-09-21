@@ -82,6 +82,11 @@ export default [
         meta: { requiresAuth: true, keepAlive: false }
       },
       {
+        path: 'focusList',
+        component: resolve => require(['../pages/me/focusList.vue'], resolve),
+        meta: { requiresAuth: true, keepAlive: false }
+      },
+      {
         path: 'changeInfo',
         name: 'changeInfo',
         component: resolve => require(['../pages/me/changeInfo.vue'], resolve),

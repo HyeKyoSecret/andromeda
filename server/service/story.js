@@ -1007,7 +1007,7 @@ router.post('/story/changeWritePermit', (req, res) => {
   'use strict'
   let writePermit = req.body.writePermit
   if (typeof writePermit === 'boolean') {
-    Root.update({name: req.body.rootName}, {$set: {'writePermit': writePermit}})
+    Root.updateOne({name: req.body.rootName}, {$set: {'writePermit': writePermit}})
       .exec((err) => {
         if (err) {
           res.send('error')

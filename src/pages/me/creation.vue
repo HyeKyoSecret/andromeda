@@ -7,7 +7,7 @@
         <div ><span class="story" :class="{active: myStoryActive}" @click="myStory">{{stitle}}</span></div>
       </div>
     </div>
-        <creation :story="myRootActive ? root : story"  v-on:loadMore="fetchData" class="creation"></creation>
+        <creation :story="myRootActive ? root : story" :type='myRootActive' v-on:loadMore="fetchData" v-on:refresh="refresh" class="creation"></creation>
     <router-view v-on:refreshImg="refreshImage"></router-view>
     <foot-menu></foot-menu>
   </div>
@@ -42,6 +42,10 @@
       this.fetchData('story')
     },
     methods: {
+      refresh (type) {
+        this[type] = []
+        this.fetchData(type)
+      },
       fetchData (type) {
         if (this.$route.name === 'creation') {
           Indicator.open({

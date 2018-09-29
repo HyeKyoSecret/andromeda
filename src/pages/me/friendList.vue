@@ -96,7 +96,7 @@
     }
     .search-board {
       width: 100%;
-      min-height: calc(100vh - 84px);
+      min-height: calc(100vh - 250px);
       background: $bg-gray;
     }
     .star-friend {

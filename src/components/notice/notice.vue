@@ -113,6 +113,7 @@
       top: 42px;
       background: white;
       width: 100px;
+      z-index: 999  ;
       .entry-trangle-top{
         position:absolute;
         top: -9px;

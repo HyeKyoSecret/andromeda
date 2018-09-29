@@ -1,13 +1,17 @@
 <template>
   <div>
-    <v-touch tag="div" class="hello" v-on:swipeleft="onSwipeLeft">Swipe me!</v-touch>
+    abc
   </div>
 </template>
 <script>
+  import pinyin from 'pinyin'
   export default {
+    created: function () {
+      this.a()
+    },
     methods: {
-      onSwipeLeft () {
-        alert('swip')
+      a () {
+        console.log(pinyin('牛腩'))
       }
     }
   }

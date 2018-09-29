@@ -15,22 +15,6 @@
         </div>
       </div>
     </div>
-    <!--<div class="star-friend">-->
-    <!--<span><thumb src="../../thumb/icon/gray_star.png" /></span>-->
-    <!--<span>星标好友</span>-->
-    <!--</div>-->
-    <!--<div class="friend-list">-->
-    <!--<div class="one-friend">-->
-    <!--<div class="icon"><thumb src="../../thumb/icon/greenbingo.png" /></div>-->
-    <!--<div class="head"><thumb src="../../thumb/photo/2b.png" /></div>-->
-    <!--<div class="name">2B</div>-->
-    <!--</div>-->
-    <!--<div class="one-friend">-->
-    <!--<div class="icon"><thumb src="../../thumb/icon/greenbingo.png" /></div>-->
-    <!--<div class="head"><thumb src="../../thumb/photo/2b.png" /></div>-->
-    <!--<div class="name">2B</div>-->
-    <!--</div>-->
-    <!--</div>-->
     <div class="friend-list" v-show="flVis">
       <div class="one-friend" v-for='(item, index) in friendList' @click='goPeoplePage(item.id)'>
         <div class="head"><img :src="item.headImg" @error="setErrorImg(index, 'friend')"/></div>
@@ -96,7 +80,7 @@
     }
     .search-board {
       width: 100%;
-      min-height: calc(100vh - 84px);
+      min-height: calc(100vh - 250px);
       background: $bg-gray;
     }
     .star-friend {

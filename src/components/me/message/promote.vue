@@ -160,6 +160,7 @@
         Axios.get('/user/getPromote')
           .then(response => {
             this.promoteList = response.data.result
+            this.promoteList = this.promoteList.reverse()
           })
       },
       deletePromote (index, id) {

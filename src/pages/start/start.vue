@@ -1,17 +1,8 @@
 <template>
   <div class="start" @click.self="goBack">
     <div class="menu">
-      <router-link tag='div' to="/buildStory" class="button-pen">
-        <img src="../../img/icon/white_pen.png" />
-      </router-link>
-      <router-link tag='div' to="/buildStory" class="button-book">
-        <img src="../../img/icon/white_book.png" />
-      </router-link>
-      <router-link tag='div' to="/buildStory" class="button-trail">
-        <img src="../../img/icon/white_trail.png" />
-      </router-link>
-      <router-link tag='div' to="/buildStory" class="button-search">
-        <img src="../../img/icon/white_search.png" />
+      <router-link tag='div' :to="item.path" :class="item.class" v-for="item in menu" :key="item.class">
+        <img :src="item.img" />
       </router-link>
     </div>
   </div>
@@ -83,13 +74,50 @@
 }
 </style>
 <script>
+  import Axios from 'axios'
   export default {
     data () {
-      return {}
+      return {
+        menu: [
+          {
+            class: 'button-pen',
+            path: '/buildStory',
+            img: require('../../img/icon/white_pen.png')
+          },
+          {
+            class: 'button-book',
+            path: '',
+            img: require('../../img/icon/white_book.png')
+          },
+          {
+            class: 'button-trail',
+            path: '/buildStory',
+            img: require('../../img/icon/white_trail.png')
+          },
+          {
+            class: 'button-search',
+            path: '/search',
+            img: require('../../img/icon/white_search.png')
+          }
+        ],
+        userId: ''
+      }
+    },
+    created: function () {
+      this.getData()
     },
     methods: {
       goBack: function () {
         this.$router.go(-1)
+      },
+      getData () {
+        Axios.get('/register/checkLogin')
+          .then(response => {
+            if (response.data.login) {
+              this.userId = response.data.user
+              this.menu[1].path = `/people/${this.userId}/subscribe`
+            }
+          })
       }
     }
   }

@@ -223,7 +223,7 @@ router.get('/register/checkLogin', (req, res) => {
 })
 router.get('/register/checkUser', (req, res) => {
   let user = req.query.user
-  let userReg = /^U([0-9]){7}$/
+  let userReg = /^([0-9]){7}$/
   let loginUser
   let sex   // 性别
   if (req.session.user) {        // 获取当前登录信息

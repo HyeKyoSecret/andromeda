@@ -11,10 +11,10 @@
     </span>
     <div v-if="more && menuActive" class="menu">
       <div class="entry-trangle-top"></div>
-      <div class="content" v-for="item in menuList">
+      <router-link :to="item.path" tag="div" class="content" v-for="item in menuList" :key="item.name">
         <span class="menu-icon"><img :src="item.icon" alt="">
         </span><span class="menu-word">{{item.label}}</span>
-      </div>
+      </router-link>
     </div>
   </div>
 </template>
@@ -27,7 +27,14 @@
           {
             name: 'report',
             label: '举报',
-            icon: require('../../img/icon/report.png')
+            icon: require('../../img/icon/report.png'),
+            path: '/report'
+          },
+          {
+            name: 'addFriend',
+            label: '添加好友',
+            icon: require('../../img/icon/add.png'),
+            path: '/addFriend'
           }
         ],
         menuList: [],
@@ -47,11 +54,12 @@
       buildMenuList () {
         if (this.more) {
           for (let i = 0; i < this.menu.length; i++) {
-            for (let j = 0; i < this.more.length; j++) {
+            for (let j = 0; j < this.more.length; j++) {
               if (this.more[j] === this.menu[i].name) {
                 this.menuList.push({
                   label: this.menu[i].label,
-                  icon: this.menu[i].icon
+                  icon: this.menu[i].icon,
+                  path: this.menu[i].path
                 })
                 break
               }
@@ -102,12 +110,12 @@
     .menu {
       position: absolute;
       right: 3px;
-      top: 45px;
+      top: 42px;
       background: white;
       width: 100px;
       .entry-trangle-top{
         position:absolute;
-        top:-10px;
+        top: -9px;
         left:80px;
         width:0;
         height:0;
@@ -128,7 +136,7 @@
         .menu-icon {
           flex: 2;
           img {
-            vertical-align: middle;
+            padding-top: 10px;
             width: 20px;
             margin-left: 5px;
           }

@@ -147,7 +147,7 @@ UserSchema.pre('save', function (next) {
     if (error) {
       return next(error)
     }
-    doc.id = 'U' + counter.seq
+    doc.id = counter.seq
     next()
   })
 })

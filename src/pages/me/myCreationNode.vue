@@ -94,7 +94,7 @@
     },
     watch: {
       writePermit: function (curVal) {
-        if (curVal !== false) {
+        if (curVal) {
           MessageBox.confirm('开放自由续写后将无法再关闭，确认开放吗?').then(action => {
             Axios.post('/story/changeWritePermit', {
               rootName: this.$route.params.rootName,
@@ -271,6 +271,12 @@
             this.result = response.data.result
             this.writeAuthorized = response.data.result.writePermit
             this.writePermit = response.data.result.writePermit
+            if (this.writeAuthorized === undefined) {
+              this.writeAuthorized = true     // 防止非自己创作的故事返回undefined时被认为是false
+            }
+            if (this.writePermit === undefined) {
+              this.writePermit = true
+            }
             this.imgSrc = response.data.result.coverImg
           } else {
             this.$emit('error')

@@ -108,6 +108,10 @@ export default [
     component: resolve => require(['../pages/register/register.vue'], resolve)
   },
   {
+    path: '/addFriend',
+    component: resolve => require(['../pages/others/addFriend.vue'], resolve)
+  },
+  {
     path: '/login',
     name: 'login',
     component: resolve => require(['../pages/register/login.vue'], resolve)

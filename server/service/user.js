@@ -614,6 +614,89 @@ router.post('/user/searchFriend', (req, res) => {
       }
     })
 })
+router.post('/user/searchFocus', (req, res) => {
+  let content = req.body.content
+  let user = req.body.user
+  let result = []
+  User.findOne({id: user})
+    .populate('focus')
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      } else {
+        if (doc) {
+          doc.focus.forEach((item) => {
+            'use strict'
+            let reg = new RegExp(content, 'gi')
+            if (reg.test(item.nickname)) {
+              result.push({
+                name: item.nickname,
+                id: item.id,
+                active: false,
+                headImg: tool.formImg(item.headImg)
+              })
+            }
+          })
+          res.send({error: false, result: result})
+        } else {
+          res.send({error: false, result: result})
+        }
+      }
+    })
+})
+router.post('/user/searchFocus', (req, res) => {
+  let content = req.body.content
+  let user = req.body.user
+  let result = []
+  User.findOne({id: user})
+    .populate('focus')
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      } else {
+        if (doc) {
+          doc.focus.forEach((item) => {
+            'use strict'
+            let reg = new RegExp(content, 'gi')
+            if (reg.test(item.nickname)) {
+              result.push({
+                name: item.nickname,
+                id: item.id,
+                active: false,
+                headImg: tool.formImg(item.headImg)
+              })
+            }
+          })
+          res.send({error: false, result: result})
+        } else {
+          res.send({error: false, result: result})
+        }
+      }
+    })
+})
+router.post('/user/searchPeople', (req, res) => {
+  let content = req.body.content
+  let result = []
+  let reg = new RegExp(content, 'gi')
+  User.findOne({nickname: reg})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      } else {
+        if (doc) {
+          result.push({
+            name: doc.nickname,
+            id: doc.id,
+            active: false,
+            headImg: tool.formImg(doc.headImg)
+          })
+          res.send({error: false, result: result})
+        } else {
+          res.send({error: false, result: result})
+        }
+      }
+    })
+})
 router.post('/user/changeBirthday', (req, res) => {
   'use strict'
   let date = req.body.date
@@ -791,7 +874,7 @@ router.get('/user/getMyCreation', (req, res) => {
     return arr
   }
   if (user) {
-    let userReg = /^U([0-9]){7}$/
+    let userReg = /^([0-9]){7}$/
     if (userReg.test(user)) {
       if (type === 'root') {
         User.findOne({id: user})

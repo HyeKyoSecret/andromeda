@@ -556,7 +556,7 @@
                 this.userId = response.data.user
                 this.follower = response.data.follower
                 this.userStatus = 'isUser'
-                let reg = new RegExp('^U')
+                let reg = /^([0-9]){7}$/
                 for (let i = 0; i < this.operation.length; i++) { // 修改path
                   let splitPath = this.operation[i].path.split('/')
                   if (!reg.test(splitPath[2])) {
@@ -594,7 +594,7 @@
               this.userId = res.data.user.userId
               this.imgSrc = res.data.user.headImg
               this.follower = res.data.user.follower
-              let reg = new RegExp('^U')
+              let reg = /^([0-9]){7}$/
               for (let i = 0; i < this.operation.length; i++) { // 修改path
                 let splitPath = this.operation[i].path.split('/')
                 if (!reg.test(splitPath[2])) {

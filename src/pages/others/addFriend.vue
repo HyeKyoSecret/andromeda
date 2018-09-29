@@ -1,9 +1,9 @@
 <template>
   <div class="friendList">
-    <notice title="我的好友" v-bind:more="moreList"></notice>
+    <notice title="查找用户" v-bind:more="moreList"></notice>
     <div class="search">
       <span class="magnifier"><img src="../../img/icon/magnifier.png" /></span>
-      <span class="searchbar"><input type="text" placeholder="搜索" @focus="startSearch" @input="searchFriend" v-model="search"></span>
+      <span class="searchbar"><input type="text" placeholder="搜索用户昵称" @focus="startSearch" @input="searchFriend" v-model="search"></span>
       <span class="delete" v-if="deleteBtn" @click="deleteSearch"><img src="../../img/icon/delete.png"></span>
       <span class="cancel" v-if="cancelBtn" @click="cancelSearch">取消</span>
     </div>
@@ -167,24 +167,12 @@
         moreList: ['addFriend']
       }
     },
-    created: function () {
-      this.getData()
-    },
     watch: {
       search: function (val) {
         val.length > 0 ? this.deleteBtn = true : this.deleteBtn = false
       }
     },
     methods: {
-      getData () {
-        Axios.get('/user/getFriendList', {
-          params: {
-            user: this.$route.params.user
-          }
-        }).then(response => {
-          this.friendList = response.data.result
-        })
-      },
       startSearch () {
         this.searchList = ''
         this.searchBoard = true
@@ -192,8 +180,7 @@
         this.flVis = false
       },
       searchFriend: debounce(function () {
-        Axios.post('/user/searchFriend', {
-          user: this.$route.params.user,
+        Axios.post('/user/searchPeople', {
           content: this.search
         }).then(response => {
           if (!response.data.error) {

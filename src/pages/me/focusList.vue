@@ -3,7 +3,7 @@
         <notice title="我的关注"></notice>
         <div class="search">
             <span class="magnifier"><img src="../../img/icon/magnifier.png" /></span>
-            <span class="searchbar"><input type="text" placeholder="搜索" @focus="startSearch" @input="searchFriend" v-model="search"></span>
+            <span class="searchbar"><input type="text" placeholder="搜索" @focus="startSearch" @input="searchFocus" v-model="search"></span>
             <span class="delete" v-if="deleteBtn" @click="deleteSearch"><img src="../../img/icon/delete.png"></span>
             <span class="cancel" v-if="cancelBtn" @click="cancelSearch">取消</span>
         </div>
@@ -190,8 +190,8 @@
         this.cancelBtn = true
         this.flVis = false
       },
-      searchFriend: debounce(function () {
-        Axios.post('/user/searchFriend', {
+      searchFocus: debounce(function () {
+        Axios.post('/user/searchFocus', {
           user: this.$route.params.user,
           content: this.search
         }).then(response => {

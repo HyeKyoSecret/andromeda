@@ -122,6 +122,26 @@ const UserSchema = new Schema({
       }]
     }
   ],
+  history: [
+    {
+      date: {
+        type: Date, default: Date.now
+      },
+      rootPack: [
+        {
+          rootId: {
+            type: Schema.Types.ObjectId,
+            ref: 'StoryRoot'
+          },
+          storyId: [ {
+            type: Schema.Types.ObjectId,
+            ref: 'Story'
+          }
+          ]
+        }
+      ]
+    }
+  ],
   commentTo: [{
     type: Schema.Types.ObjectId,
     ref: 'Comment'

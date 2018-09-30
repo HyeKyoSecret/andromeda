@@ -4,7 +4,23 @@
   </div>
 </template>
 <script>
-
+  export default {
+    data () {
+      return {
+        time: null
+      }
+    },
+    created: function () {
+      this.getTime()
+    },
+    methods: {
+      getTime () {
+        let now = new Date()
+        this.time = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
+        console.log(this.time)
+      }
+    }
+  }
 </script>
 <style lang="scss">
 .hello {

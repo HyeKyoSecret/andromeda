@@ -787,10 +787,15 @@
       addHistory () {
         Axios.post('/user/addHistory', {
           id: this.$route.params.id
+        }).then(response => {
+          if (response.data.error) {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
+          }
         })
-          .then(response => {
-            console.log(response.data)
-          })
       }
 //      getNextNode () {
 //        Axios.get('/story/getNextNode', {

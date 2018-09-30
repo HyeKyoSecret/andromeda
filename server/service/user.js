@@ -1626,19 +1626,182 @@ router.post('/user/addHistory', (req, res) => {
   } else if (req.cookies.And) {
     user = req.cookies.And.user
   }
+  const rootReg = /^R([0-9]){7}$/
+  const storyReg = /^S([0-9]){7}$/
+  let now = new Date()
+  let today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
+  let rootId
+  let storyId
+  let history
+  async function getRootId () {
+    return new Promise((resolve, reject) => {
+      if (rootReg.test(id)) {
+        Root.findOne({id: id})
+          .exec((err, root) => {
+            if (err) {
+              console.log(err)
+            }
+            if (root) {
+              resolve(root._id)
+            } else {
+              reject(null)
+            }
+          })
+      } else if (storyReg.test(id)) {
+        Story.findOne({id: id})
+          .populate('root')
+          .exec((err, story) => {
+            if (err) {
+              console.log(err)
+            }
+            if (story) {
+              Root.findOne({_id: story.root})
+                .exec((err, root) => {
+                  if (err) {
+                    console.log(err)
+                  }
+                  if (root) {
+                    resolve(root._id)
+                  } else {
+                    reject(null)
+                  }
+                })
+            } else {
+              reject(null)
+            }
+          })
+      } else {
+        reject(null)
+      }
+    })
+  }
+  async function getStoryId () {
+    return new Promise((resolve, reject) => {
+      if (rootReg.test(id)) {
+        Root.findOne({id: id})
+          .exec((err, root) => {
+            if (err) {
+              reject(null)
+            } else {
+              if (root) {
+                resolve(root._id)
+              } else {
+                reject(null)
+              }
+            }
+          })
+      } else if (storyReg.test(id)) {
+        Story.findOne({id: id})
+          .exec((err, story) => {
+            if (err) {
+              reject(null)
+            } else {
+              if (story) {
+                resolve(story._id)
+              } else {
+                reject(null)
+              }
+            }
+          })
+      }
+    })
+  }
   User.findOne({username: user}, (err, doc) => {
     if (err) {
       res.send({error: true, type: 'DB', message: '发生错误,请稍后再试'})
     } else {
       if (doc) {
         if (doc.history && doc.history.length) {
-
-        } else {
-          const rootReg = /^R([0-9]){7}$/
-          const storyReg = /^S([0-9]){7}$/
-          if (rootReg.test(id)) {
-            User.findOne()
+          if (doc.history[doc.history.length - 1].date.getTime() === today.getTime()) { // 当前记录中最新的项目是否是今天
+            (async function () {
+              let tempHistory = doc.history
+              let newHistory = tempHistory[tempHistory.length - 1]
+              let rootId = await getRootId()
+              let storyId = await getStoryId()
+              for (let i = 0; i < newHistory.rootPack.length; i++) {
+                if (newHistory.rootPack[i].rootId.toString() === rootId.toString()) {
+                  newHistory.rootPack[i].story.forEach((item, index) => {
+                    if (item.storyId.toString() === storyId.toString()) {
+                      item.date = now
+                    } else if (index === newHistory.rootPack[i].story.length - 1) {
+                      newHistory.rootPack[i].story.push({
+                        storyId: storyId,
+                        date: now
+                      })
+                    }
+                  })
+                } else {
+                  newHistory.rootPack.push({
+                    rootId: rootId,
+                    story: [{
+                      storyId: storyId,
+                      date: now
+                    }
+                    ]
+                  })
+                }
+              }
+              tempHistory[tempHistory.length - 1] = newHistory
+              User.updateOne({username: user}, {$set: {'history': tempHistory}})
+                .exec((err2) => {
+                  if (err2) {
+                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                  } else {
+                    res.send({error: false})
+                  }
+                })
+            })()
+          } else {
+            (async function () {
+              let tempHistory = doc.history
+              let rootId = await getRootId()
+              let storyId = await getStoryId()
+              tempHistory.push({
+                date: today,
+                rootPack: [
+                  {
+                    rootId: rootId,
+                    story: [{
+                      storyId: storyId,
+                      date: now
+                    }]
+                  }
+                ]
+              })
+              User.updateOne({username: user}, {$set: {'history': tempHistory}})
+                .exec((err3) => {
+                  if (err3) {
+                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                  } else {
+                    res.send({error: false})
+                  }
+                })
+            })()
           }
+        } else {
+          (async function () {
+            history = [{
+              date: today,
+              rootPack: [
+                {
+                  rootId: await getRootId(),
+                  story: [{
+                    storyId: await getStoryId(),
+                    date: now
+                  }],
+                  date: now
+                }
+              ]
+            }]
+            User.updateOne({username: user}, {$set: {'history': history}})
+              .exec((err2) => {
+                if (err2) {
+                  res.send({error: true, type: 'DB', message: '发生错误,请稍后再试'})
+                } else {
+                  res.send({error: false})
+                }
+              })
+          })()
         }
       } else {
         res.send({error: true, type: 'value', message: '发生错误，请尝试重新登录'})

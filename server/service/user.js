@@ -1618,4 +1618,32 @@ router.post('/user/cancelFocus', (req, res) => {
     res.send({error: true, message: '登录后才可进行操作', type: 'login'})
   }
 })
+router.post('/user/addHistory', (req, res) => {
+  let id = req.body.id
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  User.findOne({username: user}, (err, doc) => {
+    if (err) {
+      res.send({error: true, type: 'DB', message: '发生错误,请稍后再试'})
+    } else {
+      if (doc) {
+        if (doc.history && doc.history.length) {
+
+        } else {
+          const rootReg = /^R([0-9]){7}$/
+          const storyReg = /^S([0-9]){7}$/
+          if (rootReg.test(id)) {
+            User.findOne()
+          }
+        }
+      } else {
+        res.send({error: true, type: 'value', message: '发生错误，请尝试重新登录'})
+      }
+    }
+  })
+})
 module.exports = router

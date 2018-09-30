@@ -125,7 +125,7 @@ const UserSchema = new Schema({
   history: [
     {
       date: {
-        type: Date, default: Date.now
+        type: Date
       },
       rootPack: [
         {
@@ -133,9 +133,14 @@ const UserSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: 'StoryRoot'
           },
-          storyId: [ {
-            type: Schema.Types.ObjectId,
-            ref: 'Story'
+          story: [ {
+            storyId: {
+              type: Schema.Types.ObjectId,
+              ref: 'Story'
+            },
+            date: {
+              type: Date
+            }
           }
           ]
         }

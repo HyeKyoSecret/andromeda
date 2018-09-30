@@ -401,9 +401,9 @@
       this.getMark() // 获取书签
       this.ftNode = this.$route.params.id
       this.fetchMenuData()
-//      this.getNextNode()
       this.getDownNode()
       this.getFrontNode()
+      this.addHistory()
     },
     watch: {
       '$route' (to, from) {
@@ -743,7 +743,7 @@
         this.menuActive = false
       },
       showMarkMenu () {
-        if (!this.markList.story.length) {
+        if (!this.markList.story || this.markList.story.length === 0) {
           Toast({
             message: '无可用书签',
             position: 'middle',
@@ -783,6 +783,14 @@
       },
       openComment () {
         this.$router.push(this.$route.path + '/comment')
+      },
+      addHistory () {
+        Axios.post('/user/addHistory', {
+          id: this.$route.params.id
+        })
+          .then(response => {
+            console.log(response.data)
+          })
       }
 //      getNextNode () {
 //        Axios.get('/story/getNextNode', {

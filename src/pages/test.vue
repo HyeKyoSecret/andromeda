@@ -4,17 +4,7 @@
   </div>
 </template>
 <script>
-  import pinyin from 'pinyin'
-  export default {
-    created: function () {
-      this.a()
-    },
-    methods: {
-      a () {
-        console.log(pinyin('牛腩'))
-      }
-    }
-  }
+
 </script>
 <style lang="scss">
 .hello {

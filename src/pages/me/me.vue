@@ -347,7 +347,7 @@
           {
             name: '我的轨迹',
             icon: require('../../img/icon/my_trail.png'),
-            path: '/test'
+            path: '/people/history'
           }
         ],
         cOperation: [
@@ -369,11 +369,6 @@
           {
             name: '共同好友',
             icon: require('../../img/icon/my_friend.png'),
-            path: '/people/message/words'
-          },
-          {
-            name: '的轨迹',
-            icon: require('../../img/icon/my_trail.png'),
             path: '/people/message/words'
           }
         ],

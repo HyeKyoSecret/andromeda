@@ -8,6 +8,29 @@ let UserCountsSchema = new Schema({
   seq: { type: Number, default: 0 }
 })
 let UserCounts = mongoose.model('UserCounts', UserCountsSchema)
+const historySchema = new Schema({
+  date: {
+    type: Date
+  },
+  rootPack: [
+    {
+      rootId: {
+        type: Schema.Types.ObjectId,
+        ref: 'StoryRoot'
+      },
+      story: [ {
+        storyId: {
+          type: String
+        },
+        date: {
+          type: Date
+        }
+      }
+      ],
+      update: { type: Date }
+    }
+  ]
+}, { timestamps: { updateAt: 'updatedTime' } })
 const UserSchema = new Schema({
   date: { type: Date, default: Date.now },
   id: {type: String},
@@ -122,31 +145,7 @@ const UserSchema = new Schema({
       }]
     }
   ],
-  history: [
-    {
-      date: {
-        type: Date
-      },
-      rootPack: [
-        {
-          rootId: {
-            type: Schema.Types.ObjectId,
-            ref: 'StoryRoot'
-          },
-          story: [ {
-            storyId: {
-              type: Schema.Types.ObjectId,
-              ref: 'Story'
-            },
-            date: {
-              type: Date
-            }
-          }
-          ]
-        }
-      ]
-    }
-  ],
+  history: [historySchema],
   commentTo: [{
     type: Schema.Types.ObjectId,
     ref: 'Comment'
@@ -164,7 +163,7 @@ const UserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User'
   }]
-})
+}, {timestamps: {createdAt: 'created', updatedAt: 'updated'}})
 UserSchema.pre('save', function (next) {
   'use strict'
   let doc = this

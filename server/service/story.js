@@ -269,7 +269,6 @@ router.get('/story/getMenuData', (req, res) => {
   let getZan = async function (user) {
     let userId = await uid(user)
     if (rootReg.test(id)) {
-      // 444
       Root.findOne({id: id})
         .exec((err2, root) => {
           if (err2) {
@@ -1159,7 +1158,7 @@ router.get('/story/getSubscribe', (req, res) => {
             if (err) {
               reject()
             }
-            if (story.root) {
+            if (story && story.root) {
               resolve(story.root._id)
             } else {
               reject()

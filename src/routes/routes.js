@@ -72,6 +72,11 @@ export default [
         ]
       },
       {
+        path: 'history',
+        component: resolve => require(['../pages/me/history.vue'], resolve),
+        meta: { requiresAuth: true, keepAlive: false }
+      },
+      {
         path: 'subscribe',
         component: resolve => require(['../pages/me/subscribe.vue'], resolve),
         meta: { requiresAuth: true, keepAlive: false }

@@ -1630,8 +1630,6 @@ router.post('/user/addHistory', (req, res) => {
   const storyReg = /^S([0-9]){7}$/
   let now = new Date()
   let today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
-  let rootId
-  let storyId
   let history
   async function getRootId () {
     return new Promise((resolve, reject) => {
@@ -1675,37 +1673,6 @@ router.post('/user/addHistory', (req, res) => {
       }
     })
   }
-  async function getStoryId () {
-    return new Promise((resolve, reject) => {
-      if (rootReg.test(id)) {
-        Root.findOne({id: id})
-          .exec((err, root) => {
-            if (err) {
-              reject(null)
-            } else {
-              if (root) {
-                resolve(root._id)
-              } else {
-                reject(null)
-              }
-            }
-          })
-      } else if (storyReg.test(id)) {
-        Story.findOne({id: id})
-          .exec((err, story) => {
-            if (err) {
-              reject(null)
-            } else {
-              if (story) {
-                resolve(story._id)
-              } else {
-                reject(null)
-              }
-            }
-          })
-      }
-    })
-  }
   User.findOne({username: user}, (err, doc) => {
     if (err) {
       res.send({error: true, type: 'DB', message: '发生错误,请稍后再试'})
@@ -1717,27 +1684,28 @@ router.post('/user/addHistory', (req, res) => {
               let tempHistory = doc.history
               let newHistory = tempHistory[tempHistory.length - 1]
               let rootId = await getRootId()
-              let storyId = await getStoryId()
               for (let i = 0; i < newHistory.rootPack.length; i++) {
                 if (newHistory.rootPack[i].rootId.toString() === rootId.toString()) {
                   newHistory.rootPack[i].story.forEach((item, index) => {
-                    if (item.storyId.toString() === storyId.toString()) {
+                    if (item.storyId === id) {
                       item.date = now
+                      newHistory.rootPack[i].update = now
                     } else if (index === newHistory.rootPack[i].story.length - 1) {
                       newHistory.rootPack[i].story.push({
-                        storyId: storyId,
+                        storyId: id,
                         date: now
                       })
+                      newHistory.rootPack[i].update = now
                     }
                   })
                 } else {
                   newHistory.rootPack.push({
                     rootId: rootId,
                     story: [{
-                      storyId: storyId,
+                      storyId: id,
                       date: now
-                    }
-                    ]
+                    }],
+                    update: now
                   })
                 }
               }
@@ -1755,16 +1723,16 @@ router.post('/user/addHistory', (req, res) => {
             (async function () {
               let tempHistory = doc.history
               let rootId = await getRootId()
-              let storyId = await getStoryId()
               tempHistory.push({
                 date: today,
                 rootPack: [
                   {
                     rootId: rootId,
                     story: [{
-                      storyId: storyId,
+                      storyId: id,
                       date: now
-                    }]
+                    }],
+                    update: now
                   }
                 ]
               })
@@ -1786,10 +1754,10 @@ router.post('/user/addHistory', (req, res) => {
                 {
                   rootId: await getRootId(),
                   story: [{
-                    storyId: await getStoryId(),
+                    storyId: id,
                     date: now
                   }],
-                  date: now
+                  update: now
                 }
               ]
             }]
@@ -1808,5 +1776,56 @@ router.post('/user/addHistory', (req, res) => {
       }
     }
   })
+})
+router.get('/user/getHistory', (req, res) => {
+  let id = req.query.id
+  let result = []
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  let now = new Date()
+  let today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
+  User.findOne({id: id})
+    .populate('history.rootPack.rootId')
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      }
+      if (doc && doc.username === user) {
+        for (let i = 0; i < doc.history.length; i++) {
+          if (doc.history[i].date.getTime() === today.getTime()) {
+            result.push({
+              date: '今天',
+              rootPack: []
+            })
+          } else {
+            result.push({
+              date: moment(doc.history[i].date).fromNow(),
+              rootPack: []
+            })
+          }
+          for (let j = 0; j < doc.history[i].rootPack.length; j++) {
+            result[i].rootPack[j] = {
+              rootId: doc.history[i].rootPack[j].rootId.name,
+              coverImg: tool.formImg(doc.history[i].rootPack[j].rootId.coverImg),
+              story: [],
+              update: moment(doc.history[i].rootPack[j].update).format('HH:mm')
+            }
+            for (let k = 0; k < doc.history[i].rootPack[j].story.length; k++) {
+              result[i].rootPack[j].story[k] = {
+                storyId: doc.history[i].rootPack[j].story[k].storyId,
+                date: moment(doc.history[i].rootPack[j].story[k].date).fromNow()
+              }
+            }
+          }
+        }
+        res.send({error: false, result: result})
+      } else {
+        res.send({error: true, type: 'auth', message: '您无权访问'})
+      }
+    })
 })
 module.exports = router

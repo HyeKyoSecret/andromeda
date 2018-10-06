@@ -17,8 +17,7 @@
 <style lang='scss' scoped>
   @import "../../../scss/config";
   .word-template {
-    height: 100%;
-    min-height: calc(100vh - 82px);
+    min-height: calc(100vh - 200px);
     margin-top: 20px;
     .content {
       min-height: 100px;

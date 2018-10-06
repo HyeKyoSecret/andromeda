@@ -413,6 +413,7 @@
         this.fetchMenuData()
         this.getDownNode()
         this.getFrontNode()
+        this.addHistory()
       }
     },
     computed: {

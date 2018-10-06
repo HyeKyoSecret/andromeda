@@ -27,7 +27,7 @@
   .promote-template{
     margin-top:  10px;
     width: 100%;
-    min-height: calc(100vh - 82px);
+    min-height: calc(100vh - 150px);
     .promoteList {
       margin-top: 5px;
       &:last-child {

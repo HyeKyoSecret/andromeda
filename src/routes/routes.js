@@ -74,7 +74,15 @@ export default [
       {
         path: 'history',
         component: resolve => require(['../pages/me/history.vue'], resolve),
-        meta: { requiresAuth: true, keepAlive: false }
+        meta: { requiresAuth: true, keepAlive: true },
+        beforeEnter: (to, from, next) => {
+          if (from.name === 'people') {
+            to.meta.keepAlive = false
+            next()
+          } else {
+            next()
+          }
+        }
       },
       {
         path: 'subscribe',
@@ -133,7 +141,8 @@ export default [
     meta: { requiresAuth: true }
   },
   {
-    path: '/story/:id/',         // 阅读
+    path: '/story/:id/', // 阅读
+    name: 'story',
     component: resolve => require(['../pages/stories/readStory.vue'], resolve),
     children: [
       {

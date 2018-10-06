@@ -10,7 +10,7 @@
       <img src="../../img/icon/more.png" alt="">
     </span>
     <div v-if="more && menuActive" class="menu">
-      <div class="entry-trangle-top"></div>
+      <div class="entry-triangle-top"></div>
       <router-link :to="item.path" tag="div" class="content" v-for="item in menuList" :key="item.name">
         <span class="menu-icon"><img :src="item.icon" alt="">
         </span><span class="menu-word">{{item.label}}</span>
@@ -79,6 +79,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /*position: fixed;*/
+    /*top: 0;*/
+    /*left: 0;*/
+    /*width: 100%;*/
     span {
       text-align: center;
       font-size: 16px;
@@ -114,7 +118,7 @@
       background: white;
       width: 100px;
       z-index: 999  ;
-      .entry-trangle-top{
+      .entry-triangle-top{
         position:absolute;
         top: -9px;
         left:80px;

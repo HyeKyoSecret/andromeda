@@ -96,7 +96,6 @@
           }).catch((error) => {
             Indicator.close()
             if (error) {
-              console.log(error)
               Toast({
                 message: '请求超时',
                 position: 'middle',

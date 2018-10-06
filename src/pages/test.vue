@@ -7,7 +7,10 @@
   export default {
     data () {
       return {
-        time: null
+        a: {
+          b: 'hello',
+          c: 1
+        }
       }
     },
     created: function () {
@@ -15,9 +18,11 @@
     },
     methods: {
       getTime () {
-        let now = new Date()
-        this.time = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
-        console.log(this.time)
+        if (this.a.b === 'ello') {
+          console.log('123')
+        } else if (this.a.c === 1) {
+          console.log('456')
+        }
       }
     }
   }

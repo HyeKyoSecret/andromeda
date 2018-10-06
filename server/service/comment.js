@@ -186,7 +186,7 @@ router.post('/comment/addZan', (req, res) => {
                 } else {
                   doc.zan.push(people._id)
                   doc.save(err2 => {
-                    if(err2) {
+                    if (err2) {
                       res.send({error: true, message: '发生错误', type: 'DB'})
                     } else {
                       res.send({error: false, result: 'success'})

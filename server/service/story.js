@@ -1961,4 +1961,49 @@ router.post('/story/updateCover', function (req, res) {
       })
   })
 })
+router.post('/story/getStoryBrief', (req, res) => {
+  const story = req.body.story
+  let result = []
+  async function getContent (id) {
+    return new Promise((resolve, reject) => {
+      if (rootReg.test(id)) {
+        Root.findOne({id: id})
+          .exec((err, root) => {
+            if (err) {
+              reject(null)
+            } else {
+              if (root) {
+                resolve(root.content)
+              } else {
+                reject(null)
+              }
+            }
+          })
+      } else if (storyReg.test(id)) {
+        Story.findOne({id: id})
+          .exec((err, story) => {
+            if (err) {
+              reject(null)
+            } else {
+              resolve(story.content)
+            }
+          })
+      }
+    })
+  }
+  async function exe () {
+    try {
+      for (let i = 0; i < story.length; i++) {
+        let content = await getContent(story[i].storyId)
+        result[i] = content.slice(0, 40)
+      }
+      res.send({error: false, result: result})
+    } catch (e) {
+      if (e) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      }
+    }
+  }
+  exe()
+})
 module.exports = router

@@ -203,7 +203,7 @@ router.post('/user/addFriendRequest', (req, res) => {
               res.send({error: false, type: 'DB', message: '请不要重复发送好友请求'})
             } else {
               user.update({$push: {'pending.request': {'to': toUser._id, 'date': Date.now()}}})
-                .exec((err2) => {
+                .exec(err2 => {
                   if (err2) {
                     res.send({error: true, type: 'DB', message: '发生错误请稍后再试'})
                   }

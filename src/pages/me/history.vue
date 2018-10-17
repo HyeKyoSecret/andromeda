@@ -124,7 +124,6 @@
     .history-content {
       margin-top: 60px;
       margin-left: 40px;
-      min-height: calc(100vh - 110px);
       border-left: 1px solid $line-gray;
       .one-day {
         &:last-child:after {

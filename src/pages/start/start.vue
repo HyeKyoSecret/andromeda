@@ -91,7 +91,7 @@
           },
           {
             class: 'button-trail',
-            path: '/buildStory',
+            path: ``,
             img: require('../../img/icon/white_trail.png')
           },
           {
@@ -116,6 +116,7 @@
             if (response.data.login) {
               this.userId = response.data.user
               this.menu[1].path = `/people/${this.userId}/subscribe`
+              this.menu[2].path = `/people/${this.userId}/history`
             }
           })
       }

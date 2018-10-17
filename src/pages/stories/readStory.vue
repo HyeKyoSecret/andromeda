@@ -1,75 +1,75 @@
 <template>
   <div class="read-story">
-    <notice v-bind:title="storyInfo.title" v-bind:more="moreList"></notice>
-    <div class="marker" @click="changeMark" v-if="markList !== 'notShow'">
-      <img src="../../img/icon/marker_unselected.png" v-if="!markActive"/>
-      <img src="../../img/icon/marker_selected.png" v-else/>
-    </div>
-    <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight">
-      <div class="context" @click.self="closeMenu"><p v-for="item in storyInfo.content">{{item}}</p></div>
-      <div class="related-info">
-        <!--<div class="anchor"><thumb src="../../thumb/icon/anchor.png" /></div>-->
-        <div class="author-info">
-          <div class="like">
-            <router-link :to='storyInfo.authorId' tag="span">作者:&nbsp;{{storyInfo.author}}</router-link>
-            <span v-if="showFocus">
+      <notice v-bind:title="storyInfo.title" v-bind:more="moreList"></notice>
+      <div class="marker" @click="changeMark" v-if="markList !== 'notShow'">
+        <img src="../../img/icon/marker_unselected.png" v-if="!markActive"/>
+        <img src="../../img/icon/marker_selected.png" v-else/>
+      </div>
+      <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight">
+        <div class="context" @click.self="closeMenu"><p v-for="item in storyInfo.content">{{item}}</p></div>
+        <div class="related-info">
+          <!--<div class="anchor"><thumb src="../../thumb/icon/anchor.png" /></div>-->
+          <div class="author-info">
+            <div class="like">
+              <router-link :to='storyInfo.authorId' tag="span">作者:&nbsp;{{storyInfo.author}}</router-link>
+              <span v-if="showFocus">
           <img src="../../img/icon/redheart.png" v-if="hasFocus"/>
           <img src="../../img/icon/zan.png" v-else>
         </span>
-            <span v-else class="blank"></span>
+              <span v-else class="blank"></span>
+            </div>
+            <div class="time">{{storyInfo.date}}</div>
+            <!--<div class="follow-number">-->
+            <!--<span class="tri"><thumb src="../../thumb/icon/triangle_downward.png"/></span>-->
+            <!--<span class="number">1563</span>-->
+            <!--</div>-->
           </div>
-          <div class="time">{{storyInfo.date}}</div>
-          <!--<div class="follow-number">-->
-          <!--<span class="tri"><thumb src="../../thumb/icon/triangle_downward.png"/></span>-->
-          <!--<span class="number">1563</span>-->
-          <!--</div>-->
+        </div>
+      </v-touch>
+      <div class="read-foot-menu">
+        <div class="button" v-if='menuInfo.zan'>
+          <img v-if='menuInfo.zan' src="../../img/icon/yellowthumb.png" @click="cancelZan"/>
+          <div>{{menuInfo.num}}赞</div>
+        </div>
+        <div class="button" v-else>
+          <img src="../../img/icon/yellowthumb_unselected.png"  @click="addZan"/>
+          <div>{{menuInfo.num}}赞</div>
+        </div>
+        <div class="button" v-if='menuInfo.subscribe' @click="cancelSubscribe">
+          <img src="../../img/icon/yellowstar.png" />
+          <div>已订阅</div>
+        </div>
+        <div class="button" v-else @click="addSubscribe">
+          <img src="../../img/icon/yellowstar_unselected.png" />
+          <div>订阅</div>
+        </div>
+        <div class="write-continue">
+          <div><img src="../../img/icon/writecontinue.png" @click="writeStory"/></div>
+        </div>
+        <div class="button" @click="openComment">
+          <img src="../../img/icon/yellowcomment.png" />
+          <div>评论</div>
+        </div>
+        <div class="button" @click="showButton">
+          <img src="../../img/icon/yellowjump.png" />
+          <div>智能跳转</div>
         </div>
       </div>
-    </v-touch>
-    <div class="read-foot-menu">
-      <div class="button" v-if='menuInfo.zan'>
-        <img v-if='menuInfo.zan' src="../../img/icon/yellowthumb.png" @click="cancelZan"/>
-        <div>{{menuInfo.num}}赞</div>
+      <div class="jump-menu" v-if="menuActive">
+        <!--<div class="button">刚才阅读</div>-->
+        <!--<div class="button">最浅未读</div>-->
+        <!--<div class="button">最深以读</div>-->
+        <div class="button" v-if="jumpMenuRootCheck" @click="goStory(markRoot)">开头</div>
+        <!--<div class="button">锚定节点</div>-->
+        <!--<div class="button">热门节点</div>-->
+        <div class="button" @click="showMarkMenu">书签</div>
       </div>
-      <div class="button" v-else>
-        <img src="../../img/icon/yellowthumb_unselected.png"  @click="addZan"/>
-        <div>{{menuInfo.num}}赞</div>
-      </div>
-      <div class="button" v-if='menuInfo.subscribe' @click="cancelSubscribe">
-        <img src="../../img/icon/yellowstar.png" />
-        <div>已订阅</div>
-      </div>
-      <div class="button" v-else @click="addSubscribe">
-        <img src="../../img/icon/yellowstar_unselected.png" />
-        <div>订阅</div>
-      </div>
-      <div class="write-continue">
-        <div><img src="../../img/icon/writecontinue.png" @click="writeStory"/></div>
-      </div>
-      <div class="button" @click="openComment">
-        <img src="../../img/icon/yellowcomment.png" />
-        <div>评论</div>
-      </div>
-      <div class="button" @click="showButton">
-        <img src="../../img/icon/yellowjump.png" />
-        <div>智能跳转</div>
-      </div>
-    </div>
-    <div class="jump-menu" v-if="menuActive">
-      <!--<div class="button">刚才阅读</div>-->
-      <!--<div class="button">最浅未读</div>-->
-      <!--<div class="button">最深以读</div>-->
-      <div class="button" v-if="jumpMenuRootCheck" @click="goStory(markRoot)">开头</div>
-      <!--<div class="button">锚定节点</div>-->
-      <!--<div class="button">热门节点</div>-->
-      <div class="button" @click="showMarkMenu">书签</div>
-    </div>
-    <div class="complete"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markList.story.length && markMenu"><span @click="closeMarkMenu">取消</span></div>
-    <div class="mark-menu"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markList.story.length && markMenu">
-      <mt-cell-swipe
-        class="rq-mark"
-        v-for="(item, index) in markList.story" :key="item.id"
-        :right="[
+      <div class="complete"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markList.story.length && markMenu"><span @click="closeMarkMenu">取消</span></div>
+      <div class="mark-menu"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markList.story.length && markMenu">
+        <mt-cell-swipe
+          class="rq-mark"
+          v-for="(item, index) in markList.story" :key="item.id"
+          :right="[
               {
                 content: '修改',
                 style: { background: '#96D28E', color: '#fff', lineHeight: '56px' },
@@ -77,24 +77,24 @@
             return changeMarkInfo(item.id)
           }
               }]">
-        <slot>
-          <div class="mt-name" @click="goStory(item.id)">{{item.name}}</div>
-          <div class="mt-content" @click="goStory(item.id)">{{item.brief}}</div>
-          <div class="mt-time" @click="goStory(item.id)">{{item.date}}</div>
-        </slot>
-      </mt-cell-swipe>
-    </div>
-    <div class="arrow">
-      <div class="left-arrow">
-        <img src="../../img/icon/left_arrow.png" alt="" v-if="leftNode">
+          <slot>
+            <div class="mt-name" @click="goStory(item.id)">{{item.name}}</div>
+            <div class="mt-content" @click="goStory(item.id)">{{item.brief}}</div>
+            <div class="mt-time" @click="goStory(item.id)">{{item.date}}</div>
+          </slot>
+        </mt-cell-swipe>
       </div>
-      <div class="right-arrow">
-        <img src="../../img/icon/right_arrow.png" alt="" v-if="rightNode">
+      <div class="arrow">
+        <div class="left-arrow">
+          <img src="../../img/icon/left_arrow.png" alt="" v-if="leftNode">
+        </div>
+        <div class="right-arrow">
+          <img src="../../img/icon/right_arrow.png" alt="" v-if="rightNode">
+        </div>
       </div>
+      <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
+      <router-view></router-view>
     </div>
-    <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
-    <router-view></router-view>
-  </div>
 </template>
 <style lang='scss'>
   @import "../../scss/config";

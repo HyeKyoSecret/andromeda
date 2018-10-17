@@ -1,6 +1,6 @@
 <template>
   <div class="subscribe">
-    <notice title="我的订阅"></notice>
+    <notice :title="title"></notice>
     <div class="show-story" v-if="contentList">
       <div class="background">
         <div class="left-part"><img :src="cover.coverImg" @error="setCoverErrorImg"/></div>
@@ -118,7 +118,7 @@
     .shelf {
       margin-top: 20px;
       border-bottom: 1px solid $line-gray;
-      height: 130px;
+      min-height: 140px;
       &:last-child{
         margin-bottom: 85px;
         border: none;
@@ -162,6 +162,7 @@
     },
     data () {
       return {
+        title: '',
         subList: [],
         contentList: [],
         cover: {
@@ -227,6 +228,17 @@
               position: 'middle',
               duration: 1000
             })
+          }
+        })
+        Axios.get('/register/checkUser', {
+          params: {
+            user: this.$route.params.user
+          }
+        }).then(response => {
+          if (response.data.customer) {
+            this.title = response.data.sex + '的订阅'
+          } else {
+            this.title = '我的订阅'
           }
         })
       },

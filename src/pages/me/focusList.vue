@@ -1,6 +1,6 @@
 <template>
     <div class="focusList">
-        <notice title="我的关注"></notice>
+        <notice :title="title"></notice>
         <div class="search">
             <span class="magnifier"><img src="../../img/icon/magnifier.png" /></span>
             <span class="searchbar"><input type="text" placeholder="搜索" @focus="startSearch" @input="searchFocus" v-model="search"></span>
@@ -157,6 +157,7 @@
     },
     data () {
       return {
+        title: '',
         search: '',
         deleteBtn: false,  // 删除按钮
         searchBoard: false,  // 搜索版
@@ -182,6 +183,17 @@
           }
         }).then(response => {
           this.focusList = response.data.result
+        })
+        Axios.get('/register/checkUser', {
+          params: {
+            user: this.$route.params.user
+          }
+        }).then(response => {
+          if (response.data.customer) {
+            this.title = response.data.sex + '的关注'
+          } else {
+            this.title = '我的关注'
+          }
         })
       },
       startSearch () {

@@ -610,6 +610,9 @@
                   if (!reg.test(splitPath[2])) {
                     let pathArray = this.operation[i].path.split('/people')
                     this.operation[i].path = `/people/${this.$route.params.user}${pathArray[1]}`
+                    if (i !== 3) {
+                      this.operation[i].name = `${this.sex}${this.operation[i].name}`
+                    }
                   }
                 }
                 this.getFriendshipAndFocus()

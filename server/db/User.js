@@ -82,6 +82,18 @@ const UserSchema = new Schema({
       ref: 'StoryRoot'
     }
   ],
+  depth: [
+    {
+      rootId: {
+        type: Schema.Types.ObjectId,
+        ref: 'StoryRoot'
+      },
+      storyId: [{
+        type: 'String'
+      }],
+      latest: String
+    }
+  ],
   myCreationDraft: {    //  草稿
     root: {
       name: String,

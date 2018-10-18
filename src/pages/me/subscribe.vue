@@ -1,13 +1,13 @@
 <template>
   <div class="subscribe">
     <notice :title="title"></notice>
-    <div class="show-story" v-if="contentList">
+    <div class="show-story" v-if="subList.length">
       <div class="background">
-        <div class="left-part"><img :src="cover.coverImg" @error="setCoverErrorImg"/></div>
+        <div class="left-part"><img :src="cover.coverImg" @click="goStory(cover.latest)" @error="setCoverErrorImg"/></div>
         <div class="right-part">
           <div class="already-read">
               <img src="../../img/icon/already_read.png" />
-              <div class="read-amount">17</div>
+              <div class="read-amount">{{cover.readPercent}}</div>
           </div>
           <div class="story-name">{{cover.name}}</div>
           <div class="quantity">
@@ -22,19 +22,20 @@
             <img src="../../img/icon/gray_pen.png" />
             <div class="amount">{{cover.myCreation}} 篇</div>
           </div>
-          <div class="continue-read">
+          <div class="continue-read" @click="goStory(cover.latest)">
             继续阅读
           </div>
         </div>
       </div>
     </div>
-    <div class="shelf" v-for="(item, index) in contentList" v-if="contentList.length">
+    <div class="shelf" v-for="(item, index) in contentList" v-if="subList.length">
       <div class="book" v-for="(q, index2) in item" @click="changeCover(q)">
         <div class="cover"><img :src="q.coverImg" @error="setErrorImg(index, index2)"/></div>
-        <div class="progress-bar"></div>
+        <!--<div class="progress-bar"></div>-->
         <div class="name">{{q.name}}</div>
       </div>
     </div>
+    <blank v-if="!subList.length"></blank>
   </div>
 </template>
 <style lang='scss' scoped>
@@ -144,6 +145,7 @@
           background-color: #00db75;
         }
         .name {
+          margin-top: 2px;
           font-size: 12px;
           color: $font-dark;
         }
@@ -156,8 +158,10 @@
   import Axios from 'axios'
   import {Toast} from 'mint-ui'
   import notice from '../../components/notice/notice.vue'
+  import blank from '../../components/blank/blank.vue'
   export default {
     components: {
+      blank,
       notice
     },
     data () {
@@ -171,7 +175,10 @@
           follower: 0,
           nodeNum: 0,  // 后续结点数量
           myCreation: 0, // 当前用户参与编辑的数量
-          coverImg: ''
+          coverImg: '',
+          readCounts: '', // 已读节点
+          readPercent: '',
+          latest: ''
         }
       }
     },
@@ -187,8 +194,11 @@
         if (obj.id && this.cover.id) {
           Axios.all([Axios.get('/user/getSubStack', {params: {id: obj.id}}), Axios.get('/user/getContribute', {params: {id: this.cover.id}})])
             .then(Axios.spread((stack, contr) => {
+              this.cover.readCounts = stack.data.readCounts
+              this.cover.latest = stack.data.latest
               this.cover.nodeNum = stack.data.count
               this.cover.myCreation = contr.data.count
+              this.cover.readPercent = `${(100 * this.cover.readCounts / this.cover.nodeNum).toFixed(1)}%`
             }))
         }
       },
@@ -247,6 +257,9 @@
       },
       setErrorImg (i, j) {
         this.contentList[i][j].coverImg = require('../../img/photo/default2.png')
+      },
+      goStory (id) {
+        this.$router.push(`/story/${id}`)
       }
     }
   }

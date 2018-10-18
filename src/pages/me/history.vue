@@ -168,6 +168,7 @@
           .right {
             width: 80%;
             margin-left: 40px;
+            border-radius: 10px;
             min-height: 80px;
             background: white;
             display: flex;

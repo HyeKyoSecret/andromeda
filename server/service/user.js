@@ -12,6 +12,8 @@ const path = require('path')
 const fs = require('fs')
 const tool = require('../tool')
 const gm = require('gm').subClass({imageMagick: true})
+const rootReg = /^R([0-9]){7}$/
+const storyReg = /^S([0-9]){7}$/
 router.get('/user/getMySubscription', (req, res) => {
   'use strict'
   // let sysUser
@@ -47,6 +49,12 @@ router.get('/user/getMySubscription', (req, res) => {
 router.get('/user/getSubStack', (req, res) => {
   'use strict'
   let fid = req.query.id
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
   let stack = []
   let p
   Root.findOne({id: fid}, (err, root) => {
@@ -82,6 +90,8 @@ router.get('/user/getSubStack', (req, res) => {
       p = root._id
       let _temp
       let count = 0
+      let readCount = 0
+      let latest
       while (p || stack.length) {
         if (p) {
           count = count + 1
@@ -102,7 +112,22 @@ router.get('/user/getSubStack', (req, res) => {
           }
         }
       }
-      res.send({count: count})
+      User.findOne({username: user})
+        .populate('depth.rootId')
+        .exec((err, doc) => {
+          if (err) {
+            res.send({error: true, type: 'DB'})
+          } else {
+            for (let i = 0; i < doc.depth.length; i++) {
+              if (doc.depth[i].rootId.id === fid) {
+                readCount = doc.depth[i].storyId.length
+                latest = doc.depth[i].latest
+                break
+              }
+            }
+            res.send({count: count, readCounts: readCount, latest: latest})
+          }
+        })
     }
     exe(root)
   })
@@ -1872,6 +1897,115 @@ router.get('/user/getHistory', (req, res) => {
         } else {
           res.send({error: true, type: 'auth', message: '发生错误'})
         }
+      }
+    })
+})
+router.post('/user/addDepth', (req, res) => {
+  let fid = req.body.id
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  async function getRootObj () {
+    return new Promise((resolve, reject) => {
+      if (rootReg.test(fid)) {
+        Root.findOne({id: fid})
+          .exec((err, root) => {
+            if (err) {
+              console.log(err)
+            }
+            if (root) {
+              resolve(root)
+            } else {
+              reject(null)
+            }
+          })
+      } else if (storyReg.test(fid)) {
+        Story.findOne({id: fid})
+          .exec((err, story) => {
+            if (err) {
+              console.log(err)
+            }
+            if (story) {
+              Root.findOne({_id: story.root})
+                .exec((err, root) => {
+                  if (err) {
+                    console.log(err)
+                  }
+                  if (root) {
+                    resolve(root)
+                  } else {
+                    reject(null)
+                  }
+                })
+            } else {
+              reject(null)
+            }
+          })
+      } else {
+        reject(null)
+      }
+    })
+  }
+  User.findOne({username: user})
+    .populate('depth.rootId')
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      }
+      if (doc) {
+        (async function () {
+          let tempDoc = doc.depth
+          let root = await getRootObj()
+          if (tempDoc.length > 0) {
+            if (tempDoc.some(function (item) {
+              return item.rootId.id === root.id
+            })) {
+              tempDoc.forEach(item => {
+                if (item.rootId.id === root.id) {
+                  if (item.storyId.some(function (it) {
+                    return it === fid
+                  })) {
+                    item.latest = fid
+                  } else {
+                    item.storyId.push(fid)
+                    item.latest = fid
+                  }
+                } else {
+                  tempDoc.push({
+                    rootId: root._id,
+                    storyId: [fid],
+                    latest: fid
+                  })
+                }
+              })
+            } else {
+              tempDoc.push({
+                rootId: root._id,
+                storyId: [fid],
+                latest: fid
+              })
+            }
+          } else {
+            tempDoc.push({
+              rootId: root._id,
+              storyId: [fid],
+              latest: fid
+            })
+          }
+          User.updateOne({username: user}, {$set: {'depth': tempDoc}})
+            .exec((err2) => {
+              if (err2) {
+                res.send({error: true})
+              } else {
+                res.send({error: false})
+              }
+            })
+        })()
+      } else {
+        res.send({error: false})
       }
     })
 })

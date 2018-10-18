@@ -404,6 +404,7 @@
       this.getDownNode()
       this.getFrontNode()
       this.addHistory()
+      this.addDepth()
     },
     watch: {
       '$route' (to, from) {
@@ -414,6 +415,7 @@
         this.getDownNode()
         this.getFrontNode()
         this.addHistory()
+        this.addDepth()
       }
     },
     computed: {
@@ -797,16 +799,20 @@
             })
           }
         })
+      },
+      addDepth () {
+        Axios.post('/user/addDepth', {
+          id: this.$route.params.id
+        }).then(response => {
+          if (response.data.error) {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
+          }
+        })
       }
-//      getNextNode () {
-//        Axios.get('/story/getNextNode', {
-//          params: {
-//            id: this.$route.params.id
-//          }
-//        }).then(response => {
-//          console.log(response.data)
-//        })
-//      }
     }
   }
 

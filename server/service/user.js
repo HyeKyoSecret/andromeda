@@ -1173,6 +1173,8 @@ router.get('/user/getMyCreationNode', (req, res) => {
       }
     })
 })
+
+// 需要修改
 router.post('/user/changeMark', (req, res) => {
   let rootReg = /^R([0-9]){7}$/
   let storyReg = /^S([0-9]){7}$/

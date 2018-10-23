@@ -36,9 +36,8 @@
           </div>
         </div>
         <div class="assist-info">
-          <div class="reason">
-            推送理由：来自好友2B
-          </div>
+            <!--<div class="reason">-->
+            <!--</div>-->
           <div class="author-info">
             <div class="author-name">作者：{{item.author}}</div>
             <div class="time">{{item.date}}</div>

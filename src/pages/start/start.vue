@@ -5,6 +5,7 @@
         <img :src="item.img" />
       </router-link>
     </div>
+    <foot-menu></foot-menu>
   </div>
 </template>
 <style lang='scss' scoped>
@@ -75,7 +76,11 @@
 </style>
 <script>
   import Axios from 'axios'
+  import FootMenu from '../../components/foot-menu.vue'
   export default {
+    components: {
+      FootMenu
+    },
     data () {
       return {
         menu: [

@@ -52,6 +52,9 @@
       background-size: 55px 45px;
       background-position:center;
     }
+    .router-link-active .f-begin {
+      background-image: url(../img/icon/foot_begin_active.png);
+    }
     .router-link-active .f-discover {
       height: 65px;
       margin-left: -4px;

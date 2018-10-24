@@ -1173,8 +1173,6 @@ router.get('/user/getMyCreationNode', (req, res) => {
       }
     })
 })
-
-// 需要修改
 router.post('/user/changeMark', (req, res) => {
   let rootReg = /^R([0-9]){7}$/
   let storyReg = /^S([0-9]){7}$/
@@ -1195,8 +1193,8 @@ router.post('/user/changeMark', (req, res) => {
           if (root) {
             let content = root.content
             let brief = []
-            if (content.length >= 30) {
-              brief = content.slice(0, 30)
+            if (content.length >= 40) {
+              brief = content.slice(0, 40)
             } else {
               brief = content
             }
@@ -1206,11 +1204,11 @@ router.post('/user/changeMark', (req, res) => {
                   res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                 } else {
                   if (duser) {
-                    if (duser.mark.length > 0) {
+                    if (duser.mark.length) {
                       let markData
                       let flag
                       for (let i = 0; i < duser.mark.length; i++) {
-                        if (duser.mark[i] && duser.mark[i].rootId === id) {
+                        if (duser.mark[i].rootId === id) {
                           flag = true
                           if (markActive) {
                             duser.mark[i].story.push({
@@ -1228,9 +1226,11 @@ router.post('/user/changeMark', (req, res) => {
                               }
                             }
                             markData = duser.mark[i]
+                            console.log('删除后' + markData)
                           }
                           break
                         } else {
+                          console.log(markActive)
                           if (i === duser.mark.length - 1 && markActive) {
                             let k =
                               {
@@ -1240,6 +1240,7 @@ router.post('/user/changeMark', (req, res) => {
                                   brief: brief
                                 }]
                               }
+                            console.log('k' + k)
                             User.updateOne({username: user}, {$addToSet: {'mark': k}})
                               .exec((err3) => {
                                 if (err3) {
@@ -1975,12 +1976,6 @@ router.post('/user/addDepth', (req, res) => {
                     item.storyId.push(fid)
                     item.latest = fid
                   }
-                } else {
-                  tempDoc.push({
-                    rootId: root._id,
-                    storyId: [fid],
-                    latest: fid
-                  })
                 }
               })
             } else {

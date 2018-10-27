@@ -1225,23 +1225,20 @@ router.post('/user/changeMark', (req, res) => {
                                 }
                               }
                             }
-                            markData = duser.mark[i]
-                            console.log('删除后' + markData)
+                            markData = duser.mark
                           }
                           break
                         } else {
-                          console.log(markActive)
                           if (i === duser.mark.length - 1 && markActive) {
                             let k =
-                              {
+                              [{
                                 rootId: id,
                                 story: [{
                                   id: id,
                                   brief: brief
                                 }]
-                              }
-                            console.log('k' + k)
-                            User.updateOne({username: user}, {$addToSet: {'mark': k}})
+                              }]
+                            User.updateOne({username: user}, {$set: {'mark': k}})
                               .exec((err3) => {
                                 if (err3) {
                                   console.log(err3)
@@ -1254,7 +1251,7 @@ router.post('/user/changeMark', (req, res) => {
                         }
                       }
                       if (flag) {
-                        User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$addToSet: {'mark': markData}})
+                        User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$set: {'mark': markData}})
                           .exec((err4) => {
                             if (err4) {
                               res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -2006,4 +2003,55 @@ router.post('/user/addDepth', (req, res) => {
       }
     })
 })
+// router.post('/user/buildHistory', (req, res) => {  // 修复数据
+//   let user
+//   if (req.session.user) {
+//     user = req.session.user
+//   } else if (req.cookies.And) {
+//     user = req.cookies.And.user
+//   }
+//   let result = []
+//   let storyResult = []
+//   User.findOne({username: user})
+//     .exec((err, doc) => {
+//       if (err) {
+//         console.log(err)
+//       } else {
+//         let id = doc._id
+//         console.log(id)
+//         Root.find({author: id})
+//           .exec((err2, root) => {
+//             if (err2) {
+//               console.log(err2)
+//             } else {
+//               root.forEach(item => {
+//                 result.push(
+//                   item._id
+//                 )
+//               })
+//               Story.find({author: id})
+//                 .exec((err3, story) => {
+//                   if (err3) {
+//                     console.log(err3)
+//                   } else {
+//                     story.forEach(item => {
+//                       storyResult.push(item._id)
+//                     })
+//                     console.log(storyResult)
+//                     console.log(result)
+//                     User.updateOne({username: user}, {$set: {'myCreation.root': result, 'myCreation.story': storyResult}})
+//                       .exec(err3 => {
+//                         if (err3) {
+//                           console.log(err3)
+//                         } else {
+//                           res.send('yes')
+//                         }
+//                       })
+//                   }
+//                 })
+//             }
+//           })
+//       }
+//     })
+// })
 module.exports = router

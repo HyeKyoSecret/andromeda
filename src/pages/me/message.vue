@@ -119,18 +119,22 @@
         .words.router-link-active {
           border: 2px solid $dark-green;
           line-height: 22px;
+          opacity: 1;
         }
         .request.router-link-active {
           border: 2px solid $dark-red;
           line-height: 22px;
+          opacity: 1;
         }
         .promote.router-link-active {
           border: 2px solid $dark-blue;
           line-height: 22px;
+          opacity: 1;
         }
         .announcement.router-link-active {
           border: 2px solid $dark-yellow;
           line-height: 22px;
+          opacity: 1;
         }
         div {
           flex: 1;
@@ -149,15 +153,19 @@
           }
           .words {
             background: $main-color;
+            opacity: 0.5;
           }
           .request {
             background: $icon-red;
+            opacity: 0.5;
           }
           .promote {
             background: $icon-blue;
+            opacity: 0.5;
           }
           .announcement {
             background: $icon-yellow;
+            opacity: 0.5;
           }
         }
       }

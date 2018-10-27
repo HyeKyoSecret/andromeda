@@ -2006,4 +2006,48 @@ router.post('/story/getStoryBrief', (req, res) => {
   }
   exe()
 })
+router.get('/story/search', (req, res) => {
+  let active = req.query.active
+  let content = req.query.content
+  let result = []
+  if (active === 'author') {
+    let reg = new RegExp(content, 'gi')
+    User.find({nickname: {$regex: reg}})
+      .sort('nickname')
+      .exec((err, user) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+        } else {
+          user.forEach(item => {
+            result.push({
+              name: item.nickname,
+              head: tool.formImg(item.headImg)
+            })
+          })
+          res.send({error: false, result: result})
+        }
+      })
+  } else if (active === 'title') {
+    let reg = new RegExp('\\b' + content, 'gi')  // 单词匹配
+    Root.find({name: {$regex: reg}})
+      .populate('author')
+      .sort('name')
+      .exec((err, doc) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+        } else {
+          doc.forEach(item => {
+            result.push({
+              name: item.name,
+              coverImg: tool.formImg(item.coverImg),
+              content: item.content,
+              author: item.author.nickname,
+              date: moment(item.date).format('YYYY年M月D日 HH:mm')
+            })
+          })
+          res.send({error: false, result: result})
+        }
+      })
+  }
+})
 module.exports = router

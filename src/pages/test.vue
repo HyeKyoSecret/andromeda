@@ -4,25 +4,21 @@
   </div>
 </template>
 <script>
+  import Axios from 'axios'
   export default {
     data () {
       return {
-        a: {
-          b: 'hello',
-          c: 1
-        }
       }
     },
     created: function () {
-      this.getTime()
+      // this.buildData()
     },
     methods: {
-      getTime () {
-        if (this.a.b === 'ello') {
-          console.log('123')
-        } else if (this.a.c === 1) {
-          console.log('456')
-        }
+      buildData () {
+        Axios.post('/user/buildHistory')
+          .then(response => {
+            console.log(response.data.history)
+          })
       }
     }
   }

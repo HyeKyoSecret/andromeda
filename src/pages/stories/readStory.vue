@@ -52,7 +52,7 @@
         </div>
         <div class="button" @click="showButton">
           <img src="../../img/icon/yellowjump.png" />
-          <div>智能跳转</div>
+          <div>跳转</div>
         </div>
       </div>
       <div class="jump-menu" v-if="menuActive">

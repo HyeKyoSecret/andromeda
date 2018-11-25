@@ -10,6 +10,7 @@ const router = express.Router()
 const formidable = require('formidable')
 const path = require('path')
 const fs = require('fs')
+const client = require('../client')
 const tool = require('../tool')
 const gm = require('gm').subClass({imageMagick: true})
 const rootReg = /^R([0-9]){7}$/
@@ -2054,4 +2055,26 @@ router.post('/user/addDepth', (req, res) => {
 //       }
 //     })
 // })
+router.post('/user/testEs', (req, res) => {
+  (async function () {
+    const response = await client.search({
+      index: 'andromeda.storyroots',
+      type: '_doc',
+      body: {
+        query: {
+          match: {
+            content: '澳洲'
+          }
+        },
+        highlight: {fields: {content: {}}}
+      }
+    })
+
+    for (const tweet of response.hits.hits) {
+      // console.log('tweet:', tweet)
+      console.log(tweet.highlight)
+    }
+    res.send('ok')
+  })()
+})
 module.exports = router

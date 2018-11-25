@@ -11,14 +11,15 @@
       }
     },
     created: function () {
-      // this.buildData()
+      this.buildData()
     },
     methods: {
       buildData () {
-        Axios.post('/user/buildHistory')
-          .then(response => {
-            console.log(response.data.history)
-          })
+        Axios.post('/user/testEs', {
+          id: 13145621
+        }).then(response => {
+          console.log(response)
+        })
       }
     }
   }

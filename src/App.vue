@@ -45,6 +45,10 @@
     padding: 0;
     height: 100%;
   }
+  em {
+    color: #FC464E;
+    font-style: normal;
+  }
   a {
     text-decoration: none;
     color: #000;

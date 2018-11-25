@@ -12,8 +12,10 @@ const storyReg = /^S([0-9]){7}$/
 const formidable = require('formidable')
 const path = require('path')
 const fs = require('fs')
+const client = require('../client')
 const tool = require('../tool')
 const gm = require('gm').subClass({imageMagick: true})
+const mongoose = require('../db/mongoose')
 moment.locale('zh-cn')
 router.post('/story/buildRoot', (req, res) => {
   const form = new formidable.IncomingForm()
@@ -2006,10 +2008,23 @@ router.post('/story/getStoryBrief', (req, res) => {
   }
   exe()
 })
-router.get('/story/search', (req, res) => {
-  let active = req.query.active
-  let content = req.query.content
+router.post('/story/search', (req, res) => {
+  let active = req.body.active
+  let content = req.body.content
   let result = []
+  async function getPeople (id) {
+    return new Promise((resolve, reject) => {
+      User.findOne({_id: id})
+        .exec((err, user) => {
+          if (err) {
+            reject(false)
+          } else {
+            resolve(user.nickname)
+          }
+        })
+    })
+
+  }
   if (active === 'author') {
     let reg = new RegExp(content, 'gi')
     User.find({nickname: {$regex: reg}})
@@ -2028,26 +2043,57 @@ router.get('/story/search', (req, res) => {
         }
       })
   } else if (active === 'title') {
-    let reg = new RegExp('\\b' + content, 'gi')  // 单词匹配
-    Root.find({name: {$regex: reg}})
-      .populate('author')
-      .sort('name')
-      .exec((err, doc) => {
-        if (err) {
-          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-        } else {
-          doc.forEach(item => {
-            result.push({
-              name: item.name,
-              coverImg: tool.formImg(item.coverImg),
-              content: item.content,
-              author: item.author.nickname,
-              date: moment(item.date).format('YYYY年M月D日 HH:mm')
-            })
-          })
-          res.send({error: false, result: result})
+    (async function () {
+      const response = await client.search({
+        index: 'andromeda.storyroots',
+        type: '_doc',
+        body: {
+          query: {
+            match: {
+              name: content
+            }
+          },
+          highlight: {fields: {name: {}}}
         }
       })
+      for (const item of response.hits.hits) {
+        result.push({
+          coverImg: tool.formImg(item._source.coverImg),
+          name: item.highlight.name[0],
+          content: item._source.content,
+          subNumber: item._source.subscribe.length,
+          date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
+          author: await getPeople(mongoose.Types.ObjectId(item._source.author))
+        })
+      }
+      res.send({error: false, result: result})
+    })()
+  } else if (active === 'content') {
+    (async function () {
+      const response = await client.search({
+        index: 'andromeda.storyroots',
+        type: '_doc',
+        body: {
+          query: {
+            match: {
+              content: content
+            }
+          },
+          highlight: {fields: {content: {}}}
+        }
+      })
+      for (const item of response.hits.hits) {
+        result.push({
+          coverImg: tool.formImg(item._source.coverImg),
+          name: item._source.name,
+          content: item.highlight.content[0],
+          subNumber: item._source.subscribe.length,
+          date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
+          author: await getPeople(mongoose.Types.ObjectId(item._source.author))
+        })
+      }
+      res.send({error: false, result: result})
+    })()
   }
 })
 module.exports = router

@@ -31,17 +31,17 @@
           <div><img :src="item.coverImg" /></div>
           <div class="book-number">
             <span><img src="../../img/icon/graybook.png" /></span>
-            <span class="number">4399</span>
+            <span class="number">{{item.subNumber}}</span>
           </div>
         </div>
         <div class="right-part">
-          <div class="story-name">{{item.name}}</div>
-          <div class="story-content">{{item.content}}</div>
+          <div class="story-name" v-html="item.name"></div>
+          <div class="story-content" v-html="item.content"></div>
         </div>
       </div>
       <div class="assist-info">
         <div class="author-info">
-          <div class="author-name">作者: {{item.author}}}</div>
+          <div class="author-name">作者: {{item.author}}</div>
           <div class="time">{{item.date}}</div>
         </div>
       </div>
@@ -61,6 +61,7 @@
   import FootMenu from '../../components/foot-menu.vue'
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
+  import debounce from '../../js/debounce.js'
   export default {
     components: {
       notice,
@@ -85,20 +86,19 @@
         this.contentActive = false
         this[`${param}Active`] = true
       },
-      search () {
+      search: debounce(function () {
         if (this.searchContent) {
-          Axios.get('/story/search', {
-            params: {
-              active: this.active,
-              content: this.searchContent
-            }
+          Axios.post('/story/search', {
+            active: this.active,
+            content: this.searchContent
           }).then(response => {
             this.result = response.data.result
+            console.log(this.result)
           })
         } else {
           this.result = []
         }
-      }
+      }, 1000)
     }
   }
 </script>
@@ -229,6 +229,7 @@
         margin-left: 10px;
         outline:none;
         color: $font-dark;
+        width: 83%;
       }
       img {
         height: 22px;

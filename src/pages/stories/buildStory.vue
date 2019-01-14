@@ -327,7 +327,7 @@
           outline: none;
           font-size: 16px;
           padding: 5px;
-          line-height: 16px;
+          line-height: 20px;
         }
       }
       .permission {

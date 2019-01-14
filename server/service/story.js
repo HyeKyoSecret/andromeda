@@ -460,207 +460,207 @@ router.get('/story/getRootStory', (req, res) => {
     }
   })
 })
-router.post('/story/xuildStory', (req, res) => {
-  let ftNode = req.body.ftNode
-  let nodeName = req.body.nodeName
-  let node = {
-    name: nodeName
-  }
-  let newStory = new Story(node)
-  newStory.save((err, doc) => {
-    if (err) {
-      console.log(err)
-    } else {
-      Root.findOne({name: ftNode}) // 判断前趋结点是否为根节点
-        .exec((errRoot, root) => {
-          if (errRoot) {
-            console.log(errRoot)
-            res.send('error')
-          } else {
-            if (root) {    // 前驱结点是根节点
-              console.log('前驱结点是根节点')
-              if (root.lc) {   // 根节点lc非空
-                console.log('根节点的 lc 非空')
-                console.log('根节点 lc 指向' + root.lc)
-                console.log('开始查找根节点的lc指向的故事')
-                Story.findOne({_id: root.lc})
-                  .exec((err, story) => {
-                    if (err) {
-                      console.log(err)
-                      res.send('error')
-                    } else {
-                      if (story) {
-                        console.log('找到根节点的lc所指向的故事')
-                        let p = story.rb
-                        console.log('p结点赋值，story.rb' + p)
-
-                        let changeP = function () {
-                          return new Promise(function (resolve, reject) {
-                            Story.findOne({_id: p}, (error, nStory) => {
-                              if (error) {
-                                console.log(error)
-                              } else {
-                                p = nStory.rb
-                                if (!p) {
-                                  console.log('p已置空')
-                                  nStory.rb = doc._id
-                                  console.log('p的新值' + doc._id)
-                                  nStory.save((err3) => {
-                                    if (err3) {
-                                      console.log(err3)
-                                    } else {
-                                      console.log('写入成功')
-                                      res.send('ok')
-                                    }
-                                  })
-                                }
-                                resolve(p)
-                                reject('error+++++!!')
-                              }
-                            })
-                          })
-                        }
-
-                        let search = async function () {
-                          while (p) {
-                            p = await changeP()
-                            console.log('循环中的p' + p)
-                          }
-                          if (!p) {
-                            console.log('检测到p为空，即表明该节点的右指针为空')
-                            story.rb = doc._id
-                            console.log('story.rb' + story.rb)
-                            story.save((err4) => {
-                              if (err4) {
-                                console.log(err4 + '保存失败')
-                                res.send('error')
-                              }
-                            })
-                            res.send('ok')
-                          }
-                        }
-
-                        search().catch((err) => {
-                          'use strict'
-                          console.log('执行出现了错误' + err)
-                          res.send('error')
-                        })
-                      } else {
-                        console.log('根节点的lc故事出错')
-                        res.send('error')
-                      }
-                    }
-                  })
-              } else {
-                console.log('根节点的lc为空')
-                root.lc = doc._id
-                root.save((err) => {
-                  console.log(err)
-                  res.send('ok')
-                })
-              }
-            } else {      // 前趋结点不是根节点
-              console.log('前驱结点不是根节点')
-              Story.findOne({name: ftNode})
-                .exec((err, odstory) => {
-                  'use strict'
-                  if (err) {
-                    console.log(err)
-                    res.send('error')
-                  } else {
-                    if (odstory) {    // 前驱结点是普通故事结点
-                      console.log('前驱结点是普通故事结点')
-                      if (odstory.lc) {   // 普通故事结点lc非空
-                        console.log('普通故事结点lc非空')
-                        console.log('普通故事结点 lc 指向' + odstory.lc)
-                        console.log('开始查找普通故事结点的lc指向的故事')
-                        Story.findOne({_id: odstory.lc})
-                          .exec((err, story) => {
-                            if (err) {
-                              console.log(err)
-                              res.send('error')
-                            } else {
-                              if (story) {
-                                console.log('找到故事结点的lc所指向的故事')
-                                let p = story.rb
-                                console.log('p结点赋值，story.rb' + p)
-                                let changeP = function () {
-                                  return new Promise(function (resolve, reject) {
-                                    Story.findOne({_id: p}, (error, nStory) => {
-                                      if (error) {
-                                        console.log(error)
-                                      } else {
-                                        p = nStory.rb
-                                        if (!p) {
-                                          console.log('p已置空')
-                                          nStory.rb = doc._id
-                                          console.log('p的新值' + doc._id)
-                                          nStory.save((err3) => {
-                                            if (err3) {
-                                              console.log(err3)
-                                            } else {
-                                              console.log('写入成功')
-                                            }
-                                          })
-                                        }
-                                        resolve(p)
-                                        reject('error+++++!!')
-                                      }
-                                    })
-                                  })
-                                }
-
-                                let search = async function () {
-                                  while (p) {
-                                    p = await changeP()
-                                    console.log('循环中的p' + p)
-                                  }
-                                  if (!p) {
-                                    console.log('检测到p为空，即表明该节点的右指针为空')
-                                    story.rb = doc._id
-                                    console.log('story.rb' + story.rb)
-                                    story.save((err4) => {
-                                      if (err4) {
-                                        console.log(err4 + '保存失败')
-                                        res.send('error')
-                                      }
-                                    })
-                                    console.log(story + '12345689')
-                                    res.send('ok')
-                                  }
-                                }
-
-                                search().catch((err) => {
-                                  console.log('执行出现了错误' + err)
-                                  res.send('error')
-                                })
-                              } else {
-                                console.log('普通故事结点的lc故事出错')
-                                res.send('error')
-                              }
-                            }
-                          })
-                      } else {
-                        console.log('普通故事结点的lc为空')
-                        odstory.lc = doc._id
-                        odstory.save((err) => {
-                          if (err) {
-                            console.log(err)
-                            res.send('error')
-                          } else {
-                            res.send('ok')
-                          }
-                        })
-                      }
-                    }
-                  }
-                })
-            }
-          }
-        })
-    }
-  })
-})
+// router.post('/story/xuildStory', (req, res) => {
+//   let ftNode = req.body.ftNode
+//   let nodeName = req.body.nodeName
+//   let node = {
+//     name: nodeName
+//   }
+//   let newStory = new Story(node)
+//   newStory.save((err, doc) => {
+//     if (err) {
+//       console.log(err)
+//     } else {
+//       Root.findOne({name: ftNode}) // 判断前趋结点是否为根节点
+//         .exec((errRoot, root) => {
+//           if (errRoot) {
+//             console.log(errRoot)
+//             res.send('error')
+//           } else {
+//             if (root) {    // 前驱结点是根节点
+//               console.log('前驱结点是根节点')
+//               if (root.lc) {   // 根节点lc非空
+//                 console.log('根节点的 lc 非空')
+//                 console.log('根节点 lc 指向' + root.lc)
+//                 console.log('开始查找根节点的lc指向的故事')
+//                 Story.findOne({_id: root.lc})
+//                   .exec((err, story) => {
+//                     if (err) {
+//                       console.log(err)
+//                       res.send('error')
+//                     } else {
+//                       if (story) {
+//                         console.log('找到根节点的lc所指向的故事')
+//                         let p = story.rb
+//                         console.log('p结点赋值，story.rb' + p)
+//
+//                         let changeP = function () {
+//                           return new Promise(function (resolve, reject) {
+//                             Story.findOne({_id: p}, (error, nStory) => {
+//                               if (error) {
+//                                 console.log(error)
+//                               } else {
+//                                 p = nStory.rb
+//                                 if (!p) {
+//                                   console.log('p已置空')
+//                                   nStory.rb = doc._id
+//                                   console.log('p的新值' + doc._id)
+//                                   nStory.save((err3) => {
+//                                     if (err3) {
+//                                       console.log(err3)
+//                                     } else {
+//                                       console.log('写入成功')
+//                                       res.send('ok')
+//                                     }
+//                                   })
+//                                 }
+//                                 resolve(p)
+//                                 reject('error+++++!!')
+//                               }
+//                             })
+//                           })
+//                         }
+//
+//                         let search = async function () {
+//                           while (p) {
+//                             p = await changeP()
+//                             console.log('循环中的p' + p)
+//                           }
+//                           if (!p) {
+//                             console.log('检测到p为空，即表明该节点的右指针为空')
+//                             story.rb = doc._id
+//                             console.log('story.rb' + story.rb)
+//                             story.save((err4) => {
+//                               if (err4) {
+//                                 console.log(err4 + '保存失败')
+//                                 res.send('error')
+//                               }
+//                             })
+//                             res.send('ok')
+//                           }
+//                         }
+//
+//                         search().catch((err) => {
+//                           'use strict'
+//                           console.log('执行出现了错误' + err)
+//                           res.send('error')
+//                         })
+//                       } else {
+//                         console.log('根节点的lc故事出错')
+//                         res.send('error')
+//                       }
+//                     }
+//                   })
+//               } else {
+//                 console.log('根节点的lc为空')
+//                 root.lc = doc._id
+//                 root.save((err) => {
+//                   console.log(err)
+//                   res.send('ok')
+//                 })
+//               }
+//             } else {      // 前趋结点不是根节点
+//               console.log('前驱结点不是根节点')
+//               Story.findOne({name: ftNode})
+//                 .exec((err, odstory) => {
+//                   'use strict'
+//                   if (err) {
+//                     console.log(err)
+//                     res.send('error')
+//                   } else {
+//                     if (odstory) {    // 前驱结点是普通故事结点
+//                       console.log('前驱结点是普通故事结点')
+//                       if (odstory.lc) {   // 普通故事结点lc非空
+//                         console.log('普通故事结点lc非空')
+//                         console.log('普通故事结点 lc 指向' + odstory.lc)
+//                         console.log('开始查找普通故事结点的lc指向的故事')
+//                         Story.findOne({_id: odstory.lc})
+//                           .exec((err, story) => {
+//                             if (err) {
+//                               console.log(err)
+//                               res.send('error')
+//                             } else {
+//                               if (story) {
+//                                 console.log('找到故事结点的lc所指向的故事')
+//                                 let p = story.rb
+//                                 console.log('p结点赋值，story.rb' + p)
+//                                 let changeP = function () {
+//                                   return new Promise(function (resolve, reject) {
+//                                     Story.findOne({_id: p}, (error, nStory) => {
+//                                       if (error) {
+//                                         console.log(error)
+//                                       } else {
+//                                         p = nStory.rb
+//                                         if (!p) {
+//                                           console.log('p已置空')
+//                                           nStory.rb = doc._id
+//                                           console.log('p的新值' + doc._id)
+//                                           nStory.save((err3) => {
+//                                             if (err3) {
+//                                               console.log(err3)
+//                                             } else {
+//                                               console.log('写入成功')
+//                                             }
+//                                           })
+//                                         }
+//                                         resolve(p)
+//                                         reject('error+++++!!')
+//                                       }
+//                                     })
+//                                   })
+//                                 }
+//
+//                                 let search = async function () {
+//                                   while (p) {
+//                                     p = await changeP()
+//                                     console.log('循环中的p' + p)
+//                                   }
+//                                   if (!p) {
+//                                     console.log('检测到p为空，即表明该节点的右指针为空')
+//                                     story.rb = doc._id
+//                                     console.log('story.rb' + story.rb)
+//                                     story.save((err4) => {
+//                                       if (err4) {
+//                                         console.log(err4 + '保存失败')
+//                                         res.send('error')
+//                                       }
+//                                     })
+//                                     console.log(story + '12345689')
+//                                     res.send('ok')
+//                                   }
+//                                 }
+//
+//                                 search().catch((err) => {
+//                                   console.log('执行出现了错误' + err)
+//                                   res.send('error')
+//                                 })
+//                               } else {
+//                                 console.log('普通故事结点的lc故事出错')
+//                                 res.send('error')
+//                               }
+//                             }
+//                           })
+//                       } else {
+//                         console.log('普通故事结点的lc为空')
+//                         odstory.lc = doc._id
+//                         odstory.save((err) => {
+//                           if (err) {
+//                             console.log(err)
+//                             res.send('error')
+//                           } else {
+//                             res.send('ok')
+//                           }
+//                         })
+//                       }
+//                     }
+//                   }
+//                 })
+//             }
+//           }
+//         })
+//     }
+//   })
+// })
 router.post('/story/buildStory', (req, res) => {
   'use strict'
   let ftNode = req.body.ftNode
@@ -2023,25 +2023,47 @@ router.post('/story/search', (req, res) => {
           }
         })
     })
-
   }
   if (active === 'author') {
-    let reg = new RegExp(content, 'gi')
-    User.find({nickname: {$regex: reg}})
-      .sort('nickname')
-      .exec((err, user) => {
-        if (err) {
-          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-        } else {
-          user.forEach(item => {
-            result.push({
-              name: item.nickname,
-              head: tool.formImg(item.headImg)
-            })
-          })
-          res.send({error: false, result: result})
+    // let reg = new RegExp(content, 'gi')
+    // User.find({nickname: {$regex: reg}})
+    //   .sort('nickname')
+    //   .exec((err, user) => {
+    //     if (err) {
+    //       res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+    //     } else {
+    //       user.forEach(item => {
+    //         result.push({
+    //           name: item.nickname,
+    //           head: tool.formImg(item.headImg),
+    //           id: user.id
+    //         })
+    //       })
+    //       res.send({error: false, result: result})
+    //     }
+    //   })
+    (async function () {
+      const response = await client.search({
+        index: 'andromeda.users',
+        type: '_doc',
+        body: {
+          query: {
+            match: {
+              nickname: content
+            }
+          },
+          highlight: {fields: {nickname: {}}}
         }
       })
+      for (const item of response.hits.hits) {
+        result.push({
+          name: item.highlight.nickname[0],
+          head: tool.formImg(item._source.headImg),
+          id: item._source.id
+        })
+      }
+      res.send({error: false, result: result})
+    })()
   } else if (active === 'title') {
     (async function () {
       const response = await client.search({
@@ -2063,7 +2085,8 @@ router.post('/story/search', (req, res) => {
           content: item._source.content,
           subNumber: item._source.subscribe.length,
           date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
-          author: await getPeople(mongoose.Types.ObjectId(item._source.author))
+          author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
+          id: item._source.id
         })
       }
       res.send({error: false, result: result})
@@ -2082,6 +2105,18 @@ router.post('/story/search', (req, res) => {
           highlight: {fields: {content: {}}}
         }
       })
+      const storyRes = await client.search({
+        index: 'andromeda.stories',
+        type: '_doc',
+        body: {
+          query: {
+            match: {
+              content: content
+            }
+          },
+          highlight: {fields: {content: {}}}
+        }
+      })
       for (const item of response.hits.hits) {
         result.push({
           coverImg: tool.formImg(item._source.coverImg),
@@ -2089,7 +2124,19 @@ router.post('/story/search', (req, res) => {
           content: item.highlight.content[0],
           subNumber: item._source.subscribe.length,
           date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
-          author: await getPeople(mongoose.Types.ObjectId(item._source.author))
+          author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
+          id: item._source.id
+        })
+      }
+      for (const item of storyRes.hits.hits) {
+        result.push({
+          coverImg: tool.formImg(item._source.coverImg),
+          name: item._source.name,
+          content: item.highlight.content[0],
+          subNumber: item._source.subscribe.length,
+          date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
+          author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
+          id: item._source.id
         })
       }
       res.send({error: false, result: result})

@@ -50,17 +50,17 @@ export default [
         name: 'creation',
         component: resolve => require(['../pages/me/creation.vue'], resolve),
         meta: { requiresAuth: true, keepAlive: true },
-        // beforeEnter: (to, from, next) => {
-        //   if (from.name !== 'myCreation') {
-        //     to.meta.keepAlive = false
-        //     next()
-        //   } else {
-        //     if (!to.meta.keepAlive) {
-        //       to.meta.keepAlive = true
-        //     }
-        //     next()
-        //   }
-        // },
+        beforeEnter: (to, from, next) => {
+          if (from.name !== 'myCreation') {
+            to.meta.keepAlive = false
+            next()
+          } else {
+            if (!to.meta.keepAlive) {
+              to.meta.keepAlive = true
+            }
+            next()
+          }
+        },
         children: [
           {
             path: 'myCreation/:rootName',
@@ -163,6 +163,7 @@ export default [
   },
   {
     path: '/start',
+    name: 'start',
     component: resolve => require(['../pages/start/start.vue'], resolve)
   },
   {
@@ -171,7 +172,19 @@ export default [
   },
   {
     path: '/search',
-    component: resolve => require(['../pages/search/search.vue'], resolve)
+    component: resolve => require(['../pages/search/search.vue'], resolve),
+    meta: { keepAlive: true },
+    beforeEnter: (to, from, next) => {
+      if (from.name === 'start') {
+        to.meta.keepAlive = false
+        next()
+      } else {
+        if (!to.meta.keepAlive) {
+          to.meta.keepAlive = true
+        }
+        next()
+      }
+    }
   },
   {
     path: '/writeStory',

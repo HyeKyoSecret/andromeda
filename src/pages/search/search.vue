@@ -1,56 +1,61 @@
 <template>
   <div class="discover">
-    <notice title="搜索"></notice>
-    <div class="button-bar">
-      <div class="button">
-        <div>
-          <span class="author" :class="{active: authorActive}" @click="changeActive('author')">作者</span>
-        </div>
-        <div>
-          <span class="name" :class="{active: titleActive}" @click="changeActive('title')">题目</span>
-        </div>
-        <div>
-          <span class="content" :class="{active: contentActive}" @click="changeActive('content')">内容</span>
-        </div>
-      </div>
-    </div>
-    <div class="search-bar">
-      <span><img src="../../img/icon/gray-magnifier.png" /></span>
-      <span><input type="text" placeholder="搜索" v-model="searchContent" @input="search"></span>
-    </div>
-    <div class="order" v-if="titleActive">
-      <div class="inside-box">
-        <div class="sort-reason">按时间排序</div>
-        <div class="sort-reason">按热度排序</div>
-        <div class="sort-reason">按订阅数排序</div>
-      </div>
-    </div>
-    <div class="one-search" v-if="contentActive || titleActive" v-for="item in result">
-      <div class="story-information">
-        <div class="cover">
-          <div><img :src="item.coverImg" /></div>
-          <div class="book-number">
-            <span><img src="../../img/icon/graybook.png" /></span>
-            <span class="number">{{item.subNumber}}</span>
+    <div class="top-search">
+      <notice title="搜索"></notice>
+      <div class="button-bar">
+        <div class="button">
+          <div>
+            <span class="author" :class="{active: authorActive}" @click="changeActive('author')">作者</span>
+          </div>
+          <div>
+            <span class="name" :class="{active: titleActive}" @click="changeActive('title')">题目</span>
+          </div>
+          <div>
+            <span class="content" :class="{active: contentActive}" @click="changeActive('content')">内容</span>
           </div>
         </div>
-        <div class="right-part">
-          <div class="story-name" v-html="item.name"></div>
-          <div class="story-content" v-html="item.content"></div>
-        </div>
       </div>
-      <div class="assist-info">
-        <div class="author-info">
-          <div class="author-name">作者: {{item.author}}</div>
-          <div class="time">{{item.date}}</div>
+      <div class="search-bar">
+        <span><img src="../../img/icon/gray-magnifier.png" /></span>
+        <span><input type="text" placeholder="搜索" v-model="searchContent" @input="search"></span>
+      </div>
+      <div class="order" v-if="titleActive">
+        <div class="inside-box">
+          <div class="sort-reason" :class="{active: sortDefault}" @click="setSort('default')">默认排序</div>
+          <div class="sort-reason" :class="{active: sortTime}" @click="setSort('time')">按时间排序</div>
+          <div class="sort-reason" :class="{active: sortSub}" @click="setSort('sub')">按订阅数排序</div>
         </div>
       </div>
     </div>
-    <div class="search-board" v-if="authorActive">
-      <div class="friend-list">
-        <div class="one-friend" v-for="item in result">
-          <div class="head"><img :src="item.head"/></div>
-          <div class="name">{{item.name}}</div>
+    <div class="search-result">
+      <div class="one-search" v-if="contentActive || titleActive" v-for="item in result" @click="goStory(item.id)">
+        <div class="story-information">
+          <div class="cover">
+            <div><img :src="item.coverImg" /></div>
+            <div class="book-number">
+              <span><img src="../../img/icon/graybook.png" /></span>
+              <span class="number">{{item.subNumber}}</span>
+            </div>
+          </div>
+          <div class="right-part">
+            <div class="story-name" v-html="item.name"></div>
+            <div class="story-content" v-html="item.content"></div>
+          </div>
+        </div>
+        <div class="assist-info">
+          <div class="author-info">
+            <div class="author-name">作者: {{item.author}}</div>
+            <div class="time">{{item.date}}</div>
+          </div>
+        </div>
+      </div>
+      <!--人-->
+      <div class="search-board" v-if="authorActive">
+        <div class="friend-list">
+          <div class="one-friend" v-for="item in result" @click="goPeople(item.id)">
+            <div class="head"><img :src="item.head"/></div>
+            <div class="name" v-html="item.name"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -74,8 +79,17 @@
         authorActive: true,
         titleActive: false,
         contentActive: false,
-        result: []
+        result: [],
+        sortDefault: true,
+        sortTime: false,
+        sortSub: false
       }
+    },
+    beforeRouteEnter (to, from, next) {
+      console.log('来源' + from.name)
+      console.log('缓存状态' + to.meta.keepAlive)
+      console.log('_______________')
+      next()
     },
     methods: {
       changeActive (param) {
@@ -85,6 +99,16 @@
         this.titleActive = false
         this.contentActive = false
         this[`${param}Active`] = true
+        this.search()
+      },
+      goStory (id) {
+        this.$router.push('/story/' + id)
+      },
+      goPeople (id) {
+        this.$router.push('/people/' + id)
+      },
+      sort () {
+
       },
       search: debounce(function () {
         if (this.searchContent) {
@@ -93,12 +117,11 @@
             content: this.searchContent
           }).then(response => {
             this.result = response.data.result
-            console.log(this.result)
           })
         } else {
           this.result = []
         }
-      }, 1000)
+      }, 500)
     }
   }
 </script>
@@ -112,10 +135,23 @@
     height: 100%;
     width: 100%;
     background: $bg-gray;
+    .top-search {
+      width: 100%;
+      position: fixed;
+      top: 0;
+      z-index: 999;
+    }
+    .search-result {
+      width: 100%;
+      margin-top: 140px;
+    }
     .search-board {
       width: 100%;
       min-height: calc(100vh - 250px);
       background: $bg-gray;
+      i {
+        color: red;
+      }
       .friend-list {
         margin-top: 15px;
         &:last-child {
@@ -257,13 +293,19 @@
             border:none;
           }
         }
+        .sort-reason.active{
+          color: $icon-yellow;
+        }
       }
     }
     .one-search {
       height: 145px;
       width: 100%;
       background-color: white;
-      margin-top: 25px;
+      margin-top: 10px;
+      &:last-child {
+        margin-bottom: 100px;
+      }
       .story-information {
         margin-left: 10px;
         margin-right: 10px;

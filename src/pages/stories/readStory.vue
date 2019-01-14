@@ -167,7 +167,7 @@
       color: $font-dark;
       white-space: pre-wrap;
       p {
-        text-indent: 2em;
+        /*!*text-indent: 2em;*! 首行缩进*/
         margin: 5px 0 5px 0;
       }
     }

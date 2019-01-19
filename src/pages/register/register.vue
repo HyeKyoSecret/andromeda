@@ -171,12 +171,15 @@
           captcha: this.captcha
         }).then((response) => {
           Toast({
-            message: response.data,
+            message: response.data.message,
             position: 'middle',
-            duration: 700
+            duration: 1000
           })
-          this.getCaptcha()
-          this.$router.push('/')
+          if (response.data.error) {
+            this.getCaptcha()
+          } else {
+            this.$router.push('/')
+          }
         })
       }
     },
@@ -246,7 +249,7 @@
         &:last-child {
           border: none;
           input{
-            flex: 1;
+            flex: 2;
           }
           .error-info {
             flex: 1;

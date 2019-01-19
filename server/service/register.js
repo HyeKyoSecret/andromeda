@@ -24,17 +24,17 @@ router.post('/register', (req, res) => {
       User.findOne({username: username}, (error, doc) => {
         'use strict'
         if (error) {
-          console.log(error)
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
         } else {
           if (doc) {
-            res.send('该用户名已经存在')
+            res.send({error: true, message: '该用户名已经存在', type: 'User'})
           } else {
             User.findOne({nickname: nickname}, (error2, nick) => {
               if (error2) {
-                console.log(error2)
+                res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
               } else {
                 if (nick) {
-                  res.send('该昵称已经存在')
+                  res.send({error: true, message: '该昵称已经存在', type: 'User'})
                 } else {
                   let user = {
                     username: username,
@@ -44,13 +44,12 @@ router.post('/register', (req, res) => {
                   let newUser = new User(user)
                   newUser.save((err, doc) => {
                     if (err) {
-                      console.log(err)
-                      res.send('注册失败')
+                      res.send({error: true, type: 'DB', message: '注册失败，请稍后再试'})
                     } else {
                       req.session.user = doc.username
                       req.session.userId = doc.id
                       res.cookie('And', {user: doc.username, userId: doc.id}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
-                      res.send('注册成功')
+                      res.send({error: false, message: '注册成功'})
                     }
                   })
                 }
@@ -60,10 +59,10 @@ router.post('/register', (req, res) => {
         }
       })
     } else {
-      res.send('注册信息有误')
+      res.send({error: true, type: 'User', message: '注册信息有误'})
     }
   } else {
-    res.send('验证码错误')
+    res.send({error: true, type: 'User', message: '验证码错误'})
   }
 })
 router.post('/register/checkUserRepeated', (req, res) => {

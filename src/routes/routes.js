@@ -173,18 +173,7 @@ export default [
   {
     path: '/search',
     component: resolve => require(['../pages/search/search.vue'], resolve),
-    meta: { keepAlive: true },
-    beforeEnter: (to, from, next) => {
-      if (from.name === 'start') {
-        to.meta.keepAlive = false
-        next()
-      } else {
-        if (!to.meta.keepAlive) {
-          to.meta.keepAlive = true
-        }
-        next()
-      }
-    }
+    meta: { keepAlive: true }
   },
   {
     path: '/writeStory',

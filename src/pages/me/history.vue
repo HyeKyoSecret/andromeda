@@ -235,7 +235,7 @@
                 border-top: 1px solid $line-gray;
                 align-items: center;
                 .brief {
-                  width: 78%;
+                  width: 77%;
                   padding-left: 5px;
                   box-sizing: border-box;
                   display: -webkit-box;
@@ -248,8 +248,8 @@
                 }
                 .date {
                   display: inline-block;
-                  width: 22%;
-                  font-size: 12px;
+                  width: 23%;
+                  font-size: 10px;
                 }
               }
             }

@@ -16,8 +16,14 @@
         </div>
       </div>
       <div class="search-bar">
-        <span><img src="../../img/icon/gray-magnifier.png" /></span>
-        <span><input type="text" placeholder="搜索" v-model="searchContent" @input="search"></span>
+        <span class="magnifier"><img src="../../img/icon/magnifier.png" /></span>
+        <span class="search-input">
+          <form action="javascript:void(0)">
+            <input type="search" placeholder="搜索" @focus="startSearch"  v-on:keyup.enter="search" v-model="searchContent">
+          </form>
+        </span>
+        <span class="delete" v-if="deleteBtn" @click="deleteSearch"><img src="../../img/icon/delete.png"></span>
+        <span class="cancel" v-if="cancelBtn" @click="cancelSearch">取消</span>
       </div>
       <div class="order" v-if="titleActive">
         <div class="inside-box">
@@ -26,6 +32,19 @@
           <div class="sort-reason" :class="{active: sortSub}" @click="setSort('sub')">按订阅数排序</div>
         </div>
       </div>
+      <!--<div class="search-history">-->
+        <!--<div class="history-line">-->
+          <!--<span class="clock"><img src="../../img/icon/time.png" alt="" ></span>-->
+          <!--<span class="history-content">我真的还想再活200年</span>-->
+          <!--<span class="delete"><img src="../../img/icon/delete.png"></span>-->
+        <!--</div>-->
+        <!--<div class="history-line">-->
+          <!--<span class="clock"><img src="../../img/icon/time.png" alt="" ></span>-->
+          <!--<span class="history-content">我真的还想再活200年</span>-->
+          <!--<span class="delete"><img src="../../img/icon/delete.png"></span>-->
+        <!--</div>-->
+        <!--<div class="clear-history">清除浏览记录</div>-->
+      <!--</div>-->
     </div>
     <div class="search-result" :class="{contentActive: contentActive, titleActive: titleActive, authorActive: authorActive}">
       <div class="one-search" v-if="contentActive || titleActive" v-for="item in result" @click="goStory(item.id)">
@@ -66,7 +85,7 @@
   import FootMenu from '../../components/foot-menu.vue'
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
-  import debounce from '../../js/debounce.js'
+  // import debounce from '../../js/debounce.js'
   export default {
     components: {
       notice,
@@ -82,7 +101,9 @@
         result: [],
         sortDefault: true,
         sortTime: false,
-        sortSub: false
+        sortSub: false,
+        deleteBtn: false,  // 删除按钮
+        cancelBtn: false // 取消按钮
       }
     },
     beforeRouteEnter (to, from, next) {
@@ -93,6 +114,11 @@
         })
       } else {
         next()
+      }
+    },
+    watch: {
+      searchContent: function (val) {
+        val.length > 0 ? this.deleteBtn = true : this.deleteBtn = false
       }
     },
     methods: {
@@ -114,7 +140,7 @@
       setSort (way) {
         //
       },
-      search: debounce(function () {
+      search () {
         if (this.searchContent) {
           Axios.post('/story/search', {
             active: this.active,
@@ -155,12 +181,22 @@
         } else {
           this.result = []
         }
-      }, 500),
+      },
       countLines (ele) {
         let styles = window.getComputedStyle(ele, null)
         let lh = parseInt(styles.lineHeight, 10)
         let h = parseInt(styles.height, 10)
         return Math.round(h / lh)
+      },
+      cancelSearch () {
+        this.deleteBtn = false
+        this.cancelBtn = false
+      },
+      deleteSearch () {
+        this.searchContent = ''
+      },
+      startSearch () {
+        this.cancelBtn = true
       }
     }
   }
@@ -175,6 +211,14 @@
     height: 100%;
     width: 100%;
     background: $bg-gray;
+    @media (min-width: 768px) {
+      .top-search {
+        max-width: 700px;
+        input {
+          width: 82% !important;
+        }
+      }
+    }
     .top-search {
       width: 100%;
       position: fixed;
@@ -297,27 +341,96 @@
     }
     .search-bar {
       background-color: white;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      width: 100%;
       border-top: 1px solid $line-gray;
       border-bottom:1px solid $line-gray;
-      height: 40px;
-      input {
-        line-height: 25px;
-        border: none;
-        font-size: 15px;
-        vertical-align: middle;
-        margin-top: 6px;
+      .magnifier {
         margin-left: 10px;
-        outline:none;
-        color: $font-dark;
-        width: 83%;
+        margin-right: 12px;
+        img {
+          height: 20px;
+          width: 18px;
+        }
       }
-      img {
-        height: 22px;
-        width: 20px;
-        vertical-align: middle;
-        margin-top: 7px;
-        margin-left: 12px;
+      .search-input {
+        min-width: 70%;
       }
+      .delete {
+        position: absolute;
+        right: 60px;
+        top: 93px;
+        img {
+          height: 17px;
+          width: 17px;
+        }
+      }
+      .cancel {
+        margin-left: 20px;
+        letter-spacing: 1px;
+        font-size: 13px;
+        color: $w-gray;
+        display: inline-block;
+      }
+      input{
+        color: #333333;
+        border: none;
+        outline: none;
+        padding-left: 5px;
+        height: 35px;
+        font-size: 14px;
+        overflow: hidden;
+        width: 67%;
+        position: absolute;
+        top: 83px;
+      }
+      input[type=search]::-webkit-search-cancel-button{
+        -webkit-appearance: none;  //此处只是去掉默认的小×
+      }
+    }
+    .search-history {
+      width: 90%;
+      margin: 8px auto 0 auto;
+      background: white;
+      .history-line {
+        display: flex;
+        height: 40px;
+        border-bottom: 1px solid $line-gray;
+        span {
+          display: flex;
+          align-items: center;
+        }
+        .clock {
+          flex: 1;
+          img {
+            width: 20px;
+            line-height: 40px;
+            margin-left: 10px;
+          }
+        }
+        .delete {
+          flex: 1;
+          img {
+            width: 13px;
+            text-align: center;
+          }
+        }
+        .history-content {
+          flex: 9;
+          text-align: left;
+          margin-left: 10px;
+          overflow: hidden;
+          color: $font-dark;
+        }
+      }
+    }
+    .clear-history {
+      height: 40px;
+      color: $font-color;
+      text-align: center;
+      line-height: 40px;
     }
     .order {
       height:40px;

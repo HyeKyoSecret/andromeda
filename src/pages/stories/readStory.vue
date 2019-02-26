@@ -788,7 +788,7 @@
         this.$router.push(this.$route.path + '/comment')
       },
       addHistory () {
-        Axios.post('/user/addHistory', {
+        Axios.post('/history/addHistory', {
           id: this.$route.params.id
         }).then(response => {
           if (response.data.error) {

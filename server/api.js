@@ -8,6 +8,7 @@ const story = require('./service/story')
 const register = require('./service/register')
 const user = require('./service/user')
 const comment = require('./service/comment')
+const history = require('./service/history')
 const cookieParser = require('cookie-parser')
 router.use(session({
   secret: 'this_is_a_smart_website',
@@ -33,4 +34,5 @@ router.use('/', story)
 router.use('/', register)
 router.use('/', user)
 router.use('/', comment)
+router.use('/', history)
 module.exports = router

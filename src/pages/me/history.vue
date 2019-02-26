@@ -1,6 +1,6 @@
 <template>
   <div class="history">
-    <notice :title="title" class="notice"></notice>
+    <notice :title="title" class="notice notice-bar"></notice>
     <div v-infinite-scroll="getData"
          infinite-scroll-disabled="loading"
          infinite-scroll-distance="10"
@@ -60,7 +60,7 @@
     },
     methods: {
       getData () {
-        Axios.get('/user/getHistory', {
+        Axios.get('/history/getHistory', {
           params: {
             id: this.$route.params.user,
             val: this.history ? parseInt(this.history.length / 2) : 0
@@ -115,11 +115,18 @@
     height: 100%;
     width: 100%;
     background: $bg-gray;
+    @media (min-width: 768px) {
+      .notice-bar{
+        max-width: 700px;
+        .foot-menu {
+          max-width: 700px;
+        }
+      }
+    }
     .notice {
       position: fixed;
       top: 0;
       width: 100%;
-      z-index: 999;
     }
     .history-content {
       margin-top: 60px;

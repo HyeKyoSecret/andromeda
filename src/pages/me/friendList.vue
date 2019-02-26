@@ -3,7 +3,7 @@
     <notice title="我的好友" v-bind:more="moreList"></notice>
     <div class="search">
       <span class="magnifier"><img src="../../img/icon/magnifier.png" /></span>
-      <span class="searchbar"><input type="text" placeholder="搜索" @focus="startSearch" @input="searchFriend" v-model="search"></span>
+      <span class="search-input"><input type="text" placeholder="搜索" @focus="startSearch" @input="searchFriend" v-model="search"></span>
       <span class="delete" v-if="deleteBtn" @click="deleteSearch"><img src="../../img/icon/delete.png"></span>
       <span class="cancel" v-if="cancelBtn" @click="cancelSearch">取消</span>
     </div>
@@ -62,7 +62,7 @@
           width: 20px;
         }
       }
-      .searchbar {
+      .search-input {
         min-width: 70%;
       }
       .delete {
@@ -81,7 +81,7 @@
         font-size: 13px;
         color: $w-gray;
         display: inline-block;
-        margin-top: -3px;
+        margin-top: -2px;
       }
       input{
         color: #333333;

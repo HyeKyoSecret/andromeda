@@ -2049,15 +2049,15 @@ router.post('/story/search', (req, res) => {
         body: {
           query: {
             match: {
-              nickname: content
+              'nickname.PY': content
             }
           },
-          highlight: {fields: {nickname: {}}}
+          highlight: {fields: {'nickname.PY': {}}}
         }
       })
       for (const item of response.hits.hits) {
         result.push({
-          name: item.highlight.nickname[0],
+          name: item._source.nickname,
           head: tool.formImg(item._source.headImg),
           id: item._source.id
         })

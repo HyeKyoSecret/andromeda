@@ -1,32 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <script>
-        var debounce = function(action, delay) {
-            var timer = null;
-
-            return function() {
-                var self = this,
-                        args = arguments;
-
-                clearTimeout(timer);
-                timer = setTimeout(function() {
-                    action.apply(self, args)
-                }, delay);
-            }
-        }
-
-        // example
-        function resizeHandler() {
-            console.log("resize");
-        }
-
-        window.onresize = debounce(resizeHandler, 1000);
-    </script>
-</head>
-<body>
-    <p>ceshiyemian</p>
-</body>
-</html>
+config = {
+... _id : "AND",
+... members : [
+... {_id : 0, host : "127.0.0.1:27017"},
+... {_id : 1, host : "127.0.0.1:27027"},
+... {_id : 2, host : "127.0.0.1:27037"}]}

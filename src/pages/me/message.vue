@@ -4,7 +4,7 @@
     <div class="button-bar">
       <div class="button">
         <div v-for="item in btn">
-          <router-link tag='span' :to='item.path' :class="item.className">{{item.name}}</router-link>
+          <router-link tag='span' :to='item.path' :class="item.className" replace>{{item.name}}</router-link>
         </div>
       </div>
     </div>

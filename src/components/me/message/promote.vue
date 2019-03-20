@@ -13,7 +13,7 @@
           }
         ]">
           <div class='add-request'>
-            <span class="title" @click.self="showHello">{{item.content_1}}</span>
+            <span class="title" @click.self="showUser(item.content_1)">{{item.content_1}}</span>
             <span class="info">{{item.content_2}} <label class='novel-name' v-if="item.description === 'recommend'" @click="goStory(item.content_4)">《{{item.content_3}}》</label></span>
             <span class="date">{{item.date}}</span>
           </div>
@@ -151,10 +151,21 @@
           this.$router.push({name: 'message_request', params: { user: this.$route.params.user }})
         }
       },
-      showHello (e) {
-        e.preventDefault()
-        e.stopPropagation()
-        console.log('hello')
+      showUser (name) {
+        Axios.post('/user/getUserByName', {
+          name: name
+        })
+          .then(response => {
+            if (!response.data.error) {
+              this.$router.push(`/people/${response.data.id}`)
+            } else {
+              Toast({
+                message: '发生错误',
+                position: 'middle',
+                duration: 1000
+              })
+            }
+          })
       },
       getData () {
         Axios.get('/user/getPromote')

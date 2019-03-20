@@ -18,7 +18,7 @@
   width: 100%;
   background: $bg-gray;
   .menu {
-    margin-top: 35%;
+    margin-top: 25%;
     margin-left: 12%;
     margin-right: 12%;
     display: flex;

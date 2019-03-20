@@ -62,6 +62,7 @@
               <div class="words">
                 <span class="sex" v-if="operation.length === 5 && item.name !== '共同好友'">{{sex}}</span>
                 <span class="name">{{item.name}}</span>
+                <span class="note"></span>
               </div>
               <div class="icon">
                 <img src="../../img/icon/right.png">
@@ -90,7 +91,7 @@
   @import "../../scss/style.css";
   @import "../../scss/cropper.css";
   .me {
-    height: 100%;
+    min-height: 100%;
     background: $bg-gray;
     .me-content {
       .user-main {
@@ -126,10 +127,10 @@
             display: inline-block;
             .focus-btn, .cancel-focus-btn {
               display: inline-block;
-              margin-left: 20px;
+              margin-left: 10px;
               color: $main-color;
               border: 1px solid $main-color;
-              padding: 2px 8px 2px 8px;
+              padding: 2px 7px 2px 7px;
               border-radius: 5px;
             }
           }
@@ -195,7 +196,8 @@
         }
       }
       .user-operation {
-        margin-top: 30px;
+        margin-top: 25px;
+        padding-bottom: 100px;
         .line {
           display: flex;
           align-items: center;
@@ -355,11 +357,6 @@
             name: '的创作',
             icon: require('../../img/icon/my_creation.png'),
             path: `/people/creation`
-          },
-          {
-            name: '的订阅',
-            icon: require('../../img/icon/my_subscription.png'),
-            path: '/people/subscribe'
           },
           {
             name: '的关注',
@@ -610,7 +607,7 @@
                   if (!reg.test(splitPath[2])) {
                     let pathArray = this.operation[i].path.split('/people')
                     this.operation[i].path = `/people/${this.$route.params.user}${pathArray[1]}`
-                    if (i !== 3) {
+                    if (i !== 2) { // 共同好友是第三个
                       this.operation[i].name = `${this.sex}${this.operation[i].name}`
                     }
                   }

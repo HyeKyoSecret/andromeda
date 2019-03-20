@@ -4,7 +4,7 @@
     <div class="me-content">
       <div class="user-main">
         <div class="head-img">
-          <img src="../../img/photo/head.jpg">
+          <img :src="headImg" @error="setErrorImg">
         </div>
         <div class="words">
           <div class="name">{{nickname}}</div>
@@ -244,7 +244,8 @@
         birthday: '',
         sex: '',
         nickname: '',
-        sign: ''
+        sign: '',
+        headImg: ''
       }
     },
     created: function () {
@@ -341,8 +342,12 @@
             this.sex = response.data.sex || '未设置'
             this.nickname = response.data.nickname
             this.sign = response.data.sign || '这个人很懒，什么都没留下'
+            this.headImg = response.data.headImg
           }
         })
+      },
+      setErrorImg () {
+        this.headImg = require('../../img/images/defaultHeadImg.png')
       }
     },
     components: {

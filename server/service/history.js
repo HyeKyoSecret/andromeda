@@ -246,11 +246,11 @@ router.get('/history/getHistory', (req, res) => {
       }
       if (doc && doc.username === user) {
         let beginNumber = (doc.history && doc.history.data.length) ? doc.history.data.length - 1 - 3 * val : 0
-        let endNumber = doc.history.data.length - 3 * val - 3
+        let endNumber = (doc.history && doc.history.data.length) ? doc.history.data.length - 3 * val - 3 : 0
         if (endNumber < 0) {
           endNumber = 0
         }
-        for (let i = beginNumber; i >= endNumber; i--) {
+        for (let i = beginNumber; i > endNumber; i--) {
           let m = beginNumber - i
           if (doc.history.data[i].date.getTime() === today.getTime()) {
             result.push({

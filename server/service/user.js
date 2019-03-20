@@ -775,7 +775,7 @@ router.get('/user/getChangeInfo', (req, res) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误'})
       } else {
-        res.send({error: false, nickname: doc.nickname, sex: doc.sex, birthday: moment(doc.birthday).format('L'), sign: doc.sign})
+        res.send({error: false, headImg: tool.formImg(doc.headImg), nickname: doc.nickname, sex: doc.sex, birthday: moment(doc.birthday).format('L'), sign: doc.sign})
       }
     })
 })
@@ -1819,5 +1819,19 @@ router.post('/user/testEs', (req, res) => {
     }
     res.send('ok')
   })()
+})
+router.post('/user/getUserByName', (req, res) => {
+  User.findOne({nickname: req.body.name})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '数据库错误'})
+      } else {
+        if (doc) {
+          res.send({error: false, id: doc.id})
+        } else {
+          res.send({error: true, type: 'User', message: '用户错误'})
+        }
+      }
+    })
 })
 module.exports = router

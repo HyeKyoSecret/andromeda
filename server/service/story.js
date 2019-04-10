@@ -16,6 +16,7 @@ const client = require('../client')
 const tool = require('../tool')
 const gm = require('gm').subClass({imageMagick: true})
 const mongoose = require('../db/mongoose')
+const pinyin = require('pinyin')
 moment.locale('zh-cn')
 router.post('/story/buildRoot', (req, res) => {
   const form = new formidable.IncomingForm()
@@ -2024,46 +2025,162 @@ router.post('/story/search', (req, res) => {
         })
     })
   }
-  if (active === 'author') {
-    // let reg = new RegExp(content, 'gi')
-    // User.find({nickname: {$regex: reg}})
-    //   .sort('nickname')
-    //   .exec((err, user) => {
-    //     if (err) {
-    //       res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-    //     } else {
-    //       user.forEach(item => {
-    //         result.push({
-    //           name: item.nickname,
-    //           head: tool.formImg(item.headImg),
-    //           id: user.id
-    //         })
-    //       })
-    //       res.send({error: false, result: result})
-    //     }
-    //   })
-    (async function () {
-      const response = await client.search({
-        index: 'andromeda.users',
-        type: '_doc',
-        body: {
-          query: {
-            match: {
-              'nickname.PY': content
-            }
-          },
-          highlight: {fields: {'nickname.PY': {}}}
+  function isChn (s) {
+    const reg = /^[\u4e00-\u9fa5]+$/  // 全是中文
+    return reg.test(s)
+  }
+  const cnBegin = /^[\u4e00-\u9fa5]/
+  // 以中文开头
+  async function allChinese (content) {
+    const response = await client.search({
+      index: 'song',
+      type: '_doc',
+      body: {
+        query: {
+          multi_match: {
+            query: content,
+            type: 'phrase',
+            slop: 0,
+            fields: ['nickname.IKS', 'nickname.words']
+          }
+        },
+        from: 0,
+        size: 10,
+        highlight: {
+          fields: {
+            'nickname.IKS': {}
+          }
         }
-      })
-      for (const item of response.hits.hits) {
-        result.push({
-          name: item._source.nickname,
-          head: tool.formImg(item._source.headImg),
-          id: item._source.id
-        })
       }
-      res.send({error: false, result: result})
-    })()
+    })
+    for (const item of response.hits.hits) {
+      if (item) {
+        result.push({
+          name: item.highlight['nickname.IKS'][0]
+        })
+      } else {
+        result = []
+      }
+    }
+    res.send({error: false, result: result})
+  }
+  async function ChineseAndPinyinorEnglish (prefix) {
+    // const fix = await client.search({
+    //   index: 'song',
+    //   type: '_doc',
+    //   body: {
+    //     query: {
+    //       bool: {
+    //         must: {
+    //           match: {
+    //             'nickname.words': {
+    //               query: prefix
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // })
+    let fullPinyin = pinyin(content, {
+      heteronym: true, // 多音字
+      style: pinyin.STYLE_NORMAL
+    })
+    let newfP = ''
+    for (let i = 0; i < fullPinyin.length; i++) {
+      if (i === 0) {
+        newfP = fullPinyin[0].toString()
+      } else {
+        newfP = newfP + fullPinyin[i]
+      }
+    }
+    newfP = newfP.toLowerCase()
+    const fpSearch = await client.search({
+      index: 'song',
+      type: '_doc',
+      body: {
+        query: {
+          multi_match: {
+            query: newfP,
+            type: 'phrase',
+            slop: 0,
+            fields: ['nickname.PY']
+          }
+        },
+        hightlight: {
+          'nickname.PY': {}
+        }
+      }
+    })
+    for (const item of fpSearch.hits.hits) {
+      if (item) {
+        result.push({
+          name: item.highlight['nickname.PY'][0]
+        })
+      } else {
+        result = []
+      }
+    }
+    res.send({error: false, result: result})
+  }
+  async function mixSearch (content) {
+    const mix = await client.search({
+      index: 'song',
+      type: '_doc',
+      body: {
+        query: {
+          multi_match: {
+            query: content.toLowerCase(),
+            type: 'phrase',
+            slop: 0,
+            fields: ['nickname.words', 'nickname.PY']
+          }
+        },
+        highlight: {
+          fields: {
+            'nickname.IKS': {},
+            'nickname.PY': {}
+          }
+        }
+      }
+    })
+    for (const item of mix.hits.hits) {
+
+      if (item) {
+        if (item.highlight['nickname.IKS']) {
+          result.push({
+            name: item.highlight['nickname.IKS'][0]
+          })
+        } else if (item.highlight['nickname.PY']) {
+          result.push({
+            name: item._source.nickname
+          })
+        }
+      } else {
+        result = []
+      }
+    }
+    res.send({error: false, result: result})
+  }
+  if (active === 'author') {
+    if (isChn(content)) {
+      // 全中文
+      allChinese(content)
+    } else if (cnBegin.test(content)) {
+      let message = content.split('')
+      let arr = message
+      for (let i = 0; i < message.length; i++) {
+        if (!cnBegin.test(message[i])) {
+          arr.splice(i, message.length)
+          break
+        }
+      }
+      let prefix = arr.join('')
+      ChineseAndPinyinorEnglish(prefix)
+    } else {
+      // 非中文开头
+      mixSearch(content)
+    }
   } else if (active === 'title') {
     (async function () {
       const response = await client.search({

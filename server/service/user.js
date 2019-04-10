@@ -1798,28 +1798,7 @@ router.post('/user/addDepth', (req, res) => {
 //       }
 //     })
 // })
-router.post('/user/testEs', (req, res) => {
-  (async function () {
-    const response = await client.search({
-      index: 'andromeda.storyroots',
-      type: '_doc',
-      body: {
-        query: {
-          match: {
-            content: '澳洲'
-          }
-        },
-        highlight: {fields: {content: {}}}
-      }
-    })
 
-    for (const tweet of response.hits.hits) {
-      // console.log('tweet:', tweet)
-      console.log(tweet.highlight)
-    }
-    res.send('ok')
-  })()
-})
 router.post('/user/getUserByName', (req, res) => {
   User.findOne({nickname: req.body.name})
     .exec((err, doc) => {

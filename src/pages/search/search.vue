@@ -19,7 +19,7 @@
         <span class="magnifier"><img src="../../img/icon/magnifier.png" /></span>
         <span class="search-input">
           <form action="javascript:void(0)">
-            <input type="search" placeholder="搜索" @focus="startSearch"  v-on:keyup.enter="search" v-model="searchContent">
+            <input type="search" placeholder="搜索" @focus="startSearch" v-model="searchContent" @input="search">
           </form>
         </span>
         <span class="delete" v-if="deleteBtn" @click="deleteSearch"><img src="../../img/icon/delete.png"></span>
@@ -32,19 +32,19 @@
           <div class="sort-reason" :class="{active: sortSub}" @click="setSort('sub')">按订阅数排序</div>
         </div>
       </div>
-      <!--<div class="search-history">-->
-        <!--<div class="history-line">-->
-          <!--<span class="clock"><img src="../../img/icon/time.png" alt="" ></span>-->
-          <!--<span class="history-content">我真的还想再活200年</span>-->
-          <!--<span class="delete"><img src="../../img/icon/delete.png"></span>-->
-        <!--</div>-->
-        <!--<div class="history-line">-->
-          <!--<span class="clock"><img src="../../img/icon/time.png" alt="" ></span>-->
-          <!--<span class="history-content">我真的还想再活200年</span>-->
-          <!--<span class="delete"><img src="../../img/icon/delete.png"></span>-->
-        <!--</div>-->
-        <!--<div class="clear-history">清除浏览记录</div>-->
-      <!--</div>-->
+      <div class="search-history" v-if="searchHistory">
+        <div class="history-line">
+          <span class="clock"><img src="../../img/icon/time.png" alt="" ></span>
+          <span class="history-content">我真的还想再活200年</span>
+          <span class="delete"><img src="../../img/icon/delete.png"></span>
+        </div>
+        <div class="history-line">
+          <span class="clock"><img src="../../img/icon/time.png" alt="" ></span>
+          <span class="history-content">我真的还想再活200年</span>
+          <span class="delete"><img src="../../img/icon/delete.png"></span>
+        </div>
+        <div class="clear-history">清除浏览记录</div>
+      </div>
     </div>
     <div class="search-result" :class="{contentActive: contentActive, titleActive: titleActive, authorActive: authorActive}">
       <div class="one-search" v-if="contentActive || titleActive" v-for="item in result" @click="goStory(item.id)">
@@ -85,7 +85,7 @@
   import FootMenu from '../../components/foot-menu.vue'
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
-  // import debounce from '../../js/debounce.js'
+  import debounce from '../../js/debounce.js'
   export default {
     components: {
       notice,
@@ -103,7 +103,8 @@
         sortTime: false,
         sortSub: false,
         deleteBtn: false,  // 删除按钮
-        cancelBtn: false // 取消按钮
+        cancelBtn: false, // 取消按钮
+        searchHistory: false // 历史菜单
       }
     },
     beforeRouteEnter (to, from, next) {
@@ -119,6 +120,10 @@
     watch: {
       searchContent: function (val) {
         val.length > 0 ? this.deleteBtn = true : this.deleteBtn = false
+        if (val.length === 0) {
+          this.result = []
+        }
+        this.searchHistory = val.length === 0
       }
     },
     methods: {
@@ -140,48 +145,48 @@
       setSort (way) {
         //
       },
-      search () {
+      search: debounce(function () {
         if (this.searchContent) {
           Axios.post('/story/search', {
             active: this.active,
             content: this.searchContent
           }).then(response => {
             this.result = response.data.result
-            this.$nextTick(function () {
-              for (let i = 0; i < this.result.length; i++) {
-                // 预渲染
-                let f = document.getElementById(this.result[i].id)
-                this.result[i].lineCount = this.countLines(f)
-                if (this.result[i].lineCount > 3) {
-                  let minWords = this.result[i].content.length / this.result[i].lineCount  // 每行最少字数
-                  let delLeft = this.result[i].content.split('<em>').join('')
-                  let delRight = delLeft.split('</em>').join('')
-                  let targetPosition = 0
-                  for (let j = 0; j < this.result[i].content.length; j++) {
-                    if (this.result[i].content[j] === '<' && this.result[i].content[j + 1] === 'e' && this.result[i].content[j + 2] === 'm' && this.result[i].content[j + 3] === '>') {
-                      targetPosition = j
-                      break
-                    }
-                  }
-                  if (targetPosition < minWords * 3) {
-                    // 恢复显示
-                    this.result[i].notShow = true
-                    this.$set(this.result, i, this.result[i])  // 向vue声明
-                  } else {
-                    let cutwords = Math.round(targetPosition - (this.result[i].lineCount - 3) * minWords)  // 需要剪裁的字数（html去em标签再计算）
-                    this.result[i].content = this.result[i].content.split('').reverse().slice(0, delRight.length - cutwords).reverse().join('')  // 颠倒取值
-                    // 恢复显示
-                    this.result[i].notShow = true
-                    this.$set(this.result, i, this.result[i])  // 向vue声明
-                  }
-                }
-              }
-            })
+            // this.$nextTick(function () {
+            //   for (let i = 0; i < this.result.length; i++) {
+            //     // 预渲染
+            //     let f = document.getElementById(this.result[i].id)
+            //     this.result[i].lineCount = this.countLines(f)
+            //     if (this.result[i].lineCount > 3) {
+            //       let minWords = this.result[i].content.length / this.result[i].lineCount  // 每行最少字数
+            //       let delLeft = this.result[i].content.split('<em>').join('')
+            //       let delRight = delLeft.split('</em>').join('')
+            //       let targetPosition = 0
+            //       for (let j = 0; j < this.result[i].content.length; j++) {
+            //         if (this.result[i].content[j] === '<' && this.result[i].content[j + 1] === 'e' && this.result[i].content[j + 2] === 'm' && this.result[i].content[j + 3] === '>') {
+            //           targetPosition = j
+            //           break
+            //         }
+            //       }
+            //       if (targetPosition < minWords * 3) {
+            //         // 恢复显示
+            //         this.result[i].notShow = true
+            //         this.$set(this.result, i, this.result[i])  // 向vue声明
+            //       } else {
+            //         let cutwords = Math.round(targetPosition - (this.result[i].lineCount - 3) * minWords)  // 需要剪裁的字数（html去em标签再计算）
+            //         this.result[i].content = this.result[i].content.split('').reverse().slice(0, delRight.length - cutwords).reverse().join('')  // 颠倒取值
+            //         // 恢复显示
+            //         this.result[i].notShow = true
+            //         this.$set(this.result, i, this.result[i])  // 向vue声明
+            //       }
+            //     }
+            //   }
+            // })
           })
         } else {
           this.result = []
         }
-      },
+      }, 400),
       countLines (ele) {
         let styles = window.getComputedStyle(ele, null)
         let lh = parseInt(styles.lineHeight, 10)
@@ -191,12 +196,17 @@
       cancelSearch () {
         this.deleteBtn = false
         this.cancelBtn = false
+        this.searchHistory = false
+        this.result = []
       },
       deleteSearch () {
         this.searchContent = ''
       },
       startSearch () {
         this.cancelBtn = true
+        if (this.result.length === 0) {
+          this.searchHistory = true
+        }
       }
     }
   }
@@ -242,30 +252,37 @@
       }
       .friend-list {
         margin-top: 15px;
-        &:last-child {
-          margin-bottom: 100px;
-        }
         .one-friend {
           background: white;
-          display: flex;
           border-bottom: 1px solid $line-gray;
-          height: 60px;
+          height: 44px;
           width: 100%;
-          align-items: center;
           .head {
-            margin-right: 25px;
+            display: inline-block;
+            height: 44px;
+            vertical-align: top;
             img {
               margin-left: 25px;
-              height: 35px;
-              width: 35px;
+              margin-top: 10px;
+              height: 26px;
+              width: 26px;
             }
           }
           .name {
+            display: inline-block;
             color: $font-dark;
             font-size: 16px;
+            line-height: 44px;
+            margin-left: 20px;
           }
           &:last-child {
             border: none;
+          }
+          &:last-child:after {
+            display: block;
+            content: '';
+            height: 100px;
+            width: 100%;
           }
         }
       }
@@ -317,7 +334,7 @@
           line-height: 26px;
           span {
             display: inline-block;
-            width: 48px;
+            width: 50px;
             height: 26px;
             background: red;
             color: white;
@@ -348,6 +365,7 @@
       border-top: 1px solid $line-gray;
       border-bottom:1px solid $line-gray;
       .magnifier {
+        flex: 1;
         margin-left: 10px;
         margin-right: 12px;
         img {
@@ -356,19 +374,19 @@
         }
       }
       .search-input {
-        min-width: 70%;
+        flex: 16;
       }
       .delete {
-        position: absolute;
-        right: 60px;
-        top: 93px;
+        flex: 1.4;
+        vertical-align: bottom;
         img {
-          height: 17px;
-          width: 17px;
+          height: 16px;
+          width: 16px;
+          vertical-align: bottom;
         }
       }
       .cancel {
-        margin-left: 20px;
+        margin-right: 6px;
         letter-spacing: 1px;
         font-size: 13px;
         color: $w-gray;
@@ -382,9 +400,7 @@
         height: 35px;
         font-size: 14px;
         overflow: hidden;
-        width: 67%;
-        position: absolute;
-        top: 83px;
+        width: 100%;
       }
       input[type=search]::-webkit-search-cancel-button{
         -webkit-appearance: none;  //此处只是去掉默认的小×
@@ -396,7 +412,7 @@
       background: white;
       .history-line {
         display: flex;
-        height: 40px;
+        height: 44px;
         border-bottom: 1px solid $line-gray;
         span {
           display: flex;
@@ -405,15 +421,15 @@
         .clock {
           flex: 1;
           img {
-            width: 20px;
-            line-height: 40px;
+            width: 22px;
+            line-height: 44px;
             margin-left: 10px;
           }
         }
         .delete {
           flex: 1;
           img {
-            width: 13px;
+            width: 14px;
             text-align: center;
           }
         }
@@ -427,10 +443,10 @@
       }
     }
     .clear-history {
-      height: 40px;
+      height: 44px;
       color: $font-color;
       text-align: center;
-      line-height: 40px;
+      line-height: 44px;
     }
     .order {
       height:40px;

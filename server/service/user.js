@@ -145,7 +145,6 @@ router.get('/user/getContribute', (req, res) => {
   } else {
     res.send({count: count})
   }
-
   Root.findOne({id: id}, (err, root) => {
     if (err) {
       res.send({error: true})
@@ -180,13 +179,18 @@ router.get('/user/getContribute', (req, res) => {
               }
             })
             let exe = async function () {
-              for (let i = 0; i < user.myCreation.story.length; i++) {
-                let cstory = await getStoryRoot(user.myCreation.story[i])
-                if (cstory && root && cstory.toString() === root._id.toString()) {
-                  count += 1
-                }
-                if (i === user.myCreation.story.length - 1) {
-                  res.send({count: count})
+              if (user.myCreation.story.length === 0) {
+                res.send({count: 0})
+              } else {
+                for (let i = 0; i < user.myCreation.story.length; i++) {
+                  let cstory = await getStoryRoot(user.myCreation.story[i])
+                  if (cstory && root && cstory.toString() === root._id.toString()) {
+                    count += 1
+                  }
+                  console.log(i + '————————————————' + (user.myCreation.story.length - 1))
+                  if (i === user.myCreation.story.length - 1) {
+                    res.send({count: count})
+                  }
                 }
               }
             }
@@ -1803,14 +1807,215 @@ router.post('/user/getUserByName', (req, res) => {
   User.findOne({nickname: req.body.name})
     .exec((err, doc) => {
       if (err) {
-        res.send({error: true, type: 'DB', message: '数据库错误'})
+        res.send({error: true, type: 'DB', message: '发生错误'})
       } else {
         if (doc) {
           res.send({error: false, id: doc.id})
         } else {
-          res.send({error: true, type: 'User', message: '用户错误'})
+          res.send({error: true, type: 'User', message: '发生错误'})
         }
       }
     })
+})
+router.post('/user/getSearchPeople', (req, res) => {
+  User.findOne({nickname: req.body.content})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误'})
+      } else {
+        if (doc) {
+          res.send({error: false, path: `/people/${doc.id}`})
+        } else {
+          res.send({error: true, type: 'user', message: '发生错误'})
+        }
+      }
+    })
+})
+router.post('/user/getSearchTitle', (req, res) => {
+  Root.findOne({name: req.body.content})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误'})
+      } else {
+        if (doc) {
+          res.send({error: false, path: `/story/${doc.id}`})
+        } else {
+          res.send({error: true, type: 'user', message: '发生错误'})
+        }
+      }
+    })
+})
+router.post('/user/addSearchHistory', (req, res) => {
+  let content = req.body.content
+  let active = req.body.active
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    User.findOne({username: user})
+      .exec((err, doc) => {
+        if (err) {
+          res.send({error: true, type: 'DB'})
+        } else {
+          if (doc) {
+            doc.searchHistory.forEach((item, index) => {
+              if (item.content === content && item.style === active) {
+                doc.searchHistory.splice(index, 1)
+              }
+            })
+            if (doc.searchHistory.length <= 10) {
+              doc.searchHistory.push({
+                content: content,
+                style: active
+              })
+              res.cookie('AndSH', {sh: doc.searchHistory}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
+              User.updateOne({username: user}, {$set: {searchHistory: doc.searchHistory}})
+                .exec(err2 => {
+                  if (!err2) {
+                    res.send({error: false})
+                  } else {
+                    res.send({error: true, type: 'DB'})
+                  }
+                })
+            } else {
+              doc.searchHistory.reverse().pop()
+              doc.searchHistory.reverse()
+              doc.searchHistory.push({
+                content: content,
+                style: active
+              })
+              res.cookie('AndSH', {sh: doc.searchHistory}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
+              User.updateOne({username: user}, {$set: {searchHistory: doc.searchHistory}})
+                .exec(err2 => {
+                  if (!err2) {
+                    res.send({error: false})
+                  } else {
+                    res.send({error: true, type: 'DB'})
+                  }
+                })
+            }
+          } else {
+            res.send({error: true, type: 'user'})
+          }
+        }
+      })
+  } else {
+    if (req.cookies.ANDSH) {
+      if (req.cookies.ANDSH.sh.length <= 10) {
+        req.cookies.ANDSH.sh.push({
+          content: content,
+          style: active
+        })
+        res.cookie('AndSH', {sh: req.cookies.ANDSH.sh}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
+      } else {
+        req.cookies.ANDSH.sh.reverse().pop()
+        req.cookies.ANDSH.sh.reverse()
+        req.cookies.ANDSH.sh.push({
+          content: content,
+          style: active
+        })
+        res.cookie('AndSH', {sh: req.cookies.ANDSH.sh}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
+      }
+    }
+  }
+})
+router.post('/user/deleteSearchHistory', (req, res) => {
+  let content = req.body.content
+  let style = req.body.style
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    User.findOne({username: user})
+      .exec((err, doc) => {
+        if (err) {
+          res.send({error: true, type: 'DB'})
+        } else {
+          if (doc) {
+            doc.searchHistory.forEach((his, index) => {
+              if (his.content === content && his.style === style) {
+                doc.searchHistory.splice(index, 1)
+              }
+            })
+            User.updateOne({username: user}, {$set: {searchHistory: doc.searchHistory}})
+              .exec(err2 => {
+                if (err2) {
+                  res.send({error: true, type: 'user'})
+                } else {
+                  res.cookie('AndSH', {sh: doc.searchHistory}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
+                  res.send({error: false, history: doc.searchHistory})
+                }
+              })
+          } else {
+            res.send({error: true, type: 'user'})
+          }
+        }
+      })
+  } else {
+    if (req.cookies.ANDSH) {
+      req.cookies.ANDSH.forEach((sh, i) => {
+        if (sh.content === content && sh.style === style) {
+          req.cookies.ANDSH.splice(i, 1)
+          res.cookie('AndSH', {sh: req.cookies.ANDSH}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
+          res.send({error: false, history: req.cookies.ANDSH})
+        }
+      })
+      res.send({error: false})
+    }
+  }
+})
+router.get('/user/getSearchHistory', (req, res) => {
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    User.findOne({username: user}, (err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB'})
+      } else {
+        if (doc) {
+          res.send({error: false, history: doc.searchHistory})
+        } else {
+          res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})
+        }
+      }
+    })
+  } else {
+    if (req.cookies.ANDSH) {
+      res.send({error: false, history: req.cookies.ANDSH.sh})
+    } else {
+      res.send({error: false, history: []})
+    }
+  }
+})
+router.post('/user/clearSearchHistory', (req, res) => {
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    User.updateOne({username: user}, {$set: {searchHistory: []}}, (err) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      } else {
+        res.cookie('AndSH', {sh: []}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
+        res.send({error: false})
+      }
+    })
+  } else {
+    res.cookie('AndSH', {sh: []}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
+    res.send({error: false})
+  }
 })
 module.exports = router

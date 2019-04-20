@@ -81,7 +81,7 @@
           })
           .catch((error) => {
             console.log(error)
-            this.captchaPic = '<span style="line-height: 48px">验证码获取错误</span>'
+            this.captchaPic = '<span style="line-height: 48px">获取错误</span>'
           })
       },
       checkUserRepeated () {
@@ -237,7 +237,7 @@
         display: flex;
         align-items: center;
         input {
-          flex: 7;
+          flex: 10;
           height: 39px;
           color: #333333;
           border: none;

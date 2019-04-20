@@ -72,24 +72,24 @@
         if (this.username.length) {
           let userReg = /^[0-9a-zA-Z_]{6,16}$/
           if (!userReg.test(this.username)) {
-            this.usernameError = '用户名格式错误'
+            this.usernameError = '格式错误'
           } else {
             this.usernameError = ''
           }
         } else {
-          this.usernameError = '用户名不能为空'
+          this.usernameError = '不能为空'
         }
       },
       passwordCheck () {
         if (this.password.length) {
           let pwReg = /^[A-Za-z0-9]{6,16}$/
           if (!pwReg.test(this.password)) {
-            this.passwordError = '密码格式错误'
+            this.passwordError = '格式错误'
           } else {
             this.passwordError = ''
           }
         } else {
-          this.passwordError = '密码不能为空'
+          this.passwordError = '不能为空'
         }
       },
       login () {
@@ -204,7 +204,7 @@
           border: none;
           outline: none;
           padding-left: 5px;
-          flex: 2;
+          flex: 3;
           height: 42px;
           font-size: 14px;
           overflow: hidden;
@@ -213,7 +213,7 @@
         &:last-child {
           border: none;
           input{
-            flex: 2;
+            flex: 3;
           }
           .error-icon {
             flex: 1;

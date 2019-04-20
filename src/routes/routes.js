@@ -185,11 +185,11 @@ export default [
   },
   {
     path: '/error',
-    component: resolve => require(['../pages/error.vue'], resolve)
+    component: resolve => require(['../components/error/errorPage.vue'], resolve)
   },
   {
     path: '*',
     name: 'error',
-    component: resolve => require(['../pages/error.vue'], resolve)
+    component: resolve => require(['../components/error/errorPage.vue'], resolve)
   }
 ]

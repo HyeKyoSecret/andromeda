@@ -106,18 +106,18 @@
         .head-img{
           flex: 2;
           img {
-            width: 80px;
-            height: 80px;
+            width: 78px;
+            height: 78px;
             border-radius: 8px;
             margin-left: 5px;
           }
         }
         .words {
-          flex: 7;
+          flex: 9;
           height: 100%;
           font-size: 15px;
           font-weight: 500;
-          padding: 0 15px 0 15px;
+          padding: 0 12px 0 12px;
           .name {
             display: inline-block;
             margin-top: 8px;
@@ -253,23 +253,23 @@
           .add-friend {
             height: 42px;
             line-height: 42px;
-            border-radius: 8px;
+            /*border-radius: 8px;*/
             background: $main-color;
             font-size: 14px;
             color: #ffffff;
             text-align: center;
-            width: 85%;
+            width: 90%;
             margin: 30px auto 0 auto;
           }
           .delete-friend {
             height: 42px;
             line-height: 42px;
-            border-radius: 8px;
+            /*border-radius: 8px;*/
             background: $main-red;
             font-size: 14px;
             color: #ffffff;
             text-align: center;
-            width: 85%;
+            width: 90%;
             margin: 30px auto 0 auto;
           }
         }
@@ -277,23 +277,23 @@
       .add-friend {
         height: 42px;
         line-height: 42px;
-        border-radius: 8px;
+        /*border-radius: 8px;*/
         background: $main-color;
         font-size: 14px;
         color: #ffffff;
         text-align: center;
-        width: 85%;
+        width: 90%;
         margin: 30px auto 0 auto;
       }
       .delete-friend {
         height: 42px;
         line-height: 42px;
-        border-radius: 8px;
+        /*border-radius: 8px;*/
         background: $main-red;
         font-size: 14px;
         color: #ffffff;
         text-align: center;
-        width: 85%;
+        width: 90%;
         margin: 30px auto 0 auto;
       }
     }

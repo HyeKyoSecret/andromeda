@@ -139,6 +139,11 @@ const UserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'History'
   },
+  searchHistory: [{
+    content: String,
+    date: { type: Date, default: Date.now },
+    style: String
+  }],
   commentTo: [{
     type: Schema.Types.ObjectId,
     ref: 'Comment'

@@ -31,7 +31,7 @@
     <div class="shelf" v-for="(item, index) in contentList" v-if="subList.length">
       <div class="book" v-for="(q, index2) in item" @click="changeCover(q)">
         <div class="cover"><img :src="q.coverImg" @error="setErrorImg(index, index2)"/></div>
-        <!--<div class="progress-bar"></div>-->
+        <div class="progress-bar" v-bind:style="{ width: q.readPercent * 3 / 5 + '%'}"></div>
         <div class="name">{{q.name}}</div>
       </div>
     </div>
@@ -77,7 +77,7 @@
               position: absolute;
               top: 50%;
               right: 15%;
-              font-size: 12px;
+              font-size: 13px;
               color: $font-gray;
             }
           }
@@ -114,6 +114,10 @@
             text-align: center;
           }
         }
+      }
+      .process-bar {
+        height: 3px;
+        background-color: #00db75;
       }
     }
     .shelf {
@@ -191,6 +195,7 @@
         this.cover.name = obj.name
         this.cover.follower = obj.follower
         this.cover.coverImg = obj.coverImg
+        this.cover.readPercent = obj.readPercent
         if (obj.id && this.cover.id) {
           Axios.all([Axios.get('/user/getSubStack', {params: {id: obj.id}}), Axios.get('/user/getContribute', {params: {id: this.cover.id}})])
             .then(Axios.spread((stack, contr) => {
@@ -198,7 +203,7 @@
               this.cover.latest = stack.data.latest
               this.cover.nodeNum = stack.data.count
               this.cover.myCreation = contr.data.count
-              this.cover.readPercent = `${(100 * this.cover.readCounts / this.cover.nodeNum).toFixed(1)}%`
+              this.cover.readPercent = `${(100 * this.cover.readCounts / this.cover.nodeNum).toFixed(0)}%`
             }))
         }
       },
@@ -216,18 +221,29 @@
                 this.cover.name = this.subList[0].name
                 this.cover.follower = this.subList[0].follower
                 this.cover.coverImg = this.subList[0].coverImg
-              }
-              let temp = parseInt(this.subList.length / 3)
-              for (let i = 0; i <= temp; i++) {
-                this.contentList[i] = []
-              }
-              for (let i = 0; i <= temp; i++) {
-                for (let j = 0; j < 3; j++) {
-                  if (this.subList[i * 3 + j]) {
-                    this.contentList[i][j] = this.subList[i * 3 + j]
-                  } else {
-                    break
+                let temp = parseInt(this.subList.length / 3)
+                for (let i = 0; i <= temp; i++) {
+                  this.contentList[i] = []
+                }
+                for (let i = 0; i <= temp; i++) {
+                  for (let j = 0; j < 3; j++) {
+                    if (this.subList[i * 3 + j]) {
+                      this.contentList[i][j] = this.subList[i * 3 + j]
+                    } else {
+                      break
+                    }
                   }
+                }
+                for (let i = 0; i < this.subList.length; i++) {
+                  Axios.all([Axios.get('/user/getSubStack', {params: {id: this.subList[i].id}}), Axios.get('/user/getContribute', {params: {id: this.subList[i].id}})])
+                    .then(Axios.spread((stack, contr) => {
+                      this.subList[i].readCounts = stack.data.readCounts
+                      this.subList[i].latest = stack.data.latest
+                      this.subList[i].nodeNum = stack.data.count
+                      this.subList[i].myCreation = contr.data.count
+                      this.subList[i].readPercent = `${(100 * this.subList[i].readCounts / this.subList[i].nodeNum).toFixed(0)}`
+                      this.$set(this.subList, i, this.subList[i])  // 向vue声明
+                    }))
                 }
               }
               this.changeCover(this.cover)

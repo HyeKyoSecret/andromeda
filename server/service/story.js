@@ -18,6 +18,14 @@ const gm = require('gm').subClass({imageMagick: true})
 const mongoose = require('../db/mongoose')
 const pinyin = require('pinyin')
 moment.locale('zh-cn')
+const Trim = function (str, isGlobal) {
+  let result
+  result = str.replace(/(^\s+)|(\s+$)/g, '')
+  if (isGlobal.toLowerCase() === 'g') {
+    result = result.replace(/\s/g, '')
+  }
+  return result
+}
 router.post('/story/buildRoot', (req, res) => {
   const form = new formidable.IncomingForm()
   const imgPath = path.resolve(__dirname, '../picture/cover/')   // 图片保存路径
@@ -386,7 +394,7 @@ router.post('/story/saveStoryDraft', (req, res) => {
         }
       } else {
         // 拒绝
-        res.send({permit: false, message: '发生错误请稍后再试'})
+        res.send({permit: false, message: '发生错误，请稍后再试'})
       }
     })
   } else {
@@ -2011,7 +2019,7 @@ router.post('/story/getStoryBrief', (req, res) => {
 })
 router.post('/story/search', (req, res) => {
   let active = req.body.active
-  let content = req.body.content
+  let content = Trim(req.body.content, 'g')
   let result = []
   async function getPeople (id) {
     return new Promise((resolve, reject) => {
@@ -2032,141 +2040,456 @@ router.post('/story/search', (req, res) => {
   const cnBegin = /^[\u4e00-\u9fa5]/
   // 以中文开头
   async function allChinese (content) {
-    const response = await client.search({
-      index: 'song',
-      type: '_doc',
-      body: {
-        query: {
-          multi_match: {
-            query: content,
-            type: 'phrase',
-            slop: 0,
-            fields: ['nickname.IKS', 'nickname.words']
-          }
-        },
-        from: 0,
-        size: 10,
-        highlight: {
-          fields: {
-            'nickname.IKS': {}
+    try {
+      const response = await client.search({
+        index: 'andromeda.users',
+        type: '_doc',
+        body: {
+          query: {
+            multi_match: {
+              query: content,
+              type: 'best_fields',
+              fields: ['nickname.IKS', 'nickname.words^5'],
+              tie_breaker: 0.3,
+              operator: 'and'
+            }
+          },
+          from: 0,
+          size: 10,
+          highlight: {
+            fields: {
+              'nickname.IKS': {}
+            }
           }
         }
-      }
-    })
-    for (const item of response.hits.hits) {
-      if (item) {
+      })
+      for (const item of response.hits.hits) {
         result.push({
-          name: item.highlight['nickname.IKS'][0]
+          name: (item && item.highlight) ? item.highlight['nickname.IKS'][0] : item._source.nickname,
+          raw: item._source.nickname,
+          head: item._source.headImg ? tool.formImg(item._source.headImg) : 'default',
+          id: item._source.id
         })
-      } else {
-        result = []
       }
+      res.send({error: false, result: result})
+    } catch (err) {
+      res.send({error: true, type: 'ES', message: '请求超时'})
     }
-    res.send({error: false, result: result})
   }
   async function ChineseAndPinyinorEnglish (prefix) {
-    // const fix = await client.search({
-    //   index: 'song',
-    //   type: '_doc',
-    //   body: {
-    //     query: {
-    //       bool: {
-    //         must: {
-    //           match: {
-    //             'nickname.words': {
-    //               query: prefix
-    //             }
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // })
-    let fullPinyin = pinyin(content, {
-      heteronym: true, // 多音字
-      style: pinyin.STYLE_NORMAL
-    })
-    let newfP = ''
-    for (let i = 0; i < fullPinyin.length; i++) {
-      if (i === 0) {
-        newfP = fullPinyin[0].toString()
-      } else {
-        newfP = newfP + fullPinyin[i]
-      }
-    }
-    newfP = newfP.toLowerCase()
-    const fpSearch = await client.search({
-      index: 'song',
-      type: '_doc',
-      body: {
-        query: {
-          multi_match: {
-            query: newfP,
-            type: 'phrase',
-            slop: 0,
-            fields: ['nickname.PY']
-          }
-        },
-        hightlight: {
-          'nickname.PY': {}
+    try {
+      let fullPinyin = pinyin(content, {
+        heteronym: true, // 多音字
+        style: pinyin.STYLE_NORMAL
+      })
+      let simplePinyin = pinyin(content, {
+        heteronym: true, // 多音字
+        style: pinyin.STYLE_FIRST_LETTER
+      })
+      let newfP = ''
+      let newsP = ''
+      for (let i = 0; i < fullPinyin.length; i++) {
+        if (i === 0) {
+          newfP = fullPinyin[0].toString()
+          newsP = simplePinyin[0].toString()
+        } else {
+          newfP = newfP + fullPinyin[i]
+          newsP = newsP + simplePinyin[i]
         }
       }
-    })
-    for (const item of fpSearch.hits.hits) {
-      if (item) {
-        result.push({
-          name: item.highlight['nickname.PY'][0]
-        })
-      } else {
-        result = []
+      newfP = newfP.toLowerCase()
+      const fpSearch = await client.search({
+        index: 'andromeda.users',
+        type: '_doc',
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  match: {
+                    'nickname.IKS': {
+                      query: prefix
+                    }
+                  }
+                }
+              ],
+              should: [
+                {
+                  term: {
+                    'nickname.SPY': newsP
+                  }
+                },
+                {
+                  match: {
+                    'nickname.FPY': {
+                      query: newfP,
+                      boost: 1.5
+                    }
+                  }
+                }
+              ],
+              minimum_should_match: '50%'
+            }
+          },
+          highlight: {
+            fields: {
+              'nickname.SPY': {},
+              'nickname.FPY': {},
+              'nickname.IKS': {}
+            }
+          }
+        }
+      })
+      for (const item of fpSearch.hits.hits) {
+        if (item) {
+          result.push({
+            name: (item && item.highlight && item.highlight['nickname.IKS']) ? item.highlight['nickname.IKS'][0] : item._source.nickname,
+            raw: item._source.nickname,
+            head: item._source.headImg ? tool.formImg(item._source.headImg) : 'default',
+            id: item._source.id
+          })
+        }
       }
+      res.send({error: false, result: result})
+    } catch (e) {
+      console.log(e)
     }
-    res.send({error: false, result: result})
   }
   async function mixSearch (content) {
-    const mix = await client.search({
-      index: 'song',
-      type: '_doc',
-      body: {
-        query: {
-          multi_match: {
-            query: content.toLowerCase(),
-            type: 'phrase',
-            slop: 0,
-            fields: ['nickname.words', 'nickname.PY']
+    try {
+      let fullPinyin = pinyin(content, {
+        heteronym: true, // 多音字
+        style: pinyin.STYLE_NORMAL
+      })
+      let simplePinyin = pinyin(content, {
+        heteronym: true, // 多音字
+        style: pinyin.STYLE_FIRST_LETTER
+      })
+      let newfP = ''
+      let newsP = ''
+      for (let i = 0; i < fullPinyin.length; i++) {
+        if (i === 0) {
+          newfP = fullPinyin[0].toString()
+          newsP = simplePinyin[0].toString()
+        } else {
+          newfP = newfP + fullPinyin[i]
+          newsP = newsP + simplePinyin[i]
+        }
+      }
+      newfP = newfP.toLowerCase()
+      newsP = newsP.toLowerCase()
+      const mix = await client.search({
+        index: 'andromeda.users',
+        type: '_doc',
+        body: {
+          query: {
+            bool: {
+              should: [
+                {
+                  match: {
+                    'nickname.IKS': {
+                      query: content.toLowerCase(),
+                      boost: 0.8
+                    }
+                  }
+                },
+                {
+                  match: {
+                    'nickname.FPY': {
+                      query: newfP,
+                      boost: 1
+                    }
+                  }
+                },
+                {
+                  match: {
+                    'nickname.SPY': {
+                      query: newsP,
+                      boost: 1
+                    }
+                  }
+                }
+              ],
+              minimum_should_match: 1
+            }
+          },
+          highlight: {
+            fields: {
+              'nickname.IKS': {},
+              'nickname.SPY': {},
+              'nickname.PY': {}
+            }
           }
-        },
-        highlight: {
-          fields: {
-            'nickname.IKS': {},
-            'nickname.PY': {}
+        }
+      })
+      for (const item of mix.hits.hits) {
+        if (item && item.highlight) {
+          if (item.highlight['nickname.IKS'] && item.highlight['nickname.IKS'][0]) {
+            result.push({
+              name: item.highlight['nickname.IKS'][0],
+              raw: item._source.nickname,
+              head: item._source.headImg ? tool.formImg(item._source.headImg) : 'default',
+              id: item._source.id
+            })
+          } else {
+            result.push({
+              name: item._source.nickname,
+              raw: item._source.nickname,
+              head: item._source.headImg ? tool.formImg(item._source.headImg) : 'default',
+              id: item._source.id
+            })
           }
         }
       }
-    })
-    for (const item of mix.hits.hits) {
-
-      if (item) {
-        if (item.highlight['nickname.IKS']) {
-          result.push({
-            name: item.highlight['nickname.IKS'][0]
-          })
-        } else if (item.highlight['nickname.PY']) {
-          result.push({
-            name: item._source.nickname
-          })
-        }
-      } else {
-        result = []
-      }
+      res.send({error: false, result: result})
+    } catch (e) {
+      console.log(e)
     }
-    res.send({error: false, result: result})
+  }
+  async function allChineseTitle (content) {
+    try {
+      const response = await client.search({
+        index: 'andromeda.storyroots',
+        type: '_doc',
+        body: {
+          query: {
+            multi_match: {
+              query: content,
+              type: 'best_fields',
+              fields: ['name.IKS', 'name.words^5'],
+              tie_breaker: 0.3,
+              operator: 'and'
+            }
+          },
+          from: 0,
+          size: 10,
+          highlight: {
+            fields: {
+              'name.IKS': {}
+            }
+          }
+        }
+      })
+      for (const item of response.hits.hits) {
+        result.push({
+          name: (item && item.highlight) ? item.highlight['name.IKS'][0] : item._source.name,
+          raw: item._source.name,
+          coverImg: item._source.coverImg ? tool.formImg(item._source.coverImg) : 'default',
+          subNumber: item._source.subscribe ? item._source.subscribe.length : 0,
+          date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
+          author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
+          id: item._source.id,
+          content: item._source.content
+        })
+      }
+      res.send({error: false, result: result})
+    } catch (err) {
+      console.log(err)
+    }
+  }
+  async function ChineseAndPinyinorEnglishTitle (prefix) {
+    try {
+      let fullPinyin = pinyin(content, {
+        heteronym: true, // 多音字
+        style: pinyin.STYLE_NORMAL
+      })
+      let simplePinyin = pinyin(content, {
+        heteronym: true, // 多音字
+        style: pinyin.STYLE_FIRST_LETTER
+      })
+      let newfP = ''
+      let newsP = ''
+      for (let i = 0; i < fullPinyin.length; i++) {
+        if (i === 0) {
+          newfP = fullPinyin[0].toString()
+          newsP = simplePinyin[0].toString()
+        } else {
+          newfP = newfP + fullPinyin[i]
+          newsP = newsP + simplePinyin[i]
+        }
+      }
+      newfP = newfP.toLowerCase()
+      const fpSearch = await client.search({
+        index: 'andromeda.storyroots',
+        type: '_doc',
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  match: {
+                    'name.IKS': {
+                      query: prefix
+                    }
+                  }
+                }
+              ],
+              should: [
+                {
+                  term: {
+                    'name.SPY': newsP
+                  }
+                },
+                {
+                  match: {
+                    'name.FPY': {
+                      query: newfP,
+                      boost: 1.5
+                    }
+                  }
+                }
+              ],
+              minimum_should_match: '50%'
+            }
+          },
+          highlight: {
+            fields: {
+              'name.SPY': {},
+              'name.FPY': {},
+              'name.IKS': {}
+            }
+          }
+        }
+      })
+      for (const item of fpSearch.hits.hits) {
+        if (item) {
+          if (item.highlight && item.highlight['name.IKS']) {
+            result.push({
+              name: item.highlight['name.IKS'][0],
+              raw: item._source.name,
+              coverImg: item._source.coverImg ? tool.formImg(item._source.coverImg) : 'default',
+              subNumber: item._source.subscribe ? item._source.subscribe.length : 0,
+              date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
+              author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
+              id: item._source.id,
+              content: item._source.content
+            })
+          } else {
+            result.push({
+              name: item._source.name,
+              raw: item._source.name,
+              coverImg: item._source.coverImg ? tool.formImg(item._source.coverImg) : 'default',
+              subNumber: item._source.subscribe ? item._source.subscribe.length : 0,
+              date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
+              author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
+              id: item._source.id,
+              content: item._source.content
+            })
+          }
+        }
+      }
+      res.send({error: false, result: result})
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  async function mixSearchTitle (content) {
+    try {
+      let fullPinyin = pinyin(content, {
+        heteronym: true, // 多音字
+        style: pinyin.STYLE_NORMAL
+      })
+      let simplePinyin = pinyin(content, {
+        heteronym: true, // 多音字
+        style: pinyin.STYLE_FIRST_LETTER
+      })
+      let newfP = ''
+      let newsP = ''
+      for (let i = 0; i < fullPinyin.length; i++) {
+        if (i === 0) {
+          newfP = fullPinyin[0].toString()
+          newsP = simplePinyin[0].toString()
+        } else {
+          newfP = newfP + fullPinyin[i]
+          newsP = newsP + simplePinyin[i]
+        }
+      }
+      newfP = newfP.toLowerCase()
+      newsP = newsP.toLowerCase()
+      const mix = await client.search({
+        index: 'andromeda.storyroots',
+        type: '_doc',
+        body: {
+          query: {
+            bool: {
+              should: [
+                {
+                  match: {
+                    'name.IKS': {
+                      query: content.toLowerCase(),
+                      boost: 0.8
+                    }
+                  }
+                },
+                {
+                  match: {
+                    'name.FPY': {
+                      query: newfP,
+                      boost: 1
+                    }
+                  }
+                },
+                {
+                  match: {
+                    'name.SPY': {
+                      query: newsP,
+                      boost: 1
+                    }
+                  }
+                }
+              ],
+              minimum_should_match: 1
+            }
+          },
+          highlight: {
+            fields: {
+              'name.IKS': {},
+              'name.SPY': {},
+              'name.PY': {}
+            }
+          }
+        }
+      })
+      for (const item of mix.hits.hits) {
+        if (item && item.highlight) {
+          if (item.highlight['name.IKS'] && item.highlight['name.IKS'][0]) {
+            result.push({
+              name: item.highlight['name.IKS'][0],
+              raw: item._source.name,
+              coverImg: item._source.coverImg ? tool.formImg(item._source.coverImg) : 'default',
+              subNumber: item._source.subscribe ? item._source.subscribe.length : 0,
+              date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
+              author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
+              id: item._source.id,
+              content: item._source.content
+            })
+          } else {
+            result.push({
+              name: item._source.name,
+              raw: item._source.name,
+              coverImg: item._source.coverImg ? tool.formImg(item._source.coverImg) : 'default',
+              subNumber: item._source.subscribe ? item._source.subscribe.length : 0,
+              date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
+              author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
+              id: item._source.id,
+              content: item._source.content
+            })
+          }
+        }
+      }
+      res.send({error: false, result: result})
+    } catch (e) {
+      console.log(e)
+    }
   }
   if (active === 'author') {
     if (isChn(content)) {
       // 全中文
-      allChinese(content)
+      allChinese(content).catch(err => {
+        console.log(err)
+      })
     } else if (cnBegin.test(content)) {
+      // 中文开头
       let message = content.split('')
       let arr = message
       for (let i = 0; i < message.length; i++) {
@@ -2176,88 +2499,92 @@ router.post('/story/search', (req, res) => {
         }
       }
       let prefix = arr.join('')
-      ChineseAndPinyinorEnglish(prefix)
+      ChineseAndPinyinorEnglish(prefix).catch(err => {
+        console.log(err)
+      })
     } else {
       // 非中文开头
-      mixSearch(content)
+      mixSearch(content).catch(err => {
+        console.log(err)
+      })
     }
   } else if (active === 'title') {
-    (async function () {
-      const response = await client.search({
-        index: 'andromeda.storyroots',
-        type: '_doc',
-        body: {
-          query: {
-            match: {
-              name: content
-            }
-          },
-          highlight: {fields: {name: {}}}
-        }
+    if (isChn(content)) {
+      // 全中文
+      allChineseTitle(content).catch(err => {
+        console.log(err)
       })
-      for (const item of response.hits.hits) {
-        result.push({
-          coverImg: tool.formImg(item._source.coverImg),
-          name: item.highlight.name[0],
-          content: item._source.content,
-          subNumber: item._source.subscribe.length,
-          date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
-          author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
-          id: item._source.id
-        })
+    } else if (cnBegin.test(content)) {
+      // 中文开头
+      let message = content.split('')
+      let arr = message
+      for (let i = 0; i < message.length; i++) {
+        if (!cnBegin.test(message[i])) {
+          arr.splice(i, message.length)
+          break
+        }
       }
-      res.send({error: false, result: result})
-    })()
+      let prefix = arr.join('')
+      ChineseAndPinyinorEnglishTitle(prefix).catch(err => {
+        console.log(err)
+      })
+    } else {
+      // 非中文开头
+      mixSearchTitle(content).catch(err => {
+        console.log(err)
+      })
+    }
   } else if (active === 'content') {
-    (async function () {
-      const response = await client.search({
-        index: 'andromeda.storyroots',
-        type: '_doc',
-        body: {
-          query: {
-            match: {
-              content: content
-            }
-          },
-          highlight: {fields: {content: {}}}
-        }
-      })
-      const storyRes = await client.search({
-        index: 'andromeda.stories',
-        type: '_doc',
-        body: {
-          query: {
-            match: {
-              content: content
-            }
-          },
-          highlight: {fields: {content: {}}}
-        }
-      })
-      for (const item of response.hits.hits) {
-        result.push({
-          coverImg: tool.formImg(item._source.coverImg),
-          name: item._source.name,
-          content: item.highlight.content[0],
-          subNumber: item._source.subscribe.length,
-          date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
-          author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
-          id: item._source.id
-        })
-      }
-      for (const item of storyRes.hits.hits) {
-        result.push({
-          coverImg: tool.formImg(item._source.coverImg),
-          name: item._source.name,
-          content: item.highlight.content[0],
-          subNumber: item._source.subscribe.length,
-          date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
-          author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
-          id: item._source.id
-        })
-      }
-      res.send({error: false, result: result})
-    })()
+    // 暂时不支持内容搜索
+    // (async function () {
+    //   const response = await client.search({
+    //     index: 'andromeda.storyroots',
+    //     type: '_doc',
+    //     body: {
+    //       query: {
+    //         match: {
+    //           content: content
+    //         }
+    //       },
+    //       highlight: {fields: {content: {}}}
+    //     }
+    //   })
+    //   const storyRes = await client.search({
+    //     index: 'andromeda.stories',
+    //     type: '_doc',
+    //     body: {
+    //       query: {
+    //         match: {
+    //           content: content
+    //         }
+    //       },
+    //       highlight: {fields: {content: {}}}
+    //     }
+    //   })
+    //   for (const item of response.hits.hits) {
+    //     result.push({
+    //       coverImg: tool.formImg(item._source.coverImg),
+    //       name: item._source.name,
+    //       content: item.highlight.content[0],
+    //       subNumber: item._source.subscribe.length,
+    //       date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
+    //       author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
+    //       id: item._source.id
+    //     })
+    //   }
+    //   for (const item of storyRes.hits.hits) {
+    //     result.push({
+    //       coverImg: tool.formImg(item._source.coverImg),
+    //       name: item._source.name,
+    //       content: item.highlight.content[0],
+    //       subNumber: item._source.subscribe.length,
+    //       date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
+    //       author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
+    //       id: item._source.id
+    //     })
+    //   }
+    //   res.send({error: false, result: result})
+    // })()
   }
 })
 module.exports = router

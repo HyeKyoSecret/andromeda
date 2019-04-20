@@ -10,9 +10,9 @@
           <div>
             <span class="name" :class="{active: titleActive}" @click="changeActive('title')">题目</span>
           </div>
-          <div>
-            <span class="content" :class="{active: contentActive}" @click="changeActive('content')">内容</span>
-          </div>
+          <!--<div>-->
+            <!--<span class="content" :class="{active: contentActive}" @click="changeActive('content')">内容</span>-->
+          <!--</div>-->
         </div>
       </div>
       <div class="search-bar">
@@ -25,29 +25,24 @@
         <span class="delete" v-if="deleteBtn" @click="deleteSearch"><img src="../../img/icon/delete.png"></span>
         <span class="cancel" v-if="cancelBtn" @click="cancelSearch">取消</span>
       </div>
-      <div class="order" v-if="titleActive">
-        <div class="inside-box">
-          <div class="sort-reason" :class="{active: sortDefault}" @click="setSort('default')">默认排序</div>
-          <div class="sort-reason" :class="{active: sortTime}" @click="setSort('time')">按时间排序</div>
-          <div class="sort-reason" :class="{active: sortSub}" @click="setSort('sub')">按订阅数排序</div>
-        </div>
-      </div>
-      <div class="search-history" v-if="searchHistory">
-        <div class="history-line">
+      <!--<div class="order" v-if="titleActive">-->
+        <!--<div class="inside-box">-->
+          <!--<div class="sort-reason" :class="{active: sortDefault}" @click="setSort('default')">默认排序</div>-->
+          <!--<div class="sort-reason" :class="{active: sortTime}" @click="setSort('time')">按时间排序</div>-->
+          <!--<div class="sort-reason" :class="{active: sortSub}" @click="setSort('sub')">按订阅数排序</div>-->
+        <!--</div>-->
+      <!--</div>-->
+      <div class="search-history" v-if="searchHistory && searchHistoryList.length > 0">
+        <div class="history-line" v-for="(item, index) in searchHistoryList" @click="goSearch(item.content, item.style)">
           <span class="clock"><img src="../../img/icon/time.png" alt="" ></span>
-          <span class="history-content">我真的还想再活200年</span>
-          <span class="delete"><img src="../../img/icon/delete.png"></span>
+          <span class="history-content">{{item.content}}</span>
+          <span class="delete" @click="deleteSearchHistory(item.content, item.style, index)"><img src="../../img/icon/delete.png"></span>
         </div>
-        <div class="history-line">
-          <span class="clock"><img src="../../img/icon/time.png" alt="" ></span>
-          <span class="history-content">我真的还想再活200年</span>
-          <span class="delete"><img src="../../img/icon/delete.png"></span>
-        </div>
-        <div class="clear-history">清除浏览记录</div>
+        <div class="clear-history" @click="clearSearchHistory">清除浏览记录</div>
       </div>
     </div>
     <div class="search-result" :class="{contentActive: contentActive, titleActive: titleActive, authorActive: authorActive}">
-      <div class="one-search" v-if="contentActive || titleActive" v-for="item in result" @click="goStory(item.id)">
+      <div class="one-search" v-if="contentActive || titleActive" v-for="item in result" @click="goSearch(item.raw, active)">
         <div class="story-information">
           <div class="cover">
             <div><img :src="item.coverImg" /></div>
@@ -71,8 +66,8 @@
       <!--人-->
       <div class="search-board" v-if="authorActive">
         <div class="friend-list">
-          <div class="one-friend" v-for="item in result" @click="goPeople(item.id)">
-            <div class="head"><img :src="item.head"/></div>
+          <div class="one-friend" v-for="(item, index) in result" @click="goSearch(item.raw, active)">
+            <div class="head"><img :src="item.head" @error="setErrorImg(index)"/></div>
             <div class="name" v-html="item.name"></div>
           </div>
         </div>
@@ -86,6 +81,7 @@
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
   import debounce from '../../js/debounce.js'
+  import { Toast, MessageBox, Indicator } from 'mint-ui'
   export default {
     components: {
       notice,
@@ -104,7 +100,8 @@
         sortSub: false,
         deleteBtn: false,  // 删除按钮
         cancelBtn: false, // 取消按钮
-        searchHistory: false // 历史菜单
+        searchHistory: false, // 历史菜单
+        searchHistoryList: [] // 历史菜单列表
       }
     },
     beforeRouteEnter (to, from, next) {
@@ -117,11 +114,15 @@
         next()
       }
     },
+    created: function () {
+      this.getSearchHistory()
+    },
     watch: {
       searchContent: function (val) {
         val.length > 0 ? this.deleteBtn = true : this.deleteBtn = false
         if (val.length === 0) {
           this.result = []
+          this.getSearchHistory()
         }
         this.searchHistory = val.length === 0
       }
@@ -136,8 +137,105 @@
         this[`${param}Active`] = true
         this.search()
       },
-      goStory (id) {
-        this.$router.push('/story/' + id)
+      getSearchHistory () {
+        Axios.get('/user/getSearchHistory')
+          .then(response => {
+            if (!response.data.error) {
+              this.searchHistoryList = response.data.history
+            }
+          })
+      },
+      deleteSearchHistory (content, style, index) {
+        Axios.post('/user/deleteSearchHistory', {
+          content: content,
+          style: style
+        }).then(response => {
+          if (!response.data.error) {
+            this.searchHistoryList = response.data.history
+          } else {
+            Toast({
+              message: '发生错误，请稍后再试',
+              position: 'middle',
+              duration: 1000
+            })
+          }
+        })
+      },
+      clearSearchHistory () {
+        MessageBox.confirm('确实要清空记录吗?').then(action => {
+          Axios.post('/user/clearSearchHistory')
+            .then(response => {
+              if (!response.data.error) {
+                this.searchHistoryList = []
+              } else {
+                Toast({
+                  message: '发生错误，请稍后再试',
+                  position: 'middle',
+                  duration: 1000
+                })
+              }
+            })
+        }).catch(cancel => {
+          return true
+        })
+      },
+      goSearch (content, active) {
+        Indicator.open({
+          text: '加载中...',
+          spinnerType: 'fading-circle'
+        })
+        if (active === 'author') {
+          Axios.post('/user/getSearchPeople', {
+            content: content
+          }, {timeout: 10000}).then(response => {
+            if (response.data.error) {
+              Indicator.close()
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            } else {
+              Indicator.close()
+              Axios.post('/user/addSearchHistory', {
+                content: content,
+                active: active
+              }).then(response => {
+                return true
+              })
+              this.$router.push(response.data.path)
+            }
+          }).catch(err => {
+            Indicator.close()
+            if (err) {
+              Toast({
+                message: '发生错误',
+                position: 'middle',
+                duration: 1000
+              })
+            }
+          })
+        } else if (active === 'title') {
+          Axios.post('/user/getSearchTitle', {
+            content: content
+          }).then(response => {
+            if (response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            } else {
+              Axios.post('/user/addSearchHistory', {
+                content: content,
+                active: active
+              }).then(response => {
+                return true
+              })
+              this.$router.push(response.data.path)
+            }
+          })
+        }
       },
       goPeople (id) {
         this.$router.push('/people/' + id)
@@ -147,11 +245,24 @@
       },
       search: debounce(function () {
         if (this.searchContent) {
+          Indicator.open({
+            text: '加载中...',
+            spinnerType: 'fading-circle'
+          })
           Axios.post('/story/search', {
             active: this.active,
             content: this.searchContent
           }).then(response => {
-            this.result = response.data.result
+            Indicator.close()
+            if (response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            } else {
+              this.result = response.data.result
+            }
             // this.$nextTick(function () {
             //   for (let i = 0; i < this.result.length; i++) {
             //     // 预渲染
@@ -182,6 +293,15 @@
             //     }
             //   }
             // })
+          }).catch(err => {
+            Indicator.close()
+            if (err) {
+              Toast({
+                message: '请求超时',
+                position: 'middle',
+                duration: 1000
+              })
+            }
           })
         } else {
           this.result = []
@@ -204,9 +324,12 @@
       },
       startSearch () {
         this.cancelBtn = true
-        if (this.result.length === 0) {
+        if (this.result.length === 0 && this.searchContent.length === 0) {
           this.searchHistory = true
         }
+      },
+      setErrorImg (index) {
+        this.result[index].head = require('../../img/images/defaultHeadImg.png')
       }
     }
   }

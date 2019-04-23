@@ -4,7 +4,7 @@
     <div class="button-bar">
       <div class="button">
         <div>
-          <span class="default">默认</span>
+          <span class="default">精选</span>
         </div>
         <div>
           <span class="subscribe">关注</span>
@@ -25,10 +25,10 @@
         <div class="story-information">
           <div class="cover">
             <div><img :src='item.cover' @error="setErrorImg(index)"/></div>
-            <div class="book-number">
-              <span><img src="../../img/icon/graybook.png" /></span>
-              <span class="number">4399</span>
-            </div>
+            <!--<div class="book-number">-->
+              <!--<span><img src="../../img/icon/graybook.png" /></span>-->
+              <!--<span class="number">4399</span>-->
+            <!--</div>-->
           </div>
           <div class="right-part">
             <div class="story-name">{{item.storyName}}</div>
@@ -155,19 +155,15 @@
         align-items: center;
         justify-content: space-between;
         .default {
-          border: 2px solid $dark-green;
           line-height: 22px;
         }
         .subscribe {
-          border: 2px solid $dark-red;
           line-height: 22px;
         }
         .friend {
-          border: 2px solid $dark-blue;
           line-height: 22px;
         }
         .nova {
-          border: 2px solid $dark-yellow;
           line-height: 22px;
         }
         div {
@@ -180,22 +176,21 @@
             display: inline-block;
             width: 48px;
             height: 26px;
-            background: red;
             color: white;
             border-radius: 5px;
             box-sizing: border-box;
           }
           .default {
-            background: $main-color;
+            color: rgb(193, 227, 189);
           }
           .subscribe {
-            background: $icon-red;
+            color: rgb(242, 168, 170);
           }
           .friend {
-            background: $icon-blue;
+            color: rgb(125, 153, 203);
           }
           .nova {
-            background: $icon-yellow;
+            color: rgb(248, 215, 174);
           }
         }
       }
@@ -240,9 +235,9 @@
           }
         }
         .right-part {
-          margin-left: 10px;
+          margin-left: 12px;
           margin-top: 8px;
-          flex: 3;
+          flex: 6;
           .story-name {
             color: $font-dark;
             font-size: 15px;

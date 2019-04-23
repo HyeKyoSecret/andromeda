@@ -61,9 +61,10 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
+    min-height: calc(100vh - 42px);
     width: 100%;
     background: $bg-gray;
+    margin-top: 42px;
   .notice {
     background: $main-color;
     height: 42px;

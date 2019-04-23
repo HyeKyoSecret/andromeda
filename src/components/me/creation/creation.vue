@@ -91,6 +91,7 @@
         img {
           height: 88px;
           width: 66px;
+          border-radius: 2px;
         }
         .story-quantity {
           height: 18px;

@@ -1997,6 +1997,69 @@ router.get('/user/getSearchHistory', (req, res) => {
     }
   }
 })
+router.post('/user/changeFontSize', (req, res) => {
+  let user
+  let value = req.body.value
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    User.updateOne({username: user}, {$set: {'fontSize': value}})
+      .exec(err => {
+        if (err) {
+          console.log('失败')
+          res.send({error: true, type: 'auth', message: ''})
+        } else {
+          console.log('成功')
+          res.send({error: false})
+        }
+      })
+  } else {
+    res.send({error: true, type: 'auth', message: '请登录后再试'})
+  }
+})
+router.get('/user/getFontSize', (req, res) => {
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  User.findOne({username: user})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      } else {
+        if (doc) {
+          res.send({error: false, size: doc.fontSize})
+        }
+      }
+    })
+})
+router.get('/user/getSettings', (req, res) => {
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  let settings = {}
+  User.findOne({username: user})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      } else {
+        if (doc) {
+          settings.fontSize = doc.fontSize
+          res.send({error: false, settings: settings})
+        } else {
+          res.send({error: true, type: 'user', message: '请重新登录'})
+        }
+      }
+    })
+})
 router.post('/user/clearSearchHistory', (req, res) => {
   let user
   if (req.session.user) {

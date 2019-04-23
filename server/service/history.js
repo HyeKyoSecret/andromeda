@@ -245,12 +245,12 @@ router.get('/history/getHistory', (req, res) => {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
       }
       if (doc && doc.username === user) {
-        let beginNumber = (doc.history && doc.history.data.length) ? doc.history.data.length - 1 - 3 * val : 0
-        let endNumber = (doc.history && doc.history.data.length) ? doc.history.data.length - 3 * val - 3 : 0
+        let beginNumber = (doc.history && doc.history.data.length) ? doc.history.data.length - 1 - 4 * val : 0
+        let endNumber = (doc.history && doc.history.data.length) ? doc.history.data.length - 4 * val - 4 : 0
         if (endNumber < 0) {
           endNumber = 0
         }
-        for (let i = beginNumber; i > endNumber; i--) {
+        for (let i = beginNumber; i >= endNumber; i--) {
           let m = beginNumber - i
           if (doc.history.data[i].date.getTime() === today.getTime()) {
             result.push({
@@ -283,6 +283,7 @@ router.get('/history/getHistory', (req, res) => {
           }
           bubbleSort(result[m].rootPack)
         }
+        console.log(result)
         res.send({error: false, result: result})
       } else {
         if (typeof id === 'undefined') {

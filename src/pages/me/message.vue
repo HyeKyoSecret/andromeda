@@ -99,7 +99,8 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
+    margin-top: 42px;
+    min-height: calc(100vh - 84px);
     width: 100%;
     background: $bg-gray;
     .button-bar {
@@ -118,22 +119,30 @@
         justify-content: center;
         .words.router-link-active {
           border: 2px solid $dark-green;
+          color: $dark-green;
           line-height: 22px;
+          font-weight: 600;
           opacity: 1;
         }
         .request.router-link-active {
           border: 2px solid $dark-red;
+          color: $dark-red;
           line-height: 22px;
+          font-weight: 600;
           opacity: 1;
         }
         .promote.router-link-active {
-          border: 2px solid $dark-blue;
+          border: 2px solid $icon-blue;
           line-height: 22px;
+          color: $icon-blue;
+          font-weight: 600;
           opacity: 1;
         }
         .announcement.router-link-active {
           border: 2px solid $dark-yellow;
           line-height: 22px;
+          color: $dark-yellow;
+          font-weight: 600;
           opacity: 1;
         }
         div {
@@ -141,31 +150,30 @@
           height: 26px;
           width: 30px;
           text-align: center;
-          line-height: 26px;
+          line-height: 22px;
           span {
             display: inline-block;
             width: 48px;
             height: 26px;
-            background: red;
             color: white;
             border-radius: 5px;
             box-sizing: border-box;
           }
           .words {
-            background: $main-color;
-            opacity: 0.5;
+            color: rgb(183, 223, 178);
+            font-weight: 600;
           }
           .request {
-            background: $icon-red;
-            opacity: 0.5;
+            color: rgb(242, 168, 170);
+            font-weight: 600;
           }
           .promote {
-            background: $icon-blue;
-            opacity: 0.5;
+            color: rgb(125, 153, 203);
+            font-weight: 600;
           }
           .announcement {
-            background: $icon-yellow;
-            opacity: 0.5;
+            color: rgb(248, 215, 174);
+            font-weight: 600;
           }
         }
       }

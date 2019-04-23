@@ -63,7 +63,7 @@
         Axios.get('/history/getHistory', {
           params: {
             id: this.$route.params.user,
-            val: this.history ? parseInt(this.history.length / 2) : 0
+            val: this.history ? parseInt(this.history.length / 3) : 0
           }
         }).then(response => {
           if (response.data.error) {
@@ -117,6 +117,7 @@
     background: $bg-gray;
     @media (min-width: 768px) {
       .notice-bar{
+        z-index: 999;
         max-width: 700px;
         .foot-menu {
           max-width: 700px;
@@ -124,6 +125,7 @@
       }
     }
     .notice {
+      z-index: 999;
       position: fixed;
       top: 0;
       width: 100%;

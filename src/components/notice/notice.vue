@@ -73,22 +73,23 @@
 <style lang='scss' scoped>
   @import "../../scss/config";
   .notice {
+    z-index: 800;
     background: $main-color;
     height: 42px;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    /*position: fixed;*/
-    /*top: 0;*/
-    /*left: 0;*/
-    /*width: 100%;*/
+    position: fixed;
+    top: 0;
+    width: 100%;
     span {
       text-align: center;
       font-size: 16px;
     }
     .icon {
       position: absolute;
+      z-index: 999;
       left: 4px;
       display: inline-block;
       height: 42px;
@@ -117,7 +118,7 @@
       top: 42px;
       background: white;
       width: 100px;
-      z-index: 999  ;
+      z-index: 999;
       .entry-triangle-top{
         position:absolute;
         top: -9px;
@@ -153,6 +154,11 @@
         }
       }
 
+    }
+  }
+  @media (min-width: 768px) {
+    .notice {
+      max-width: 700px;
     }
   }
 </style>

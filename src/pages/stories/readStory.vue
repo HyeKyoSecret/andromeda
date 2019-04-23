@@ -8,7 +8,6 @@
       <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight">
         <div class="context" @click.self="closeMenu"><p v-for="item in storyInfo.content">{{item}}</p></div>
         <div class="related-info">
-          <!--<div class="anchor"><thumb src="../../thumb/icon/anchor.png" /></div>-->
           <div class="author-info">
             <div class="like">
               <router-link :to='storyInfo.authorId' tag="span">作者:&nbsp;{{storyInfo.author}}</router-link>
@@ -19,10 +18,6 @@
               <span v-else class="blank"></span>
             </div>
             <div class="time">{{storyInfo.date}}</div>
-            <!--<div class="follow-number">-->
-            <!--<span class="tri"><thumb src="../../thumb/icon/triangle_downward.png"/></span>-->
-            <!--<span class="number">1563</span>-->
-            <!--</div>-->
           </div>
         </div>
       </v-touch>
@@ -52,16 +47,11 @@
         </div>
         <div class="button" @click="showButton">
           <img src="../../img/icon/yellowjump.png" />
-          <div>跳转</div>
+          <div>前往</div>
         </div>
       </div>
       <div class="jump-menu" v-if="menuActive">
-        <!--<div class="button">刚才阅读</div>-->
-        <!--<div class="button">最浅未读</div>-->
-        <!--<div class="button">最深以读</div>-->
         <div class="button" v-if="jumpMenuRootCheck" @click="goStory(markRoot)">开头</div>
-        <!--<div class="button">锚定节点</div>-->
-        <!--<div class="button">热门节点</div>-->
         <div class="button" @click="showMarkMenu">书签</div>
       </div>
       <div class="complete"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markList.story.length && markMenu"><span @click="closeMarkMenu">取消</span></div>
@@ -149,12 +139,14 @@
     }
   }
   .read-story {
-    height: 100%;
+    min-height: calc(100vh - 42px);
+    margin-top: 42px;
     background: $bg-gray;
     .marker {
-      float: right;
-      margin-right: 45px;
-      margin-top: -15px;
+      position: absolute;
+      top: 27px;
+      right: 45px;
+      z-index: 900;
       img {
         height: 45px;
         width: 25px;
@@ -162,6 +154,7 @@
     }
     .context {
       margin: 30px 10px 0 11px;
+      padding: 25px 0 0 5px;
       font-size: 16px;
       height: calc(100vh - 220px);
       color: $font-dark;

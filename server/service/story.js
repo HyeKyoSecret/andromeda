@@ -2482,6 +2482,77 @@ router.post('/story/search', (req, res) => {
       console.log(e)
     }
   }
+  async function mixSearchContent (content) {
+    try {
+      const mix = await client.search({
+        index: ['andromeda.storyroots', 'andromeda.stories'],
+        type: '_doc',
+        body: {
+          query: {
+            bool: {
+              should: [
+                {
+                  match: {
+                    'content.IKS': {
+                      query: content.toLowerCase()
+                    }
+                  }
+                }
+              ],
+              minimum_should_match: 1
+            }
+          }
+        }
+      })
+      for (const item of mix.hits.hits) {
+        let root = {}
+        if (!item._source.name) {
+          root = await getRoot(item._source.id)
+          if (root) {
+            root.rootName = root.name
+            root.coverImg = tool.formImg(root.coverImg)
+            root.subNumber = root.subscribe ? root.subscribe.length : 0
+          } else {
+            res.send({error: true, type: 'value', message: '发生错误'})
+            break
+          }
+        } else {
+          root.rootName = item._source.name
+          root.coverImg = tool.formImg(item._source.coverImg)
+          root.subscribe = item._source.subscribe ? item._source.subscribe.length : 0
+        }
+        result.push({
+          name: root.rootName,
+          raw: item._source.id,
+          coverImg: root.coverImg ? root.coverImg : 'default',
+          subNumber: root.subscribe ? root.subscribe : 0,
+          date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
+          author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
+          id: item._source.id,
+          content: item._source.content
+        })
+      }
+      res.send({error: false, result: result})
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  async function getRoot(id) {
+    return new Promise(function (resolve, reject) {
+      Story.findOne({id: id})
+        .populate('root')
+        .exec((err, story) => {
+          if (err) {
+            reject('error')
+          }
+          if (story) {
+            resolve(story.root)
+          } else {
+            resolve('error')
+          }
+        })
+    })
+  }
   if (active === 'author') {
     if (isChn(content)) {
       // 全中文
@@ -2535,56 +2606,9 @@ router.post('/story/search', (req, res) => {
       })
     }
   } else if (active === 'content') {
-    // 暂时不支持内容搜索
-    // (async function () {
-    //   const response = await client.search({
-    //     index: 'andromeda.storyroots',
-    //     type: '_doc',
-    //     body: {
-    //       query: {
-    //         match: {
-    //           content: content
-    //         }
-    //       },
-    //       highlight: {fields: {content: {}}}
-    //     }
-    //   })
-    //   const storyRes = await client.search({
-    //     index: 'andromeda.stories',
-    //     type: '_doc',
-    //     body: {
-    //       query: {
-    //         match: {
-    //           content: content
-    //         }
-    //       },
-    //       highlight: {fields: {content: {}}}
-    //     }
-    //   })
-    //   for (const item of response.hits.hits) {
-    //     result.push({
-    //       coverImg: tool.formImg(item._source.coverImg),
-    //       name: item._source.name,
-    //       content: item.highlight.content[0],
-    //       subNumber: item._source.subscribe.length,
-    //       date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
-    //       author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
-    //       id: item._source.id
-    //     })
-    //   }
-    //   for (const item of storyRes.hits.hits) {
-    //     result.push({
-    //       coverImg: tool.formImg(item._source.coverImg),
-    //       name: item._source.name,
-    //       content: item.highlight.content[0],
-    //       subNumber: item._source.subscribe.length,
-    //       date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
-    //       author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
-    //       id: item._source.id
-    //     })
-    //   }
-    //   res.send({error: false, result: result})
-    // })()
+    mixSearchContent(content).catch(err => {
+      console.log(err)
+    })
   }
 })
 module.exports = router

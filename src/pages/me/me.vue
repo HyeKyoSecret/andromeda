@@ -1,6 +1,6 @@
 <template>
   <div class="me">
-    <notice v-bind:title="title"></notice>
+    <notice v-bind:title="title" class="notice"></notice>
     <!--进度条-->
     <mt-progress :value="percent" :bar-height="6" v-if="percentShow">
       <!--<div slot="end">{{Math.ceil(percent)}}%</div>-->
@@ -91,16 +91,16 @@
   @import "../../scss/style.css";
   @import "../../scss/cropper.css";
   .me {
-    min-height: 100%;
+    min-height: calc(100vh - 42px);
     background: $bg-gray;
     .me-content {
+      margin-top: 40px;
       .user-main {
         height: 95px;
         background: white;
         display: flex;
         align-items: center;
         padding: 11px 11px 11px 12px;
-        border-top: 1px solid $border-gray;
         border-bottom: 1px solid $border-gray;
         margin-top: 20px;
         .head-img{
@@ -350,6 +350,11 @@
             name: '我的轨迹',
             icon: require('../../img/icon/my_trail.png'),
             path: '/people/history'
+          },
+          {
+            name: '我的设置',
+            icon: require('../../img/icon/settings.png'),
+            path: '/people/settings'
           }
         ],
         cOperation: [

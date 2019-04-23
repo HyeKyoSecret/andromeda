@@ -13,6 +13,7 @@ router.post('/comment/storyComment', (req, res) => {
   const id = req.body.id
   const content = req.body.content
   const to = req.body.to
+  const main = req.body.main
   let user
   if (req.session.user) {
     user = req.session.user
@@ -52,33 +53,17 @@ router.post('/comment/storyComment', (req, res) => {
                       if (err4) {
                         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                       } else {
-                        if (!to) {
-                          User.updateOne({username: node.author.username}, {
-                            $addToSet: {'commentFrom': comment._id, 'promote': {'description': 'comment', 'content_1': people.nickname, 'content_2': '评论了你', 'content_3': comment.content}}
-                          }).exec(err5 => {
-                            if (err5) {
-                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                            } else {
-                              res.send({error: false, message: '评论成功'})
-                            }
-                          })
-                        } else {
-                          Comment.findOne({_id: mongoose.Types.ObjectId(to)})
-                            .exec((err6, doc) => {
-                              if (err6) {
+                        if (main) {
+                          Comment.updateOne({_id: mongoose.Types.ObjectId(main)}, {$addToSet: {subComment: comment._id}})
+                            .exec(err5 => {
+                              if (err5) {
                                 res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                               } else {
-                                User.updateOne({username: doc.people}, {
-                                  $addToSet: {'commentFrom': comment._id, 'promote': {'description': 'comment', 'content_1': people.nickname, 'content_2': '评论了你', 'content_3': comment.content}}
-                                }).exec(err7 => {
-                                  if (err7) {
-                                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                                  } else {
-                                    res.send({error: false, message: '评论成功'})
-                                  }
-                                })
+                                res.send({error: false, message: '评论成功'})
                               }
                             })
+                        } else {
+                          res.send({error: false, message: '评论成功'})
                         }
                       }
                     })
@@ -129,11 +114,39 @@ router.get('/comment/getComment', (req, res) => {
         }
       }
     })
+    .populate({
+      path: 'comment',
+      populate: {
+        path: 'subComment',
+        populate: {
+          path: 'people'
+        }
+      }
+    })
+    .populate({
+      path: 'comment',
+      populate: {
+        path: 'subComment',
+        populate: {
+          path: 'commentTo',
+          populate: {
+            path: 'people'
+          }
+        }
+      }
+    })
+    .populate({
+      path: 'subComment',
+      populate: {
+        path: 'people'
+      }
+    })
     .exec((err, doc) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
       } else {
         doc.comment.forEach((comment) => {
+          let subContent = []
           if (comment.display) {
             let hasZan = false
             for (let i = 0; i < comment.zan.length; i++) {   // 检查是否赞过
@@ -141,16 +154,31 @@ router.get('/comment/getComment', (req, res) => {
                 hasZan = true
               }
             }
-            result.push({
-              id: comment._id,
-              headImg: comment.people ? comment.people.headImg ? tool.formImg(comment.people.headImg) : 'default' : 'default',
-              people: comment.people.nickname,
-              content: comment.content,
-              zan: comment.zan ? comment.zan.length : 0,
-              commentTo: comment.commentTo ? comment.commentTo.people.nickname : null,
-              date: moment(comment.date).fromNow(),
-              hasZan: hasZan
-            })
+            if (comment.subComment && comment.subComment.length > 0) {
+              for (let i = 0; i < comment.subComment.length; i++) {
+                subContent.push({
+                  id: comment.subComment[i].id,
+                  people: comment.subComment[i].people.nickname,
+                  content: comment.subComment[i].content,
+                  zan: comment.subComment[i].zan ? comment.subComment[i].zan.length : 0,
+                  commentTo: comment.subComment[i].commentTo ? comment.subComment[i].commentTo.people.nickname : '',
+                  date: moment(comment.subComment[i].date).fromNow()
+                })
+              }
+            }
+            if (comment && !comment.commentTo) {
+              result.push({
+                id: comment._id,
+                headImg: comment.people ? comment.people.headImg ? tool.formImg(comment.people.headImg) : 'default' : 'default',
+                people: comment.people.nickname,
+                content: comment.content,
+                zan: comment.zan ? comment.zan.length : 0,
+                commentTo: comment.commentTo ? comment.commentTo.people.nickname : null,
+                date: moment(comment.date).fromNow(),
+                hasZan: hasZan,
+                subComment: subContent
+              })
+            }
           }
         })
         if (doc) {

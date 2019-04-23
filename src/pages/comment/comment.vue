@@ -25,17 +25,42 @@
               <img src="../../img/icon/gray_thumb.png" v-if="!item.hasZan" @click="addZan(index)">
               <img src="../../img/icon/yellowthumb.png" v-else @click="cancelZan(index)">{{item.zan}}
             </span>
-            <span class="reply" @click="replyComment(index, item.id)" v-if="!author">回复</span>
+            <span class="reply" @click="replyComment(item.id, item.id)">回复</span>
             <span class="time">{{item.date}}</span>
             <span class="showBtn" v-if="item.lc > 3" @click="showComment(index)">{{item.notShow ? '展开' : '收起'}}</span>
+          </div>
+          <div class="sub-comment">
+            <div class="one-sub-comment" v-for="q in item.subComment">
+              <div class="sub-comment-content">
+                <div class="sub-critic-name">
+                  <span class="sub-critic">{{q.people}}</span>
+                  <span class="sub-to">
+              <img src="../../img/icon/gray_triangle.png">
+            </span>
+                  <span class="sub-re-critic">{{q.commentTo}}</span>
+                </div>
+                <div class="sub-content">
+                  {{q.content}}
+                </div>
+                <div class="sub-information">
+            <span class="sub-thumb-up" >
+              <img src="../../img/icon/gray_thumb.png">
+              <img src="../../img/icon/yellowthumb.png">
+            </span>
+                  <span class="sub-reply" @click="replyComment(item.id, q.id)">回复</span>
+                  <span class="sub-time">{{q.date}}</span>
+                </div>
+              </div>
           </div>
         </div>
       </div>
     </div>
+      <div class="blank"></div>
+    </div>
     <div class="comment-input">
       <textarea id="textArea" v-model="comment" rows="1" placeholder="写下你的评论。。。" @focus="showButton"></textarea>
       <span class="fake submit" v-if="fakeSubmit && !commentCheck">发送</span>
-      <span class="submit" v-if="commentCheck" @click="submitComment(tempId)">发送</span>
+      <span class="submit" v-if="commentCheck" @click="submitComment(toId, mainId)">发送</span>
     </div>
   </div>
 </template>
@@ -46,9 +71,11 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
+    min-height: calc(100vh - 42px);
     width: 100%;
     background: white;
+    margin-top: 42px;
+    z-index: 901;
     .comment-number {
       font-size: 14px;
       color: $font-gray;
@@ -62,34 +89,37 @@
     .all-comment {
       .one-comment {
         background-color: white;
-        display: flex;
-        padding: 10px 10px 10px 10px;
-        &:last-child {
-          padding-bottom: 100px;
+        padding: 10px 10px 0 10px;
+        border-top: 1px solid $line-gray;
+        &:first-child{
+          border: none;
         }
         .critic-pic {
-          flex: 1;
+          display: inline-block;
+          width: 13%;
+          height: 100%;
+          text-align: center;
+          vertical-align: top;
           img {
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
           }
         }
         .comment-content {
-          flex: 8;
+          width: 80%;
+          display: inline-block;
           margin-left: 10px;
           color: $font-dark;
-          border-bottom: 1px solid $line-gray;
           .critic-name {
-            font-size: 16px;
-            font-weight: 800;
+            font-size: 13px;
+            font-weight: 600;
             img {
               height: 10px;
               width: 10px;
             }
           }
           .content{
-            font-size: 14px;
-            line-height: 1.3em;
+            font-size: 13px;
             color: $font-dark;
             margin-top: 5px;
             word-break: break-all;
@@ -98,11 +128,10 @@
             display: inline-block;
           }
           .content.notshow {
-            font-size: 14px;
+            font-size: 13px;
             color: $font-dark;
             margin-top: 5px;
             max-height: 60px;
-            line-height: 1.3em;
             word-break: break-all;
             display: -webkit-box;
             display: -moz-box;
@@ -114,7 +143,8 @@
           }
           .information {
             margin-top: 10px;
-            margin-bottom: 10px;
+            height: 30px;
+            line-height: 30px;
             span {
               height: 14px;
               line-height: 14px;
@@ -132,8 +162,76 @@
             }
           }
         }
+        .sub-comment {
+          .one-sub-comment {
+            &:last-child {
+              border-bottom: none !important;
+            }
+            border-top: 1px solid $line-gray;
+            background-color: white;
+            display: flex;
+            padding: 10px 10px 10px 0;
+            .sub-comment-content {
+              flex: 8;
+              color: $font-dark;
+              .sub-critic-name {
+                font-size: 13px;
+                font-weight: 600;
+                img {
+                  height: 8px;
+                  width: 8px;
+                }
+              }
+              .sub-content{
+                font-size: 13px;
+                color: $font-dark;
+                margin-top: 5px;
+                word-break: break-all;
+                overflow: visible;
+                max-height: 300px;
+                display: inline-block;
+              }
+              .sub-content.notshow {
+                font-size: 13px;
+                color: $font-dark;
+                margin-top: 5px;
+                max-height: 60px;
+                word-break: break-all;
+                display: -webkit-box;
+                display: -moz-box;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 3;
+                -moz-box-orient: vertical;
+                -moz-line-clamp: 3;
+                overflow: hidden;
+              }
+              .sub-information {
+                margin-top: 8px;
+                span {
+                  height: 14px;
+                  line-height: 14px;
+                  color: $font-gray;
+                  margin-right: 5px;
+                  img {
+                    margin-right: 5px;
+                    height: 14px;
+                    width: 14px;
+                  }
+                }
+                .sub-showBtn {
+                  float: right;
+                  color: $main-color;
+                }
+              }
+            }
+          }
+        }
       }
-
+      .blank {
+        width: 100%;
+        height: 75px;
+        background: white;
+      }
     }
     &:last-child .comment-content {
       border: none;
@@ -187,7 +285,6 @@
   }
 </style>
 <script>
-  // import Vue from 'Vue'
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
   import autoSize from 'autosize'
@@ -199,14 +296,14 @@
         fakeSubmit: false,
         submit: false,
         commentList: [],
-        tempId: '',
-        tempWord: '',
+        toId: '',  // 回复的具体对象，
+        mainId: '', // 回复的主对象
         author: ''
       }
     },
     computed: {
       commentCheck: function () {
-        if (this.comment.length > 0 && this.comment.length <= 180) {
+        if (this.comment.length > 0 && this.comment.length <= 160) {
           this.fakeSubmit = false
           return true
         } else {
@@ -216,17 +313,18 @@
     },
     watch: {
       comment: function () {
-        if (this.comment && this.comment.length > 180) {
+        if (this.comment && this.comment.length > 160) {
           Toast({
             position: 'middle',
-            message: `已超过最大字数` + (this.comment.length - 180) + '字',
+            message: `已超过最大字数` + (this.comment.length - 160) + '字',
             duration: 1000
           })
         }
-        if (!this.tempWord || this.tempWord !== `${this.comment.split('：')[0]}：`) {   // 检查是否有回复人
-          this.tempWord = ''
-          this.tempId = ''
-        }
+        // if (!this.tempWord || this.tempWord !== `${this.comment.split('：')[0]}：`) {   // 检查是否有回复人
+        //   this.tempWord = ''
+        //   this.toId = ''
+        //   this.mainId = ''
+        // }
       }
     },
     mounted: function () {
@@ -299,11 +397,12 @@
       showButton () {
         this.fakeSubmit = true
       },
-      submitComment (to) {
+      submitComment (to, mainId) {
         Axios.post('/comment/storyComment', {
           id: this.$route.params.id,
-          content: to ? this.comment.split('：', 2)[1] : this.comment,
-          to: to
+          content: this.comment,
+          to: to,
+          main: mainId
         }).then(response => {
           Toast({
             position: 'middle',
@@ -313,8 +412,8 @@
           this.getData()
           this.comment = ''
           document.getElementById('textArea').style.height = 28 + 'px'
-          this.tempWord = ''
-          this.tempId = ''
+          this.toId = ''
+          this.mainId = ''
         })
       },
       countLines (ele) {
@@ -356,10 +455,10 @@
           }
         })
       },
-      replyComment (i, id) {
-        this.tempWord = '对' + this.commentList[i].people + '说：'
-        this.comment = this.tempWord
-        this.tempId = id
+      replyComment (main, to) {
+        this.comment = ''
+        this.toId = to
+        this.mainId = main
         document.getElementById('textArea').focus()
       },
       setErrorImg (x) {

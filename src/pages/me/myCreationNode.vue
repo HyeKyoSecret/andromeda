@@ -298,7 +298,8 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
+    min-height: calc(100vh - 42px);
+    margin-top: 42px;
     width: 100%;
     background: $bg-gray;
     .image-item {
@@ -342,6 +343,7 @@
           img {
             height: 88px;
             width: 66px;
+            border-radius: 2px;
           }
           .change-cover {
             height: 20px;

@@ -142,7 +142,8 @@ const UserSchema = new Schema({
   searchHistory: [{
     content: String,
     date: { type: Date, default: Date.now },
-    style: String
+    style: String,
+    id: String
   }],
   commentTo: [{
     type: Schema.Types.ObjectId,
@@ -160,7 +161,11 @@ const UserSchema = new Schema({
   follower: [{
     type: Schema.Types.ObjectId,
     ref: 'User'
-  }]
+  }],
+  fontSize: {
+    type: String,
+    default: '正常'
+  }
 }, {timestamps: {createdAt: 'created', updatedAt: 'updated'}})
 UserSchema.pre('save', function (next) {
   'use strict'

@@ -44,8 +44,9 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
+    min-height: calc(100vh - 42px);
     width: 100%;
+    margin-top: 42px;
     background: $bg-gray;
     .show-story {
       margin: 20px auto 0 auto;
@@ -139,6 +140,7 @@
           margin-left: 20%;
           margin-right: 20%;
           img{
+            border-radius: 2px;
             width: 100%;
           }
         }

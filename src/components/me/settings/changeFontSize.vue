@@ -1,10 +1,10 @@
 <template>
-  <div class="radio" v-show="radio" @click.self="closeRadio">
-    <div class="content">
+  <div class="change-font-size" v-show="radio" @click.self="closeRadio">
+    <div class="change-content">
       <mt-radio
         align="right"
         v-model="value"
-        :options="['男', '女']">
+        :options="['正常', '大', '特大']">
       </mt-radio>
     </div>
   </div>
@@ -20,15 +20,15 @@
       }
     },
     created: function () {
-      this.getSex()
+      this.getFontSize()
+      this.changeFontStyle()
     },
     watch: {
       value: function (newVal, oldVal) {
         setTimeout(function () {
           this.radio = false
           if (oldVal !== '') {
-            Axios.post('/user/changeSex', {
-              id: this.id,
+            Axios.post('/user/changeFontSize', {
               value: this.value
             }).then(response => {
               if (!response.data.error) {
@@ -59,41 +59,52 @@
       }
     },
     methods: {
-      getSex () {
-        Axios.get('/user/getChangeInfo', {
-          params: {
-            id: this.id
-          }
-        }).then(response => {
-          if (!response.data.error) {
-            this.value = response.data.sex
-          }
-        })
+      getFontSize () {
+        Axios.get('/user/getFontSize')
+          .then(response => {
+            if (!response.data.error) {
+              this.value = response.data.size
+            } else {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 800
+              })
+            }
+          })
       },
       openRadio () {
         this.radio = true
       },
       closeRadio () {
         this.radio = false
+      },
+      changeFontStyle () {
+
       }
     },
     props: ['id']
   }
 </script>
-<style lang='scss' scoped>
+<style lang='scss'>
   @import "../../../scss/style.css";
-  .radio {
+  @import "../../../scss/config";
+  .change-font-size {
     width: 100%;
-    min-height: calc(100vh - 42px);
+    height: 100%;
     position: absolute;
     top: 0;
     left: 0;
     background: rgba(0,0,0,0.5);
   }
-  .content {
+  .change-content {
     position: absolute;
-    bottom: 90px;
+    bottom: 80px;
     left: 0;
     width: 100%;
+  }
+  .mint-cell-wrapper {
+    background-image: none !important;
+    border-bottom: 1px solid #d9d9d9;
   }
 </style>

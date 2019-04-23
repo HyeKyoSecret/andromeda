@@ -20,6 +20,9 @@ const CommentSchema = new Schema({
   commentTo: {
     type: Schema.Types.ObjectId, ref: 'Comment'
   },
+  subComment: [{
+    type: Schema.Types.ObjectId, ref: 'Comment'
+  }],
   display: {
     type: Boolean,
     default: true

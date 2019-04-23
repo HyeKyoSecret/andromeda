@@ -113,6 +113,12 @@ export default [
             next()
           }
         }
+      },
+      {
+        path: 'settings',
+        name: 'settings',
+        component: resolve => require(['../pages/me/settings.vue'], resolve),
+        meta: { requiresAuth: true }
       }
     ]
   },

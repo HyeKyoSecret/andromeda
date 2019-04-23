@@ -1,5 +1,5 @@
 <template>
-  <div class="discover">
+  <div class="search-main">
     <div class="top-search">
       <notice title="搜索"></notice>
       <div class="button-bar">
@@ -10,16 +10,16 @@
           <div>
             <span class="name" :class="{active: titleActive}" @click="changeActive('title')">题目</span>
           </div>
-          <!--<div>-->
-            <!--<span class="content" :class="{active: contentActive}" @click="changeActive('content')">内容</span>-->
-          <!--</div>-->
+          <div>
+            <span class="content" :class="{active: contentActive}" @click="changeActive('content')">内容</span>
+          </div>
         </div>
       </div>
       <div class="search-bar">
         <span class="magnifier"><img src="../../img/icon/magnifier.png" /></span>
         <span class="search-input">
           <form action="javascript:void(0)">
-            <input type="search" placeholder="搜索" @focus="startSearch" v-model="searchContent" @input="search">
+            <input type="search" placeholder="搜索" @focus="startSearch" v-model="searchContent">
           </form>
         </span>
         <span class="delete" v-if="deleteBtn" @click="deleteSearch"><img src="../../img/icon/delete.png"></span>
@@ -33,16 +33,16 @@
         <!--</div>-->
       <!--</div>-->
       <div class="search-history" v-if="searchHistory && searchHistoryList.length > 0">
-        <div class="history-line" v-for="(item, index) in searchHistoryList" @click="goSearch(item.content, item.style)">
+        <div class="history-line" v-for="(item, index) in searchHistoryList">
           <span class="clock"><img src="../../img/icon/time.png" alt="" ></span>
-          <span class="history-content">{{item.content}}</span>
+          <span class="history-content" @click="setSearch(item.content, item.style)">{{item.content}}</span>
           <span class="delete" @click="deleteSearchHistory(item.content, item.style, index)"><img src="../../img/icon/delete.png"></span>
         </div>
         <div class="clear-history" @click="clearSearchHistory">清除浏览记录</div>
       </div>
     </div>
     <div class="search-result" :class="{contentActive: contentActive, titleActive: titleActive, authorActive: authorActive}">
-      <div class="one-search" v-if="contentActive || titleActive" v-for="item in result" @click="goSearch(item.raw, active)">
+      <div class="one-search" v-if="contentActive || titleActive" v-for="item in result" @click="goSearch(item.raw, active, item.id)">
         <div class="story-information">
           <div class="cover">
             <div><img :src="item.coverImg" /></div>
@@ -53,7 +53,7 @@
           </div>
           <div class="right-part">
             <div class="story-name" v-html="item.name"></div>
-            <div class="story-content" v-html="item.content" :class="{contentClose: item.notShow}" :id="item.id"></div>
+            <div class="story-content" v-html="item.content" :id="item.id"></div>
           </div>
         </div>
         <div class="assist-info">
@@ -119,6 +119,7 @@
     },
     watch: {
       searchContent: function (val) {
+        this.search()
         val.length > 0 ? this.deleteBtn = true : this.deleteBtn = false
         if (val.length === 0) {
           this.result = []
@@ -179,7 +180,12 @@
           return true
         })
       },
-      goSearch (content, active) {
+      setSearch (content, active) {
+        console.log(content, active)
+        this.searchContent = content
+        this.changeActive(active)
+      },
+      goSearch (content, active, id) {
         Indicator.open({
           text: '加载中...',
           spinnerType: 'fading-circle'
@@ -226,6 +232,7 @@
                 duration: 1000
               })
             } else {
+              Indicator.close()
               Axios.post('/user/addSearchHistory', {
                 content: content,
                 active: active
@@ -235,6 +242,16 @@
               this.$router.push(response.data.path)
             }
           })
+        } else {
+          Axios.post('/user/addSearchHistory', {
+            content: this.searchContent,
+            active: active,
+            id: id
+          }).then(response => {
+            Indicator.close()
+            return true
+          })
+          this.$router.push(`/story/${id}`)
         }
       },
       goPeople (id) {
@@ -263,36 +280,6 @@
             } else {
               this.result = response.data.result
             }
-            // this.$nextTick(function () {
-            //   for (let i = 0; i < this.result.length; i++) {
-            //     // 预渲染
-            //     let f = document.getElementById(this.result[i].id)
-            //     this.result[i].lineCount = this.countLines(f)
-            //     if (this.result[i].lineCount > 3) {
-            //       let minWords = this.result[i].content.length / this.result[i].lineCount  // 每行最少字数
-            //       let delLeft = this.result[i].content.split('<em>').join('')
-            //       let delRight = delLeft.split('</em>').join('')
-            //       let targetPosition = 0
-            //       for (let j = 0; j < this.result[i].content.length; j++) {
-            //         if (this.result[i].content[j] === '<' && this.result[i].content[j + 1] === 'e' && this.result[i].content[j + 2] === 'm' && this.result[i].content[j + 3] === '>') {
-            //           targetPosition = j
-            //           break
-            //         }
-            //       }
-            //       if (targetPosition < minWords * 3) {
-            //         // 恢复显示
-            //         this.result[i].notShow = true
-            //         this.$set(this.result, i, this.result[i])  // 向vue声明
-            //       } else {
-            //         let cutwords = Math.round(targetPosition - (this.result[i].lineCount - 3) * minWords)  // 需要剪裁的字数（html去em标签再计算）
-            //         this.result[i].content = this.result[i].content.split('').reverse().slice(0, delRight.length - cutwords).reverse().join('')  // 颠倒取值
-            //         // 恢复显示
-            //         this.result[i].notShow = true
-            //         this.$set(this.result, i, this.result[i])  // 向vue声明
-            //       }
-            //     }
-            //   }
-            // })
           }).catch(err => {
             Indicator.close()
             if (err) {
@@ -337,11 +324,12 @@
 <style lang='scss' scoped>
   @import "../../scss/style.css";
   @import "../../scss/config";
-  .discover {
+  .search-main {
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
+    min-height: calc(100vh - 42px);
+    margin-top: 42px;
     width: 100%;
     background: $bg-gray;
     @media (min-width: 768px) {
@@ -355,16 +343,16 @@
     .top-search {
       width: 100%;
       position: fixed;
-      top: 0;
+      top: 42px;
       z-index: 999;
     }
     .search-result.contentActive, .search-result.authorActive {
       width: 100%;
-      margin-top: 140px;
+      margin-top: 100px;
     }
     .search-result.titleActive {
       width: 100%;
-      margin-top: 180px;
+      margin-top: 100px;
     }
     .search-board {
       width: 100%;
@@ -530,7 +518,7 @@
       }
     }
     .search-history {
-      width: 90%;
+      width: 95%;
       margin: 8px auto 0 auto;
       background: white;
       .history-line {
@@ -557,7 +545,8 @@
           }
         }
         .history-content {
-          flex: 9;
+          flex: 8;
+          margin-right: 15px;
           text-align: left;
           margin-left: 10px;
           overflow: hidden;
@@ -645,13 +634,13 @@
             font-size: 14px;
             display: inline-block;
             line-height: 18px;
-            /*display: -webkit-box;*/
-            /*display: -moz-box;*/
-            /*-webkit-box-orient: vertical;*/
-            /*-webkit-line-clamp: 3;*/
-            /*-moz-box-orient: vertical;*/
-            /*-moz-line-clamp: 3;*/
-            /*overflow: hidden;*/
+            display: -webkit-box;
+            display: -moz-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+            -moz-box-orient: vertical;
+            -moz-line-clamp: 3;
+            overflow: hidden;
           }
           .story-content.contentClose {
             margin-top: 3px;
@@ -674,7 +663,6 @@
         align-items: center;
         margin-left: 10px;
         margin-right: 10px;
-        margin-top: 10px;
         .author-info {
           text-align: right;
           flex: 1;

@@ -21,8 +21,8 @@
 .hello {
   width: 100px;
   height: 100px;
-  background: $main-color;
-  opacity: 0.7;
+  background: #D3D3D3;
+  opacity: 0.1;
 }
   .hello2 {
     width: 100px;

@@ -1,10 +1,10 @@
 <template>
   <div class="read-story">
       <notice v-bind:title="storyInfo.title" v-bind:more="moreList"></notice>
-      <div class="marker" @click="changeMark" v-if="markList !== 'notShow'">
-        <img src="../../img/icon/marker_unselected.png" v-if="!markActive"/>
-        <img src="../../img/icon/marker_selected.png" v-else/>
-      </div>
+      <!--<div class="marker" @click="changeMark" v-if="markList !== 'notShow'">-->
+        <!--<img src="../../img/icon/marker_unselected.png" v-if="!markActive"/>-->
+        <!--<img src="../../img/icon/marker_selected.png" v-else/>-->
+      <!--</div>-->
       <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight">
         <div class="context" @click.self="closeMenu"><p v-for="item in storyInfo.content">{{item}}</p></div>
         <div class="related-info">
@@ -46,8 +46,8 @@
           <div>评论</div>
         </div>
         <div class="button" @click="showButton">
-          <img src="../../img/icon/yellowjump.png" />
-          <div>前往</div>
+          <img src="../../img/icon/index.png" />
+          <div>书签</div>
         </div>
       </div>
       <div class="jump-menu" v-if="menuActive">
@@ -382,7 +382,7 @@
           subscribe: false
         },
         writeWindow: false,
-        moreList: ['report'],
+        moreList: ['report', 'font', 'mark'],
         downList: [],  // 下层候选节点
         frontNode: null,
         leftNode: null,

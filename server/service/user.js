@@ -1446,7 +1446,7 @@ router.get('/user/getMark', (req, res) => {
                 res.send({error: false, result: [], mark: markExist, root: id})
               }
             } else {
-              res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})
+              res.send({error: false})
             }
           }
         })
@@ -1571,7 +1571,7 @@ router.post('/user/changeMarkInfo', (req, res) => {
       res.send({error: true, type: 'value', message: '数据错误'})
     }
   } else {
-    res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})
+    res.send({error: false, type: 'user', message: '发生错误，请尝试重新登录'})
   }
 })
 router.post('/user/addFocus', (req, res) => {

@@ -9,11 +9,11 @@
           <div><img :src="item.cover" @error="setErrorImg(index)"/></div>
           <div class="story-quantity">
             <span><img src="../../../img/icon/graybook.png" /></span>
-            <span class="number">{{item.readCounts}}</span>
+            <span class="number">{{item.readCounts}}人</span>
           </div>
           <div class="story-quantity">
             <span><img src="../../../img/icon/gray_flag.png" /></span>
-            <span class="number">{{item.nodeCounts}}</span>
+            <span class="number">{{item.nodeCounts}}篇</span>
           </div>
         </div>
         <div class="right-part">

@@ -51,7 +51,7 @@
       </div>
       <router-link to="/login" tag="div" class="fake-user-main" v-else>
         <img src="../../img/images/logo.png" alt="">
-        <p>登录仙女座，链接你与Ta们的故事</p>
+        <p>点击登录，链接你与Ta们的故事</p>
       </router-link>
         <div class="user-operation">
           <router-link :to='item.path' tag='div' class="line" v-for='item in operation' :key="item.name">

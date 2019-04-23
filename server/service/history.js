@@ -191,7 +191,7 @@ router.post('/history/addHistory', (req, res) => {
             })()
           }
         } else {
-          res.send({error: true, type: 'value', message: '发生错误，请尝试重新登录'})
+          res.send({error: false})
         }
       }
     })

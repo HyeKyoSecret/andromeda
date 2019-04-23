@@ -132,7 +132,7 @@
     }
     .history-content {
       margin-top: 60px;
-      margin-left: 40px;
+      margin-left: 30px;
       border-left: 1px solid $line-gray;
       .one-day {
         &:last-child:after {
@@ -153,7 +153,7 @@
           margin-bottom: 15px;
           .left {
             position: absolute;
-            left: 25px;
+            left: 15px;
             .icon {
               background: $bg-gray;
               width: 25px;
@@ -178,13 +178,13 @@
             width: 80%;
             margin-left: 40px;
             border-radius: 10px;
-            min-height: 80px;
+            min-height: 75px;
             background: white;
             display: flex;
             align-items: center;
             flex-direction: column;
             .root-list {
-              min-height: 80px;
+              min-height: 75px;
               width: 100%;
               display: flex;
               align-items: center;
@@ -202,10 +202,11 @@
                 align-items: center;
                 img {
                   flex: 2;
-                  margin-left: 14px;
+                  margin-left: 13px;
                   margin-top: 3px;
                   width: 42px;
                   height: 56px;
+                  border-radius: 1px;
                 }
                 .root-name {
                   flex: 7;

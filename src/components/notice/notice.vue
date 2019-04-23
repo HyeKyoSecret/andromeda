@@ -6,11 +6,20 @@
     <span class="title">
       {{title}}
     </span>
-    <span class="more" v-if="more" @click="showMenu">
-      <img src="../../img/icon/more.png" alt="">
+    <span class="mark" v-if="more">
+      <img src="../../img/icon/mark.png" alt="">
     </span>
+    <span class="mark" v-if="more">
+      <img src="../../img/icon/mark_active.png" alt="">
+    </span>
+    <span class="search" v-if="more">
+      <img src="../../img/icon/search.png" alt="">
+    </span>
+    <span class="font" v-if="more">
+      <img src="../../img/icon/font.png" alt="">
+    </span>
+
     <div v-if="more && menuActive" class="menu">
-      <div class="entry-triangle-top"></div>
       <router-link :to="item.path" tag="div" class="content" v-for="item in menuList" :key="item.name">
         <span class="menu-icon"><img :src="item.icon" alt="">
         </span><span class="menu-word">{{item.label}}</span>
@@ -31,9 +40,15 @@
             path: '/report'
           },
           {
-            name: 'addFriend',
-            label: '添加好友',
-            icon: require('../../img/icon/add.png'),
+            name: 'font',
+            label: '字体',
+            icon: require('../../img/icon/font.png'),
+            path: '/setFont'
+          },
+          {
+            name: 'font',
+            label: '加入书签',
+            icon: require('../../img/icon/mark.png'),
             path: '/addFriend'
           }
         ],
@@ -100,7 +115,7 @@
         height: 20px;
       }
     }
-    .more {
+    .mark {
       position: absolute;
       right: 6px;
       display: inline-block;
@@ -108,18 +123,43 @@
       width: 30px;
       line-height: 50px;
       img {
+        width: 22px;
+        height: 21px;
+      }
+    }
+    .search {
+      position: absolute;
+      right: 34px;
+      display: inline-block;
+      height: 42px;
+      width: 30px;
+      line-height: 50px;
+      img {
+        width: 22px;
+        height: 22px;
+      }
+    }
+    .font {
+      position: absolute;
+      right: 60px;
+      display: inline-block;
+      height: 42px;
+      width: 30px;
+      line-height: 50px;
+      img {
         width: 25px;
-        height: 20px;
+        height: 25px;
       }
     }
     .menu {
       position: absolute;
-      right: 3px;
+      right: 0;
       top: 42px;
-      background: white;
-      width: 100px;
+      background: rgba(255, 255, 255, 0.95);
+      width: 100%;
       z-index: 999;
-      .entry-triangle-top{
+      display: flex;
+/*      .entry-triangle-top{
         position:absolute;
         top: -9px;
         left:80px;
@@ -128,27 +168,24 @@
         border-left:10px solid transparent;
         border-right:10px solid transparent;
         border-bottom:10px solid #fff;
-      }
+      }*/
       .content {
-        border-bottom: 1px solid $line-gray;
-        &:last-child {
-          border: none;
-        }
-        height: 40px;
-        width: 100%;
-        line-height: 40px;
+        flex: 1;
+        height: 70px;
+        align-items: center;
+        justify-content: center;
         text-align: center;
-        display: inline-flex;
+        display: flex;
+        flex-wrap: wrap;
         .menu-icon {
-          flex: 2;
+          width: 100%;
           img {
-            padding-top: 10px;
-            width: 20px;
-            margin-left: 5px;
+            height: 28px;
           }
         }
         .menu-word {
-          flex: 5;
+          width: 100%;
+          margin-top: -20px;
           color: $w-gray;
           font-size: 14px;
         }

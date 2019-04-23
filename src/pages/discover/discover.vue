@@ -218,6 +218,7 @@
             img {
               height: 88px;
               width: 66px;
+              border-radius: 2px;
           }
           .book-number {
             height: 18px;

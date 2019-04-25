@@ -10,7 +10,6 @@ const router = express.Router()
 const formidable = require('formidable')
 const path = require('path')
 const fs = require('fs')
-const client = require('../client')
 const tool = require('../tool')
 const gm = require('gm').subClass({imageMagick: true})
 const rootReg = /^R([0-9]){7}$/
@@ -1179,8 +1178,6 @@ router.get('/user/getMyCreationNode', (req, res) => {
     })
 })
 router.post('/user/changeMark', (req, res) => {
-  let rootReg = /^R([0-9]){7}$/
-  let storyReg = /^S([0-9]){7}$/
   let markActive = req.body.markActive
   let id = req.body.id
   let user
@@ -1190,233 +1187,31 @@ router.post('/user/changeMark', (req, res) => {
     user = req.cookies.And.user
   }
   if (user) {
-    if (rootReg.test(id)) {
-      Root.findOne({id: id}, (err1, root) => {
-        if (err1) {
-          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-        } else {
-          if (root) {
-            let content = root.content
-            let brief = []
-            if (content.length >= 40) {
-              brief = content.slice(0, 40)
-            } else {
-              brief = content
-            }
-            User.findOne({username: user})
-              .exec((err2, duser) => {
-                if (err2) {
-                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                } else {
-                  if (duser) {
-                    if (duser.mark.length) {
-                      let markData
-                      let flag
-                      for (let i = 0; i < duser.mark.length; i++) {
-                        if (duser.mark[i].rootId === id) {
-                          flag = true
-                          if (markActive) {
-                            duser.mark[i].story.push({
-                              id: id,
-                              brief: brief
-                            })
-                            markData = duser.mark[i]
-                          } else {
-                            if (duser.mark[i] && duser.mark[i].story) {
-                              for (let j = 0; j < duser.mark[i].story.length; j++) {
-                                if (duser.mark[i].story[j].id === id) {
-                                  duser.mark[i].story.splice(j, 1)
-                                  break
-                                }
-                              }
-                            }
-                            markData = duser.mark
-                          }
-                          break
-                        } else {
-                          if (i === duser.mark.length - 1 && markActive) {
-                            let k =
-                              [{
-                                rootId: id,
-                                story: [{
-                                  id: id,
-                                  brief: brief
-                                }]
-                              }]
-                            User.updateOne({username: user}, {$set: {'mark': k}})
-                              .exec((err3) => {
-                                if (err3) {
-                                  console.log(err3)
-                                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                                } else {
-                                  res.send({error: false})
-                                }
-                              })
-                          }
-                        }
-                      }
-                      if (flag) {
-                        User.updateOne({$and: [{username: user}, {'mark.rootId': id}]}, {$set: {'mark': markData}})
-                          .exec((err4) => {
-                            if (err4) {
-                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                            } else {
-                              res.send({error: false})
-                            }
-                          })
-                      }
-                    } else {
-                      if (markActive) {
-                        let k =
-                          {
-                            rootId: id,
-                            story: [{
-                              id: id,
-                              brief: brief
-                            }]
-                          }
-                        User.updateOne({username: user}, {$addToSet: {'mark': k}})
-                          .exec((err5) => {
-                            if (err5) {
-                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                            } else {
-                              res.send({error: false})
-                            }
-                          })
-                      } else {
-                        // 这种情况是有问题的，但用户并无影响。查开发手册
-                        res.send({error: false})
-                      }
-                    }
-                  }
-                }
-              })
-          } else {
-            res.send({error: true, type: 'value', message: '数据错误'})
-          }
-        }
-      })
-    } else if (storyReg.test(id)) {
-      Story.findOne({id: id})
-        .populate('root')
-        .exec((err, doc) => {
+    if (markActive) {
+      User.updateOne({username: user}, {$addToSet: {mark: id}})
+        .exec(err => {
           if (err) {
-            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+            res.send({error: true, type: 'DB', message: '发生错误'})
           } else {
-            if (doc) {
-              let rId = doc.root.id
-              let content = doc.content
-              let brief = []
-              if (content.length >= 30) {
-                brief = content.slice(0, 30)
-              } else {
-                brief = content
-              }
-              User.findOne({username: user})
-                .exec((err3, duser) => {
-                  if (err3) {
-                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                  } else {
-                    if (duser) {
-                      if (duser.mark.length) {
-                        let markData = []
-                        let flag
-                        for (let i = 0; i < duser.mark.length; i++) {
-                          if (duser.mark[i] && duser.mark[i].rootId === rId) {
-                            flag = true
-                            if (markActive) {
-                              duser.mark[i].story.push({
-                                id: id,
-                                brief: brief
-                              })
-                              markData.push(duser.mark[i])
-                            } else {
-                              console.log('查询到的' + duser.mark[i])
-                              if (duser.mark[i] && duser.mark[i].story) {
-                                for (let j = 0; j < duser.mark[i].story.length; j++) {
-                                  if (duser.mark[i].story[j].id === id) {
-                                    duser.mark[i].story.splice(j, 1)
-                                    break
-                                  }
-                                }
-                              }
-                              markData.push(duser.mark[i])
-                            }
-                            break
-                          } else {
-                            if (i === duser.mark.length - 1 && markActive) {
-                              let k =
-                                {
-                                  rootId: rId,
-                                  story: {
-                                    id: id,
-                                    brief: brief
-                                  }
-                                }
-                              User.updateOne({username: user}, {$addToSet: {'mark': k}})
-                                .exec((err3) => {
-                                  if (err3) {
-                                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                                  } else {
-                                    res.send({error: false})
-                                  }
-                                })
-                            }
-                          }
-                        }
-                        if (flag) {
-                          User.updateOne({$and: [{username: user}, {'mark.rootId': rId}]}, {$set: {'mark': markData}})
-                            .exec((err2) => {
-                              if (err2) {
-                                res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                              } else {
-                                res.send({error: false})
-                              }
-                            })
-                        }
-                      } else {
-                        if (markActive) {
-                          let k =
-                            {
-                              rootId: rId,
-                              story: {
-                                id: id,
-                                brief: brief
-                              }
-                            }
-                          User.updateOne({username: user}, {$addToSet: {'mark': k}})
-                            .exec((err3) => {
-                              if (err3) {
-                                res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                              } else {
-                                res.send({error: false})
-                              }
-                            })
-                        } else {
-                          // 这种情况是有问题的，但用户并无影响。查开发手册
-                          res.send({error: false})
-                        }
-                      }
-                    } else {
-                      res.send({error: true, type: 'value', message: '数据错误，请尝试重新登录'})
-                    }
-                  }
-                })
-            } else {
-              res.send({error: true, type: 'value', message: '数据错误，请尝试重新登录'})
-            }
+            res.send({error: false})
+          }
+        })
+    } else {
+      User.updateOne({username: user}, {$pull: {mark: id}})
+        .exec(err => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误'})
+          } else {
+            res.send({error: false})
           }
         })
     }
   } else {
-    res.send({error: true, type: 'value', message: '数据错误'})
+    res.send({error: true, type: 'value', message: '请登录后再试'})
   }
 })
 router.get('/user/getMark', (req, res) => {
   let id = req.query.id
-  const rootReg = /^R([0-9]){7}$/
-  const storyReg = /^S([0-9]){7}$/
-  let result = []
   let markExist = false
   let user
   if (req.session.user) {
@@ -1425,155 +1220,26 @@ router.get('/user/getMark', (req, res) => {
     user = req.cookies.And.user
   }
   if (user) {
-    if (rootReg.test(id)) {
-      User.findOne({username: user})
-        .exec((err, doc) => {
-          if (err) {
-            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+    User.findOne({username: user})
+      .exec((err, doc) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误'})
+        } else {
+          if (doc && doc.mark) {
+            markExist = doc.mark.some(item => {
+              return item === id
+            })
           } else {
-            if (doc) {
-              if (doc.mark.length) {
-                doc.mark.forEach((mark) => {
-                  if (mark.rootId === id) {
-                    markExist = mark.story.some(function (sid) {
-                      return sid.id === id
-                    })
-                    result = mark
-                  }
-                })
-                res.send({error: false, result: result, mark: markExist, root: id})
-              } else {
-                res.send({error: false, result: [], mark: markExist, root: id})
-              }
-            } else {
-              res.send({error: false})
-            }
+            markExist = false
           }
-        })
-    } else if (storyReg.test(id)) {
-      Story.findOne({id: id})
-        .populate('root')
-        .exec((err, story) => {
-          if (err) {
-            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-          } else {
-            if (story) {
-              let rId = story.root.id
-              User.findOne({username: user})
-                .exec((err, doc) => {
-                  if (err) {
-                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                  } else {
-                    if (doc) {
-                      if (doc.mark.length) {
-                        doc.mark.forEach((mark) => {
-                          if (mark.rootId === rId) {
-                            markExist = mark.story.some(function (sid) {
-                              return sid.id === id
-                            })
-                            result = mark
-                          }
-                        })
-                        res.send({error: false, result: result, mark: markExist, root: rId})
-                      } else {
-                        res.send({error: false, result: [], mark: markExist, root: rId})
-                      }
-                    } else {
-                      res.send({error: true, type: 'user', message: '发生错误，请尝试重新登录'})
-                    }
-                  }
-                })
-            } else {
-              res.send({error: true, type: 'value', message: '数据错误'})
-            }
-          }
-        })
-    }
+          res.send({error: false, mark: markExist})
+        }
+      })
   } else {
-    res.send({error: false, result: 'notShow'})
+    res.send({error: true, type: 'DB', message: '请登录后再试'})
   }
 })
-router.post('/user/changeMarkInfo', (req, res) => {
-  const rootReg = /^R([0-9]){7}$/
-  const storyReg = /^S([0-9]){7}$/
-  let id = req.body.id
-  let value = req.body.value
-  let user
-  if (req.session.user) {
-    user = req.session.user
-  } else if (req.cookies.And && req.cookies.And.user) {
-    user = req.cookies.And.user
-  }
-  if (user) {
-    if (rootReg.test(id)) {
-      User.findOne({$and: [{'username': user}, {'mark.rootId': id}]})
-        .exec((err, doc) => {
-          if (err) {
-            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-          } else {
-            let obj = doc.mark
-            for (let i = 0; i < obj.length; i++) {
-              if (obj[i].rootId === id) {
-                for (let j = 0; j < obj[i].story.length; j++) {
-                  if (obj[i].story[j].id === id) {
-                    obj[i].story[j].name = value // 修改书签名
-                    break
-                  }
-                }
-              }
-            }
-            User.updateOne({$and: [{'username': user}, {'mark.rootId': id}]}, {$set: {'mark': obj}})
-              .exec((err2) => {
-                if (err2) {
-                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                } else {
-                  res.send({error: false, message: '修改成功'})
-                }
-              })
-          }
-        })
-    } else if (storyReg.test(id)) {
-      Story.findOne({id: id})
-        .populate('root')
-        .exec((err, story) => {
-          if (err) {
-            res.send({error: false, type: 'DB', message: '发生错误，请稍后再试'})
-          } else {
-            User.findOne({$and: [{'username': user}, {'mark.rootId': story.root.id}]})
-              .exec((err, doc) => {
-                if (err) {
-                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                } else {
-                  let obj = doc.mark
-                  for (let i = 0; i < obj.length; i++) {
-                    if (obj[i].rootId === story.root.id) {
-                      for (let j = 0; j < obj[i].story.length; j++) {
-                        if (obj[i].story[j].id === id) {
-                          obj[i].story[j].name = value // 修改书签名
-                          break
-                        }
-                      }
-                    }
-                  }
-                  User.updateOne({$and: [{'username': user}, {'mark.rootId': story.root.id}]}, {$set: {'mark': obj}})
-                    .exec((err2) => {
-                      if (err2) {
-                        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                      } else {
-                        res.send({error: false, message: '修改成功'})
-                      }
-                    })
-                }
-              })
-          }
-        })
-    } else {
-      res.send({error: true, type: 'value', message: '数据错误'})
-    }
-  } else {
-    res.send({error: false, type: 'user', message: '发生错误，请尝试重新登录'})
-  }
-})
+
 router.post('/user/addFocus', (req, res) => {
   let userId = req.body.userId
   let user
@@ -2009,10 +1675,8 @@ router.post('/user/changeFontSize', (req, res) => {
     User.updateOne({username: user}, {$set: {'fontSize': value}})
       .exec(err => {
         if (err) {
-          console.log('失败')
           res.send({error: true, type: 'auth', message: ''})
         } else {
-          console.log('成功')
           res.send({error: false})
         }
       })

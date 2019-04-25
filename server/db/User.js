@@ -126,13 +126,7 @@ const UserSchema = new Schema({
   ],
   mark: [
     {
-      rootId: String,
-      story: [{
-        name: { type: String, default: '未命名' },
-        id: String,
-        brief: String,
-        date: { type: Date, default: Date.now }
-      }]
+      type: String
     }
   ],
   history: {

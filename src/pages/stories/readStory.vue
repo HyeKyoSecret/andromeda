@@ -1,12 +1,8 @@
 <template>
-  <div class="read-story">
-      <notice v-bind:title="storyInfo.title" v-bind:more="moreList"></notice>
-      <!--<div class="marker" @click="changeMark" v-if="markList !== 'notShow'">-->
-        <!--<img src="../../img/icon/marker_unselected.png" v-if="!markActive"/>-->
-        <!--<img src="../../img/icon/marker_selected.png" v-else/>-->
-      <!--</div>-->
+  <div class="read-story" :class="{bigFont: (settings.fontSize === '大'), superFont: (settings.fontSize === '特大')}">
+      <notice v-bind:title="storyInfo.title" v-bind:more="moreList" v-bind:id="id" v-on:getMark="getMark" :mark="markActive" v-on:openFontSettings="openFont"></notice>
       <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight">
-        <div class="context" @click.self="closeMenu"><p v-for="item in storyInfo.content">{{item}}</p></div>
+        <div class="context"><p v-for="item in storyInfo.content">{{item}}</p></div>
         <div class="related-info">
           <div class="author-info">
             <div class="like">
@@ -45,34 +41,10 @@
           <img src="../../img/icon/yellowcomment.png" />
           <div>评论</div>
         </div>
-        <div class="button" @click="showButton">
+        <div class="button" @click="">
           <img src="../../img/icon/index.png" />
           <div>书签</div>
         </div>
-      </div>
-      <div class="jump-menu" v-if="menuActive">
-        <div class="button" v-if="jumpMenuRootCheck" @click="goStory(markRoot)">开头</div>
-        <div class="button" @click="showMarkMenu">书签</div>
-      </div>
-      <div class="complete"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markList.story.length && markMenu"><span @click="closeMarkMenu">取消</span></div>
-      <div class="mark-menu"  v-bind:style="{marginTop: markMenuMargin + 'px'}" v-if="markList.story && markList.story.length && markMenu">
-        <mt-cell-swipe
-          class="rq-mark"
-          v-for="(item, index) in markList.story" :key="item.id"
-          :right="[
-              {
-                content: '修改',
-                style: { background: '#96D28E', color: '#fff', lineHeight: '56px' },
-                handler:  function () {
-            return changeMarkInfo(item.id)
-          }
-              }]">
-          <slot>
-            <div class="mt-name" @click="goStory(item.id)">{{item.name}}</div>
-            <div class="mt-content" @click="goStory(item.id)">{{item.brief}}</div>
-            <div class="mt-time" @click="goStory(item.id)">{{item.date}}</div>
-          </slot>
-        </mt-cell-swipe>
       </div>
       <div class="arrow">
         <div class="left-arrow">
@@ -82,12 +54,145 @@
           <img src="../../img/icon/right_arrow.png" alt="" v-if="rightNode">
         </div>
       </div>
+      <div class="read-search">
+        <div class="entry-triangle-top"></div>
+        <div class="main-search">
+          <div class="search-content">
+            <div class="search-icon">
+              <img src="../../img/icon/search_gray.png" alt="">
+            </div>
+            <div class="input">
+              <input type="text" placeholder="输入一段文字或作者名">
+            </div>
+          </div>
+        </div>
+        <div class="read-search-content">
+          <div class="select-bar">
+            <span class="words">文本</span>
+            <span class="author">作者</span>
+          </div>
+          <div class="search-content">
+            <div class="search-id">3434355</div>
+            <div class="search-words">十年生死两茫茫。不思量。自难忘。千里孤坟，无处话凄凉。纵使相逢应不识，尘满面，鬓如霜。</div>
+          </div>
+          <div class="a-content">
+            <div></div>
+          </div>
+        </div>
+      </div>
       <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
-      <router-view></router-view>
+      <mt-radio ref="radio" v-on:refresh= 'getSettings' v-bind:id="id"></mt-radio>
+    <router-view></router-view>
     </div>
 </template>
 <style lang='scss'>
   @import "../../scss/config";
+  .read-search {
+    .entry-triangle-top{
+      position:absolute;
+      top: 42px;
+      right:37px;
+      width:0;
+      height:0;
+      border-width: 0 15px 15px;
+      border-style: solid;
+      border-color:transparent transparent white;/*透明 透明  灰*/
+    }
+    .main-search {
+      width: 240px;
+      height: 50px;
+      background: white;
+      position: absolute;
+      top: 55px;
+      right: 5px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .search-content {
+        display: flex;
+        border-radius: 10px;
+        width: 210px;
+        height: 32px;
+        background: rgb(223, 223, 223);
+        align-items: center;
+        .search-icon {
+          margin-left: 8px;
+          margin-top: 3px;
+          img {
+            width: 22px;
+          }
+        }
+        .input {
+          input {
+            border: none;
+            background: rgb(223, 223, 223);
+            outline: none;
+            height: 30px;
+            padding-left: 5px;
+            font-size: 14px;
+          }
+        }
+      }
+    }
+   .read-search-content {
+     position: absolute;
+     top: 99px;
+     right: 5px;
+     width: 240px;
+     min-height: 300px;
+     background: white;
+     border-bottom-left-radius: 10px;
+     border-bottom-right-radius: 10px;
+     .select-bar {
+       height: 20px;
+       margin-top: 10px;
+       background: rgb(223, 223, 223);
+       width: 100%;
+       .words {
+         color: $font-dark;
+         font-size: 13px;
+         display: inline-flex;
+         margin-left: 10px;
+         font-weight: 600;
+       }
+       .words.active {
+         color: $font-dark;
+         font-size: 13px;
+         display: inline-flex;
+         margin-left: 10px;
+         font-weight: 600;
+         border-bottom: 1px solid $font-dark;
+       }
+       .author {
+         color: $font-dark;
+         font-size: 13px;
+         display: inline-flex;
+         margin-left: 65px;
+         font-weight: 600;
+       }
+       .author.active {
+         color: $font-dark;
+         font-size: 13px;
+         display: inline-flex;
+         margin-left: 65px;
+         font-weight: 600;
+         border-bottom: 1px solid $font-dark;
+       }
+     }
+     .search-content {
+       width: 92%;
+       margin: 0 auto;
+       padding: 5px;
+       font-size: 12px;
+       color: $font-dark;
+       border-bottom: 1px solid $border-gray;
+       em {
+         color: $main-red;
+       };
+     }
+   }
+  }
   .rq-mark {
     text-align: left;
     font-size: 12px;
@@ -266,67 +371,6 @@
         }
       }
     }
-    .jump-menu {
-      position: absolute;
-      top: 35%;
-      left: 50%;
-      width: 240px;
-      background-color: white;
-      margin-left: -120px;
-      border-radius: 8px;
-      color: $font-dark;
-      border: 1px solid $border-gray;
-      .button {
-        text-align: center;
-        font-size: 18px;
-        height: 45px;
-        line-height: 45px;
-        border-bottom: 1px solid $line-gray;
-        &:last-child {
-          border:  none;
-        }
-      }
-    }
-    .mark-menu {
-      position: absolute;
-      top: 136px;
-      left: 50%;
-      width: 260px;
-      background-color: white;
-      margin-left: -130px;
-      border-radius: 8px;
-      color: $font-dark;
-      border: 1px solid $border-gray;
-      max-height: 328px;
-      overflow: auto;
-      moz-user-select: -moz-none;
-       -moz-user-select: none;
-       -o-user-select: none;
-       -khtml-user-select: none;
-       -webkit-user-select: none;
-       -ms-user-select: none;
-      user-select: none;
-    }
-    .complete {
-      position: absolute;
-      z-index: 50;
-      top: 137px;
-      left: 50%;
-      width: 259px;
-      margin-left: -129px;
-      color: $main-color;
-      font-size: 14px;
-      height: 28px;
-      text-align: right;
-      background: white;
-      border-radius: 8px;
-      margin-top: 1px solid $border-gray;
-      span {
-        width: 30px;
-        display: inline-block;
-        margin: 3px 8px 3px 0;
-      }
-    }
     .arrow {
       position: absolute;
       bottom: 60px;
@@ -347,20 +391,49 @@
       }
     }
   }
+  .read-story.bigFont {
+    .context {
+      font-size: $b-font-7;
+    }
+    .author-info {
+      .like span{
+        font-size: $b-font-7;
+      }
+      .time {
+        font-size: $b-font-3;
+      }
+    }
+  }
+  .read-story.superFont {
+    .context {
+      font-size: $s-font-9;
+    }
+    .author-info {
+      .like span{
+        font-size: $s-font-9;
+      }
+      .time {
+        font-size: $b-font-5;
+      }
+    }
+  }
   </style>
 <script>
   import Axios from 'axios'
   import notice from '../../components/notice/notice.vue'
-  import moment from 'moment'
   import { Toast, MessageBox } from 'mint-ui'
   import writeStory from '../../components/story/writeStory.vue'
+  import MtRadio from '../../components/me/settings/changeFontSize.vue'
   export default {
     components: {
       notice,
-      writeStory
+      writeStory,
+      MtRadio
     },
     data () {
       return {
+        settings: {}, // 设置
+        id: this.$route.params.id,
         storyInfo: {
           title: '',
           content: [],
@@ -371,10 +444,6 @@
         },
         hasFocus: false, // 关注红星,
         showFocus: false,
-        markRoot: '',
-        markList: {},
-        markMenu: false,
-        menuActive: false,
         markActive: false,
         menuInfo: {
           zan: false,
@@ -398,9 +467,11 @@
       this.getFrontNode()
       this.addHistory()
       this.addDepth()
+      this.getSettings()
     },
     watch: {
       '$route' (to, from) {
+        this.id = this.$route.params.id
         this.getData()
         this.getMark() // 获取书签
         this.ftNode = this.$route.params.id
@@ -409,19 +480,6 @@
         this.getFrontNode()
         this.addHistory()
         this.addDepth()
-      }
-    },
-    computed: {
-      markMenuMargin: function () {
-        if (this.markList && this.markList.story) {
-          return (5 - this.markList.story.length) * 25
-        } else {
-          return 0
-        }
-      },
-      jumpMenuRootCheck: function () {
-        const rootReg = /^R([0-9]){7}$/
-        return !rootReg.test(this.$route.params.id)
       }
     },
     methods: {
@@ -571,31 +629,6 @@
           }
         })
       },
-      getMark () {
-        Axios.get('/user/getMark', {
-          params: {
-            id: this.$route.params.id
-          }
-        }).then(response => {
-          if (!response.data.error) {
-            this.markList = response.data.result
-            this.markRoot = response.data.root
-            if (this.markList.story) {
-              this.markList.story.reverse()
-              for (let i = 0; i < this.markList.story.length; i++) {
-                this.markList.story[i].date = moment(this.markList.story[i].date).format('YYYY年MM月DD日 HH:mm')
-              }
-            }
-            this.markActive = response.data.mark
-          } else {
-            Toast({
-              message: response.data.message,
-              position: 'middle',
-              duration: 1000
-            })
-          }
-        })
-      },
       fetchMenuData () {
         Axios.get('/story/getMenuData', {
           params: {
@@ -716,14 +749,15 @@
           }
         })
       },
-      changeMark () {
-        this.markActive = !this.markActive
-        Axios.post('/user/changeMark', {
-          id: this.$route.params.id,
-          markActive: this.markActive
+      getMark () {
+        Axios.get('/user/getMark', {
+          params: {
+            id: this.$route.params.id
+          }
         }).then(response => {
-          this.getMark()
-          if (response.data.error) {
+          if (!response.data.error) {
+            this.markActive = response.data.mark
+          } else {
             Toast({
               message: response.data.message,
               position: 'middle',
@@ -732,50 +766,8 @@
           }
         })
       },
-      showButton () {
-        this.menuActive = !this.menuActive
-      },
-      closeMenu () {
-        this.menuActive = false
-      },
-      showMarkMenu () {
-        if (!this.markList.story || this.markList.story.length === 0) {
-          Toast({
-            message: '无可用书签',
-            position: 'middle',
-            duration: 1000
-          })
-        }
-        this.menuActive = false
-        this.markMenu = true
-      },
-      closeMarkMenu () {
-        this.markMenu = false
-        this.menuActive = false
-      },
       goStory (id) {
-        this.markMenu = false
-        this.menuActive = false
         this.$router.push('/story/' + id)
-      },
-      changeMarkInfo (id) {
-        MessageBox.prompt('请输入新的书签名', '').then(({ value, action }) => {
-          if (action === 'confirm') {
-            Axios.post('/user/changeMarkInfo', {
-              id: id,
-              value: value
-            }).then(response => {
-              Toast({
-                message: response.data.message,
-                position: 'middle',
-                duration: 1000
-              })
-              this.getMark()
-            })
-          }
-        }).catch(error => {
-          return error
-        })
       },
       openComment () {
         this.$router.push(this.$route.path + '/comment')
@@ -805,6 +797,23 @@
             })
           }
         })
+      },
+      getSettings () {
+        Axios.get('/user/getSettings')
+          .then(response => {
+            if (!response.data.error) {
+              this.settings = response.data.settings
+            } else {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 800
+              })
+            }
+          })
+      },
+      openFont () {
+        this.$refs.radio.openRadio()
       }
     }
   }

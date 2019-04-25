@@ -6,19 +6,18 @@
     <span class="title">
       {{title}}
     </span>
-    <span class="mark" v-if="more">
-      <img src="../../img/icon/mark.png" alt="">
-    </span>
-    <span class="mark" v-if="more">
-      <img src="../../img/icon/mark_active.png" alt="">
-    </span>
-    <span class="search" v-if="more">
-      <img src="../../img/icon/search.png" alt="">
-    </span>
-    <span class="font" v-if="more">
-      <img src="../../img/icon/font.png" alt="">
-    </span>
-
+      <span class="mark" v-if="more && mark" @click="changeMark">
+        <img src="../../img/icon/mark_active.png" alt="">
+      </span>
+        <span class="mark" v-if="more && !mark" @click="changeMark">
+        <img src="../../img/icon/mark.png" alt="">
+      </span>
+        <span class="search" v-if="more">
+        <img src="../../img/icon/search.png" alt="">
+      </span>
+        <span class="font" v-if="more" @click="openFontSettings">
+        <img src="../../img/icon/font.png" alt="">
+     </span>
     <div v-if="more && menuActive" class="menu">
       <router-link :to="item.path" tag="div" class="content" v-for="item in menuList" :key="item.name">
         <span class="menu-icon"><img :src="item.icon" alt="">
@@ -28,8 +27,11 @@
   </div>
 </template>
 <script>
+  // import moment from 'moment'
+  import Axios from 'axios'
+  import { Toast } from 'mint-ui'
   export default {
-    props: ['title', 'more'],
+    props: ['title', 'more', 'id', 'mark'],
     data () {
       return {
         menu: [
@@ -53,7 +55,8 @@
           }
         ],
         menuList: [],
-        menuActive: false
+        menuActive: false,
+        rangeValue: ''
       }
     },
     created: function () {
@@ -81,12 +84,31 @@
             }
           }
         }
+      },
+      changeMark () {
+        Axios.post('/user/changeMark', {
+          id: this.id,
+          markActive: !this.mark
+        }).then(response => {
+          this.$emit('getMark')
+          if (response.data.error) {
+            Toast({
+              message: response.data.message,
+              position: 'middle',
+              duration: 1000
+            })
+          }
+        })
+      },
+      openFontSettings () {
+        this.$emit('openFontSettings')
       }
     }
   }
 </script>
 <style lang='scss' scoped>
   @import "../../scss/config";
+  @import "../../scss/style.css";
   .notice {
     z-index: 800;
     background: $main-color;
@@ -98,6 +120,14 @@
     position: fixed;
     top: 0;
     width: 100%;
+    .range {
+      position: absolute;
+      top: 42px;
+      left: 0;
+      background: white;
+      width: 100%;
+      height: 50px;
+    }
     span {
       text-align: center;
       font-size: 16px;
@@ -129,7 +159,7 @@
     }
     .search {
       position: absolute;
-      right: 34px;
+      right: 37px;
       display: inline-block;
       height: 42px;
       width: 30px;
@@ -141,7 +171,7 @@
     }
     .font {
       position: absolute;
-      right: 60px;
+      right: 67px;
       display: inline-block;
       height: 42px;
       width: 30px;
@@ -159,16 +189,6 @@
       width: 100%;
       z-index: 999;
       display: flex;
-/*      .entry-triangle-top{
-        position:absolute;
-        top: -9px;
-        left:80px;
-        width:0;
-        height:0;
-        border-left:10px solid transparent;
-        border-right:10px solid transparent;
-        border-bottom:10px solid #fff;
-      }*/
       .content {
         flex: 1;
         height: 70px;

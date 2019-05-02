@@ -12,7 +12,7 @@
         <span class="mark" v-if="more && !mark" @click="changeMark">
         <img src="../../img/icon/mark.png" alt="">
       </span>
-        <span class="search" v-if="more">
+        <span class="search" v-if="more" @click="openSearch">
         <img src="../../img/icon/search.png" alt="">
       </span>
         <span class="font" v-if="more" @click="openFontSettings">
@@ -102,6 +102,9 @@
       },
       openFontSettings () {
         this.$emit('openFontSettings')
+      },
+      openSearch () {
+        this.$emit('openSearch')
       }
     }
   }

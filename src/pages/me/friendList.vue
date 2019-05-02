@@ -1,6 +1,6 @@
 <template>
   <div class="friendList">
-    <notice title="我的好友" v-bind:more="moreList"></notice>
+    <notice title="我的好友"></notice>
     <div class="search">
       <span class="magnifier"><img src="../../img/icon/magnifier.png" /></span>
       <span class="search-input"><input type="text" placeholder="搜索" @focus="startSearch" @input="searchFriend" v-model="search"></span>
@@ -163,8 +163,7 @@
         cancelBtn: false,
         friendList: [],
         searchList: [],
-        flVis: true,
-        moreList: ['addFriend']
+        flVis: true
       }
     },
     created: function () {

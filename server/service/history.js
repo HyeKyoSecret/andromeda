@@ -283,7 +283,6 @@ router.get('/history/getHistory', (req, res) => {
           }
           bubbleSort(result[m].rootPack)
         }
-        console.log(result)
         res.send({error: false, result: result})
       } else {
         if (typeof id === 'undefined') {

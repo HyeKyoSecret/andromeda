@@ -147,3 +147,49 @@
   }
 }
 }
+db.createUser(
+  {
+    user: "swallowAdmin",
+    pwd: "sullivan20102010",
+    roles: [
+      { role: "dbOwner", db: "admin" },
+      { role: "clusterAdmin", db: "admin" },
+      { role: "readWriteAnyDatabase", db: "admin" },
+      { role: "userAdminAnyDatabase", db: "admin" },
+      { role: "dbAdminAnyDatabase", db: "admin" },
+      { role: "dbAdminAnyDatabase", db: "admin" },
+      { role: "root", db: 'admin'}
+      ]
+  }
+)
+db.createUser(
+  {
+    user: "swallow",
+    pwd: "andromeda2019",
+    roles: [ { role: "dbOwner", db: "andromeda" }]
+  }
+)
+db.createUser(
+  {
+    user: "es",
+    pwd: "andromeda2019",
+    roles: [ { role: "dbOwner", db: "admin" },{role: "clusterAdmin", db: "admin" },
+      { role: "userAdminAnyDatabase", db: "admin" },
+      { role: "dbAdminAnyDatabase", db: "admin" },
+      { role: "root", db: "admin" }, { role: "restore", db: "admin" }, {role: 'dbOwner', db: 'andromeda'}]
+  }
+)
+db.grantRolesToUser( "swallowAdmin" , [ { role: "dbOwner", db: "admin" },{ "role": "clusterAdmin", "db": "admin" },
+  { "role": "userAdminAnyDatabase", "db": "admin" },
+  { "role": "dbAdminAnyDatabase", "db": "admin" },
+  { role: "root", db: "admin" }, { role: "restore", db: "admin" } ])
+db.grantRolesToUser( "swallow" , [ { "role": "clusterManager", "db": "admin" },{ role: "dbOwner", db: "andromeda" },{ "role": "dbOwner", "db": "local" }])
+db.grantRolesToUser( "swallow" , [ { role: "dbOwner", db: "admin" },{role: "clusterAdmin", db: "admin" },
+  { role: "userAdminAnyDatabase", db: "admin" },
+  { role: "dbAdminAnyDatabase", db: "admin" },
+  { role: "root", db: "admin" }, { role: "restore", db: "admin" }, {role: 'dbOwner', db: 'andromeda'} ])
+
+
+db.grantRolesToUser( "es" , [ { role: "dbOwner", db: "admin" },{role: "clusterAdmin", db: "admin" },
+  { role: "userAdminAnyDatabase", db: "admin" },
+  { role: "dbAdminAnyDatabase", db: "admin" }, { role: "restore", db: "admin" }, {role: 'dbOwner', db: 'andromeda'} ])

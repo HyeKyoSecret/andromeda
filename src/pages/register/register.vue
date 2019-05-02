@@ -10,7 +10,7 @@
     </div>
     <div class="logo-show">
       <div class="logo">
-        <img src="../../img/images/logo.png" alt="">
+        <img src="../../img/images/killerwhale._logo.png" alt="">
       </div>
     </div>
     <div class="register-input">
@@ -216,11 +216,11 @@
     }
     .logo-show{
       width: 100%;
-      height: 130px;
+      height: 150px;
       text-align: center;
       img {
         margin-top: 30px;
-        width: 100px;
+        width: 90px;
       }
     }
     .register-input {

@@ -136,9 +136,12 @@ router.get('/comment/getComment', (req, res) => {
       }
     })
     .populate({
-      path: 'subComment',
+      path: 'comment',
       populate: {
-        path: 'people'
+        path: 'subComment',
+        populate: {
+          path: 'zan'
+        }
       }
     })
     .exec((err, doc) => {
@@ -157,12 +160,16 @@ router.get('/comment/getComment', (req, res) => {
             if (comment.subComment && comment.subComment.length > 0) {
               for (let i = 0; i < comment.subComment.length; i++) {
                 subContent.push({
-                  id: comment.subComment[i].id,
+                  id: comment.subComment[i]._id,
                   people: comment.subComment[i].people.nickname,
                   content: comment.subComment[i].content,
                   zan: comment.subComment[i].zan ? comment.subComment[i].zan.length : 0,
                   commentTo: comment.subComment[i].commentTo ? comment.subComment[i].commentTo.people.nickname : '',
-                  date: moment(comment.subComment[i].date).fromNow()
+                  date: moment(comment.subComment[i].date).fromNow(),
+                  hasZan: comment.subComment[i].zan.some(function (item) {
+                    return item.username === user
+                  }),
+                  isYours: comment.subComment[i].people.username === user
                 })
               }
             }
@@ -176,7 +183,9 @@ router.get('/comment/getComment', (req, res) => {
                 commentTo: comment.commentTo ? comment.commentTo.people.nickname : null,
                 date: moment(comment.date).fromNow(),
                 hasZan: hasZan,
-                subComment: subContent
+                subComment: subContent.reverse(),
+                showSubComment: false,
+                isYours: comment.people.username === user
               })
             }
           }

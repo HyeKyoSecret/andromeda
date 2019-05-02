@@ -153,7 +153,12 @@ export default [
     children: [
       {
         path: 'comment',
-        component: resolve => require(['../pages/comment/comment.vue'], resolve),
+        component: resolve => require(['../pages/stories/comment/comment.vue'], resolve),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'mark',
+        component: resolve => require(['../pages/stories/mark/mark.vue'], resolve),
         meta: { requiresAuth: true }
       }
     ]

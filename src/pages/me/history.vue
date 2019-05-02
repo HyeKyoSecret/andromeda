@@ -175,7 +175,7 @@
             }
           }
           .right {
-            width: 80%;
+            width: 85%;
             margin-left: 40px;
             border-radius: 10px;
             min-height: 75px;

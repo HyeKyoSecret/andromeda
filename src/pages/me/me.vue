@@ -50,7 +50,7 @@
         </div>
       </div>
       <router-link to="/login" tag="div" class="fake-user-main" v-else>
-        <img src="../../img/images/logo.png" alt="">
+        <img src="../../img/images/killerwhale._logo.png" alt="">
         <p>点击登录，链接你与Ta们的故事</p>
       </router-link>
         <div class="user-operation">
@@ -188,10 +188,10 @@
         flex-direction: column;
         img {
           display: block;
-          width: 60px;
+          width: 48px;
         }
         p {
-          margin-top: 10px;
+          margin-top: 8px;
           font-size: 16px;
         }
       }

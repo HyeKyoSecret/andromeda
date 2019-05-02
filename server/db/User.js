@@ -126,7 +126,8 @@ const UserSchema = new Schema({
   ],
   mark: [
     {
-      type: String
+      id: String,
+      date: { type: Date, default: Date.now }
     }
   ],
   history: {

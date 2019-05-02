@@ -1,6 +1,6 @@
 <template>
   <div class="blank">
-    <img src="../../img/images/fade-logo.png" alt="">
+    <img src="../../img/images/killerwhale_graybackground.png" alt="">
   </div>
 </template>
 <script>
@@ -10,5 +10,8 @@
     width: 100%;
     margin-top: 40%;
     text-align: center;
+    img {
+      height: 220px;
+    }
   }
 </style>

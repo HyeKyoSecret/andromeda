@@ -13,29 +13,31 @@
           <div class="critic-name">
             <span class="critic">{{item.people}}</span>
             <span class="to" v-if="item.commentTo">
-              <img src="../../img/icon/gray_triangle.png">
+              <img src="../../../img/icon/gray_triangle.png">
             </span>
             <span class="re-critic" v-if="item.commentTo">{{item.commentTo}}</span>
           </div>
-          <div class="content" :class="{notshow: commentList[index].notShow}":id="item.id">
+          <div class="content" :class="{notshow: commentList[index].notShow}" :id="item.id" @click="replyComment(item.id, item.id)">
             {{item.content}}
           </div>
           <div class="information">
             <span class="thumb-up" >
-              <img src="../../img/icon/gray_thumb.png" v-if="!item.hasZan" @click="addZan(index)">
-              <img src="../../img/icon/yellowthumb.png" v-else @click="cancelZan(index)">{{item.zan}}
+              <img src="../../../img/icon/gray_thumb.png" v-if="!item.hasZan" @click="addZan(item.id, 'main', index)">
+              <img src="../../../img/icon/yellowthumb.png" v-else @click="cancelZan(item.id, 'main', index)">{{item.zan}}
             </span>
-            <span class="reply" @click="replyComment(item.id, item.id)">回复</span>
+            <span class="reply" @click="replyComment(item.id, item.id, index)">回复</span>
             <span class="time">{{item.date}}</span>
-            <span class="showBtn" v-if="item.lc > 3" @click="showComment(index)">{{item.notShow ? '展开' : '收起'}}</span>
+            <span class="time" v-if="item.isYours" @click="deleteComment('main', item.id)">删除</span>
+            <!--<span class="showBtn" v-if="item.lc > 3" @click="showComment(index)">{{item.notShow ? '展开' : '收起'}}</span>-->
+            <span class="showBtn" @click=showSubComment(index) v-if="item.subComment && item.subComment.length > 0 && !item.showSubComment">共{{item.subComment.length}}条评论</span>
           </div>
-          <div class="sub-comment">
-            <div class="one-sub-comment" v-for="q in item.subComment">
+          <div class="sub-comment" v-if="item.showSubComment">
+            <div class="one-sub-comment" v-for="(q, j) in item.subComment">
               <div class="sub-comment-content">
                 <div class="sub-critic-name">
                   <span class="sub-critic">{{q.people}}</span>
                   <span class="sub-to">
-              <img src="../../img/icon/gray_triangle.png">
+              <img src="../../../img/icon/gray_triangle.png">
             </span>
                   <span class="sub-re-critic">{{q.commentTo}}</span>
                 </div>
@@ -44,11 +46,13 @@
                 </div>
                 <div class="sub-information">
             <span class="sub-thumb-up" >
-              <img src="../../img/icon/gray_thumb.png">
-              <img src="../../img/icon/yellowthumb.png">
+              <img src="../../../img/icon/gray_thumb.png" v-if="!q.hasZan" @click="addZan(q.id, 'sub', index, j)">
+              <img src="../../../img/icon/yellowthumb.png" v-else @click="cancelZan(q.id, 'sub', index, j)">{{q.zan}}
             </span>
-                  <span class="sub-reply" @click="replyComment(item.id, q.id)">回复</span>
+                  <span class="sub-reply" @click="replyComment(item.id, q.id, index)">回复</span>
                   <span class="sub-time">{{q.date}}</span>
+                  <span class="sub-time" v-if="q.isYours" @click="deleteComment('sub', q.id)">删除</span>
+                  <span class="sub-showBtn" v-if="item.subComment && j === item.subComment.length - 1" @click=showSubComment(index)>收起评论</span>
                 </div>
               </div>
           </div>
@@ -65,8 +69,8 @@
   </div>
 </template>
 <style lang='scss' scoped>
-  @import "../../scss/style.css";
-  @import "../../scss/config";
+  @import "../../../scss/style.css";
+  @import "../../../scss/config";
   .comment {
     position: absolute;
     top: 0;
@@ -119,6 +123,7 @@
             }
           }
           .content{
+            line-height: 18px;
             font-size: 13px;
             color: $font-dark;
             margin-top: 5px;
@@ -158,6 +163,8 @@
             }
             .showBtn {
               float: right;
+              display: inline-block;
+              margin-top: 8px;
               color: $main-color;
             }
           }
@@ -220,6 +227,8 @@
                 }
                 .sub-showBtn {
                   float: right;
+                  display: inline-block;
+                  margin-top: 8px;
                   color: $main-color;
                 }
               }
@@ -285,7 +294,7 @@
   }
 </style>
 <script>
-  import notice from '../../components/notice/notice.vue'
+  import notice from '../../../components/notice/notice.vue'
   import Axios from 'axios'
   import autoSize from 'autosize'
   import { Toast, MessageBox } from 'mint-ui'
@@ -298,7 +307,8 @@
         commentList: [],
         toId: '',  // 回复的具体对象，
         mainId: '', // 回复的主对象
-        author: ''
+        author: '',
+        temp: -1  // 用于保存当前回复对象的主窗口
       }
     },
     computed: {
@@ -334,17 +344,79 @@
       this.getData()
     },
     methods: {
-      showComment (i) {
-        this.commentList[i].notShow = !this.commentList[i].notShow
-        this.$set(this.commentList, i, this.commentList[i])
+      showSubComment (index) {
+        this.commentList[index].showSubComment = !this.commentList[index].showSubComment
+        this.$set(this.commentList, index, this.commentList[index])
       },
-      addZan (i) {
+      deleteComment (type, id) {
+        if (type === 'main') {
+          MessageBox({
+            title: '提示',
+            message: '删除评论将连带删除关于本条的所有评论，您确定这样做吗?',
+            showCancelButton: true
+          }).then(action => {
+            Axios.post('/comment/deleteComment', {
+              id: id
+            }).then(response => {
+              if (!response.data.error) {
+                this.getData()
+                Toast({
+                  position: 'middle',
+                  message: response.data.message,
+                  duration: 1000
+                })
+              } else {
+                Toast({
+                  position: 'middle',
+                  message: response.data.message,
+                  duration: 1000
+                })
+              }
+            })
+          }).catch(e => {
+            return 0
+          })
+        } else if (type === 'sub') {
+          MessageBox({
+            title: '提示',
+            message: '确定删除本条评论吗?',
+            showCancelButton: true
+          }).then(action => {
+            Axios.post('/comment/deleteComment', {
+              id: id
+            }).then(response => {
+              if (!response.data.error) {
+                this.getData()
+                Toast({
+                  position: 'middle',
+                  message: response.data.message,
+                  duration: 1000
+                })
+              } else {
+                Toast({
+                  position: 'middle',
+                  message: response.data.message,
+                  duration: 1000
+                })
+              }
+            })
+          }).catch(e => {
+            return 0
+          })
+        }
+      },
+      addZan (id, type, i, j) {
         Axios.post('/comment/addZan', {
-          id: this.commentList[i].id
+          id: id
         }).then(response => {
           if (!response.data.error) {
-            this.commentList[i].hasZan = true
-            this.commentList[i].zan += 1
+            if (type === 'main') {
+              this.commentList[i].hasZan = true
+              this.commentList[i].zan += 1
+            } else if (type === 'sub') {
+              this.commentList[i].subComment[j].hasZan = true
+              this.commentList[i].subComment[j].zan += 1
+            }
           } else {
             if (response.data.askLogin) {
               MessageBox({
@@ -366,13 +438,18 @@
           }
         })
       },
-      cancelZan (i) {
+      cancelZan (id, type, i, j) {
         Axios.post('/comment/cancelZan', {
-          id: this.commentList[i].id
+          id: id
         }).then(response => {
           if (!response.data.error) {
-            this.commentList[i].hasZan = false
-            this.commentList[i].zan -= 1
+            if (type === 'main') {
+              this.commentList[i].hasZan = false
+              this.commentList[i].zan -= 1
+            } else if (type === 'sub') {
+              this.commentList[i].subComment[j].hasZan = false
+              this.commentList[i].subComment[j].zan -= 1
+            }
           } else {
             if (response.data.askLogin) {
               MessageBox({
@@ -410,10 +487,16 @@
             duration: 1000
           })
           this.getData()
-          this.comment = ''
-          document.getElementById('textArea').style.height = 28 + 'px'
-          this.toId = ''
-          this.mainId = ''
+          this.$nextTick(function () {
+            this.commentList[this.temp].showSubComment = true
+            this.$set(this.commentList, this.temp, this.commentList[this.temp])
+            console.log(this.temp)
+            console.log(this.commentList[this.temp].showSubComment)
+            this.comment = ''
+            document.getElementById('textArea').style.height = 28 + 'px'
+            this.toId = ''
+            this.mainId = ''
+          }.bind(this))
         })
       },
       countLines (ele) {
@@ -429,23 +512,29 @@
           }
         }).then(response => {
           if (!response.data.error) {
-            this.commentList = response.data.result
-            this.$nextTick(function () {
-              for (let i = 0; i < this.commentList.length; i++) {
-                let f = document.getElementById(this.commentList[i].id)
-                this.commentList[i].lc = this.countLines(f)
-                if (this.commentList[i].lc > 3) {
-                  this.commentList[i].notShow = true
-                  this.$set(this.commentList, i, this.commentList[i])
-                }
-              }
-              this.commentList.forEach(comment => {
-                if (comment.lc > 3) {
-                  comment.notShow = true
-                }
-              })
-            }.bind(this))
+            if (this.temp > -1) {
+              response.data.result[this.temp].showSubComment = true
+              this.commentList = response.data.result
+            } else {
+              this.commentList = response.data.result
+            }
+            // this.$nextTick(function () {
+            //   for (let i = 0; i < this.commentList.length; i++) {
+            //     let f = document.getElementById(this.commentList[i].id)
+            //     this.commentList[i].lc = this.countLines(f)
+            //     if (this.commentList[i].lc > 3) {
+            //       this.commentList[i].notShow = true
+            //       this.$set(this.commentList, i, this.commentList[i])
+            //     }
+            //   }
+            //   this.commentList.forEach(comment => {
+            //     if (comment.lc > 3) {
+            //       comment.notShow = true
+            //     }
+            //   })
+            // }.bind(this))
             this.author = response.data.author
+            console.log(this.author)
           } else {
             Toast({
               position: 'middle',
@@ -455,14 +544,15 @@
           }
         })
       },
-      replyComment (main, to) {
+      replyComment (main, to, index) {
         this.comment = ''
         this.toId = to
         this.mainId = main
+        this.temp = index
         document.getElementById('textArea').focus()
       },
       setErrorImg (x) {
-        this.commentList[x].headImg = require('../../img/images/defaultHeadImg.png')
+        this.commentList[x].headImg = require('../../../img/images/defaultHeadImg.png')
       }
     },
     components: {

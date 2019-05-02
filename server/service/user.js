@@ -186,7 +186,6 @@ router.get('/user/getContribute', (req, res) => {
                   if (cstory && root && cstory.toString() === root._id.toString()) {
                     count += 1
                   }
-                  console.log(i + '————————————————' + (user.myCreation.story.length - 1))
                   if (i === user.myCreation.story.length - 1) {
                     res.send({count: count})
                   }
@@ -1180,6 +1179,9 @@ router.get('/user/getMyCreationNode', (req, res) => {
 router.post('/user/changeMark', (req, res) => {
   let markActive = req.body.markActive
   let id = req.body.id
+  let mark = {
+    id: id
+  }
   let user
   if (req.session.user) {
     user = req.session.user
@@ -1188,21 +1190,54 @@ router.post('/user/changeMark', (req, res) => {
   }
   if (user) {
     if (markActive) {
-      User.updateOne({username: user}, {$addToSet: {mark: id}})
-        .exec(err => {
+      User.findOne({username: user})
+        .exec((err, doc) => {
           if (err) {
             res.send({error: true, type: 'DB', message: '发生错误'})
           } else {
-            res.send({error: false})
+            if (doc && doc.mark) {
+              doc.mark.forEach((item, index) => {
+                if (item.id === mark.id) {
+                  doc.mark.splice(index, 1)
+                }
+              })
+              doc.mark.push(mark)
+              User.updateOne({username: user}, {$set: {mark: doc.mark}})
+                .exec(err2 => {
+                  if (err2) {
+                    res.send({error: true, type: 'DB', message: '发生错误'})
+                  } else {
+                    res.send({error: false})
+                  }
+                })
+            } else {
+              res.send({error: true, type: 'DB', message: '发生错误'})
+            }
           }
         })
     } else {
-      User.updateOne({username: user}, {$pull: {mark: id}})
-        .exec(err => {
+      User.findOne({username: user})
+        .exec((err, doc) => {
           if (err) {
             res.send({error: true, type: 'DB', message: '发生错误'})
           } else {
-            res.send({error: false})
+            if (doc && doc.mark) {
+              doc.mark.forEach((item, index) => {
+                if (item.id === mark.id) {
+                  doc.mark.splice(index, 1)
+                }
+              })
+              User.updateOne({username: user}, {$set: {mark: doc.mark}})
+                .exec(err2 => {
+                  if (err2) {
+                    res.send({error: true, type: 'DB', message: '发生错误'})
+                  } else {
+                    res.send({error: false})
+                  }
+                })
+            } else {
+              res.send({error: true, type: 'DB', message: '发生错误'})
+            }
           }
         })
     }
@@ -1227,7 +1262,7 @@ router.get('/user/getMark', (req, res) => {
         } else {
           if (doc && doc.mark) {
             markExist = doc.mark.some(item => {
-              return item === id
+              return item.id === id
             })
           } else {
             markExist = false
@@ -1236,7 +1271,7 @@ router.get('/user/getMark', (req, res) => {
         }
       })
   } else {
-    res.send({error: true, type: 'DB', message: '请登录后再试'})
+    res.send({error: false, mark: false})
   }
 })
 
@@ -1691,16 +1726,21 @@ router.get('/user/getFontSize', (req, res) => {
   } else if (req.cookies.And) {
     user = req.cookies.And.user
   }
-  User.findOne({username: user})
-    .exec((err, doc) => {
-      if (err) {
-        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-      } else {
-        if (doc) {
-          res.send({error: false, size: doc.fontSize})
+  if (user) {
+    User.findOne({username: user})
+      .exec((err, doc) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+        } else {
+          if (doc) {
+            res.send({error: false, size: doc.fontSize})
+          }
         }
-      }
-    })
+      })
+  } else {
+    res.send({error: false, size: '正常'})
+  }
+
 })
 router.get('/user/getSettings', (req, res) => {
   let user
@@ -1719,7 +1759,7 @@ router.get('/user/getSettings', (req, res) => {
           settings.fontSize = doc.fontSize
           res.send({error: false, settings: settings})
         } else {
-          res.send({error: true, type: 'user', message: '请重新登录'})
+          res.send({error: false, settings: {fontSize: '正常'}})
         }
       }
     })

@@ -112,10 +112,11 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
     width: 100%;
+    min-height: calc(100vh - 42px);
     box-sizing: border-box;
     background: $bg-gray;
+    margin-top: 42px;
     .notice {
       background: $main-color;
       height: 42px;
@@ -263,7 +264,7 @@
         align-items: center;
         margin-left: 10px;
         margin-right: 10px;
-        margin-top: 10px;
+        margin-top: 5px;
         .reason {
           color: $font-gray;
           font-size: 12px;

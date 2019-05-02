@@ -7,6 +7,7 @@ import routes from './routes/routes'
 import App from './App.vue'
 import MintUI from 'mint-ui'
 import Axios from 'axios'
+import VueScrollLock from 'vue-scroll-lock'
 import VueFinger from './js/vueFinger'
 const VueTouch = require('vue-touch')
 Vue.use(VueTouch, {name: 'v-touch'})
@@ -17,6 +18,7 @@ Axios.defaults.withCredentials = true
 Vue.use(MintUI)
 Vue.use(VueRouter)
 Vue.use(VueFinger)
+Vue.use(VueScrollLock)
 const scrollBehavior = (to, from, savedPosition) => {
   if (savedPosition) {
     return savedPosition

@@ -17,7 +17,7 @@ router.post('/register', (req, res) => {
   let nickReg = /^[\u4E00-\u9FA5A-Za-z0-9]{2,7}$/  // 中文数字字母
   let psReg = /^[A-Za-z0-9]{6,16}$/
   // console.log('收到的验证码' + captcha)
-  // console.log('session验证码' + req.session.captchaText)
+  // ('session验证码' + req.session.captchaText)
   // console.log(req.session.captchaText === captcha)
   if (captcha.toLowerCase() === req.session.captchaText) {
     if (userReg.test(username) && nickReg.test(nickname) && psReg.test(password)) {

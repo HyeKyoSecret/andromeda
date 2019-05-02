@@ -18,6 +18,7 @@
     "moment": "^2.19.4",
     "vue": "^2.4.2",
     "vue-router": "^2.7.0",
+    "vue-scroll-lock": "^0.0.6",
     "vue-style-loader": "^3.0.3"
   },
   "devDependencies": {

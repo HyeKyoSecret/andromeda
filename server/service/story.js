@@ -436,11 +436,9 @@ router.get('/story/getStoryDraft', (req, res) => {
     author = req.session.user
   } else if (req.cookies.And) {
     author = req.cookies.And.user
-  } else {
-    return
   }
   let id = req.query.id
-  if (storyReg.test(id)) {
+  if (storyReg.test(id) && author) {
     User.findOne({username: author}, (err, user) => {
       if (err) {
         res.send(null)
@@ -456,7 +454,7 @@ router.get('/story/getStoryDraft', (req, res) => {
         res.send(result)
       }
     })
-  } else {   // id 不合法
+  } else {
     res.send(result)
   }
 })
@@ -679,8 +677,6 @@ router.post('/story/buildStory', (req, res) => {
     author = req.session.user
   } else if (req.cookies.And) {
     author = req.cookies.And.user
-  } else {
-    res.send({error: true, type: 'login', message: '发布失败，请先登录'})
   }
   let story = {
     content: content
@@ -1313,19 +1309,22 @@ router.post('/story/cancelSubscribe', (req, res) => {
             Root.findOneAndUpdate({id: id}, {$pull: {'subscribe': userId._id}}, (err2, root) => {
               if (err2) {
                 res.send({login: false, success: false})
-              }
-              for (let i = 0; i < userId.subscribe.length; i++) {
-                if (userId.subscribe[i].toString() === root._id.toString()) {
-                  userId.subscribe.splice(i, 1)
-                  break
+              } else {
+                for (let i = 0; i < userId.subscribe.length; i++) {
+                  if (userId.subscribe[i].toString() === root._id.toString()) {
+                    userId.subscribe.splice(i, 1)
+                    break
+                  }
                 }
+                User.updateOne({username: user}, {$set: {subscribe: userId.subscribe}})
+                  .exec(err3 => {
+                    if (err3) {
+                      res.send({login: true, success: false})
+                    } else {
+                      res.send({login: true, success: true})
+                    }
+                  })
               }
-              userId.save((err3) => {
-                if (err3) {
-                  console.log(err3)
-                }
-                res.send({login: true, success: true})
-              })
             })
           } else {
             res.send({login: false, success: false})
@@ -1553,7 +1552,11 @@ router.get('/story/prepareTraversal', (req, res) => {
             console.log(err)
             reject('error')
           } else {
-            resolve(doc.friendList)
+            if (doc) {
+              resolve(doc.friendList)
+            } else {
+              resolve(new Array(0))
+            }
           }
         })
     })
@@ -2519,13 +2522,13 @@ router.post('/story/search', (req, res) => {
         } else {
           root.rootName = item._source.name
           root.coverImg = tool.formImg(item._source.coverImg)
-          root.subscribe = item._source.subscribe ? item._source.subscribe.length : 0
+          root.subNumber = item._source.subscribe ? item._source.subscribe.length : 0
         }
         result.push({
           name: root.rootName,
           raw: item._source.id,
           coverImg: root.coverImg ? root.coverImg : 'default',
-          subNumber: root.subscribe ? root.subscribe : 0,
+          subNumber: root.subNumber ? root.subNumber : 0,
           date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
           author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
           id: item._source.id,
@@ -2537,7 +2540,7 @@ router.post('/story/search', (req, res) => {
       console.log(e)
     }
   }
-  async function getRoot(id) {
+  async function getRoot (id) {
     return new Promise(function (resolve, reject) {
       Story.findOne({id: id})
         .populate('root')
@@ -2610,5 +2613,361 @@ router.post('/story/search', (req, res) => {
       console.log(err)
     })
   }
+})
+router.post('/story/readSearch', (req, res) => {
+  let content = req.body.content
+  let style = req.body.style
+  let fid = req.body.id
+  let p
+  let stack = []
+  let storyList = []
+  let result = []
+  async function getRootObj () {
+    return new Promise((resolve, reject) => {
+      if (rootReg.test(fid)) {
+        Root.findOne({id: fid})
+          .exec((err, root) => {
+            if (err) {
+              console.log(err)
+            }
+            if (root) {
+              resolve(root)
+            } else {
+              reject(null)
+            }
+          })
+      } else if (storyReg.test(fid)) {
+        Story.findOne({id: fid})
+          .exec((err, story) => {
+            if (err) {
+              console.log(err)
+            }
+            if (story) {
+              Root.findOne({_id: story.root})
+                .exec((err, root) => {
+                  if (err) {
+                    console.log(err)
+                  }
+                  if (root) {
+                    resolve(root)
+                  } else {
+                    reject(null)
+                  }
+                })
+            } else {
+              reject(null)
+            }
+          })
+      } else {
+        reject(null)
+      }
+    })
+  }
+  async function traversal (root) { // 先序遍历
+    p = root._id
+    let _temp
+    while (p || stack.length) {
+      if (p) {
+        _temp = await getObj(p)
+        storyList.push(_temp.id)
+        stack.push({
+          _id: _temp._id,
+          // id: _temp.id,
+          content: _temp.content
+        })
+        p = _temp.lc
+      } else {
+        stack.pop()
+        p = _temp.rb
+        while (!p && stack.length > 1) {
+          _temp = await getObj(stack[stack.length - 1]._id)
+          p = _temp.rb
+          stack.pop()
+        }
+      }
+    }
+    return storyList
+  }
+  const getObj = function (id) {
+    return new Promise((resolve, reject) => {
+      Story.findOne({_id: id})
+        .populate('author')
+        .exec((err, story) => {
+          if (err) {
+            console.log(err)
+          }
+          if (story) {
+            resolve(story)
+          } else {
+            Root.findOne({_id: id}, (err, root) => {
+              if (err) {
+                console.log(err)
+              }
+              if (root) {
+                resolve(root)
+              } else {
+                resolve(null)
+              }
+            })
+          }
+        })
+    })
+  }
+  async function contentSearch () {
+    let root = await getRootObj()
+    let stlist = await traversal(root)
+    const response = await client.search({
+      index: ['andromeda.storyroots', 'andromeda.stories'],
+      type: '_doc',
+      body: {
+        query: {
+          bool: {
+            should: [
+              {
+                match: {
+                  'content.IKS': {
+                    query: content.toLowerCase()
+                  }
+                }
+              }
+            ]
+          }
+        },
+        from: 0,
+        size: 10,
+        highlight: {
+          fields: {
+            'content.IKS': {}
+          }
+        }
+      }
+    })
+    for (let i = 0; i < response.hits.hits.length; i++) {
+      for (let j = 0; j < stlist.length; j++) {
+        if (response.hits.hits[i]._source.id === stlist[j]) {
+          result.push({
+            id: response.hits.hits[i]._source.id,
+            content: response.hits.hits[i]._source.content,
+            highlight: response.hits.hits[i].highlight ? response.hits.hits[i].highlight['content.IKS'][0] : ''
+          })
+          break
+        }
+      }
+    }
+    res.send({error: false, result: result})
+  }
+  async function authorSearch () {
+    let root = await getRootObj()
+    let stlist = await traversal(root)
+    User.findOne({nickname: content})
+      .populate('myCreation.root')
+      .populate('myCreation.story')
+      .exec((err, doc) => {
+        if (err) {
+          res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+        } else {
+          if (doc) {
+            doc.myCreation.root.forEach(item => {
+              for (let i = 0; i < stlist.length; i++) {
+                if (item.id === stlist[i]) {
+                  result.push({
+                    id: item.id,
+                    content: item.content,
+                    highlight: item.content
+                  })
+                }
+              }
+            })
+            doc.myCreation.story.forEach(item => {
+              for (let i = 0; i < stlist.length; i++) {
+                if (item.id === stlist[i]) {
+                  result.push({
+                    id: item.id,
+                    content: item.content,
+                    highlight: item.content
+                  })
+                }
+              }
+            })
+            res.send({error: false, result: result})
+          }
+        }
+      })
+  }
+  if (style === 'content') {
+    contentSearch().catch(err => {
+      if (err) {
+        res.send({error: true, type: 'es', message: '发生错误，请稍后再试'})
+      }
+    })
+  } else {
+    authorSearch().catch(err => {
+      if (err) {
+        res.send({error: true, type: 'es', message: '发生错误，请稍后再试'})
+      }
+    })
+  }
+})
+router.get('/story/getMark', (req, res) => {
+  let fid = req.query.id
+  let user
+  let storyList = []
+  let p
+  let stack = []
+  let result = []
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  async function getRootObj () {
+    return new Promise((resolve, reject) => {
+      if (rootReg.test(fid)) {
+        Root.findOne({id: fid})
+          .exec((err, root) => {
+            if (err) {
+              console.log(err)
+            }
+            if (root) {
+              resolve(root)
+            } else {
+              reject(null)
+            }
+          })
+      } else if (storyReg.test(fid)) {
+        Story.findOne({id: fid})
+          .exec((err, story) => {
+            if (err) {
+              console.log(err)
+            }
+            if (story) {
+              Root.findOne({_id: story.root})
+                .exec((err, root) => {
+                  if (err) {
+                    console.log(err)
+                  }
+                  if (root) {
+                    resolve(root)
+                  } else {
+                    reject(null)
+                  }
+                })
+            } else {
+              reject(null)
+            }
+          })
+      } else {
+        reject(null)
+      }
+    })
+  }
+  async function traversal (root) { // 先序遍历
+    p = root._id
+    let _temp
+    while (p || stack.length) {
+      if (p) {
+        _temp = await getObj(p)
+        storyList.push({
+          id: _temp.id,
+          content: _temp.content
+        })
+        stack.push({
+          _id: _temp._id,
+          // id: _temp.id,
+          content: _temp.content
+        })
+        p = _temp.lc
+      } else {
+        stack.pop()
+        p = _temp.rb
+        while (!p && stack.length > 1) {
+          _temp = await getObj(stack[stack.length - 1]._id)
+          p = _temp.rb
+          stack.pop()
+        }
+      }
+    }
+    return storyList
+  }
+  async function getObj (id) {
+    return new Promise((resolve, reject) => {
+      Story.findOne({_id: id})
+        .populate('author')
+        .exec((err, story) => {
+          if (err) {
+            console.log(err)
+          }
+          if (story) {
+            resolve(story)
+          } else {
+            Root.findOne({_id: id}, (err, root) => {
+              if (err) {
+                console.log(err)
+              }
+              if (root) {
+                resolve(root)
+              } else {
+                resolve(null)
+              }
+            })
+          }
+        })
+    })
+  }
+  async function getUserMark (user) {
+    return new Promise((resolve, reject) => {
+      User.findOne({username: user})
+        .exec((err, doc) => {
+          if (err) {
+            reject(err)
+          } else {
+            if (doc) {
+              resolve(doc.mark)
+            } else {
+              reject(null)
+            }
+          }
+        })
+    })
+  }
+  function bubbleSort (arr) {   // 排序算法，从大到小
+    for (let i = 0; i < arr.length - 1; i++) {
+      for (let j = 0; j < arr.length - 1 - i; j++) {
+        if (arr[j]['timeStamp'] < arr[j + 1]['timeStamp']) {
+          let tmp = arr[j]
+          arr[j] = arr[j + 1]
+          arr[j + 1] = tmp
+        }
+      }
+    }
+    return arr
+  }
+  async function exe () {
+    try {
+      let root = await getRootObj()
+      let stlist = await traversal(root)
+      let markList = await getUserMark(user)
+      for (let i = 0; i < stlist.length; i++) {
+        for (let j = 0; j < markList.length; j++) {
+          if (stlist[i].id === markList[j].id) {
+            result.push({
+              id: stlist[i].id,
+              content: stlist[i].content,
+              date: moment(markList[j].date).format('YYYY年M月D日 HH:mm'),
+              timeStamp: markList[j].date.getTime()
+            })
+          }
+        }
+      }
+      bubbleSort(result)
+      res.send({error: false, result: result})
+    } catch (err) {
+      if (err) {
+        console.log(err)
+        res.send({error: true, type: 'async', message: '发生错误'})
+      }
+    }
+  }
+  exe()
 })
 module.exports = router

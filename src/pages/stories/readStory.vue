@@ -1,6 +1,6 @@
 <template>
   <div class="read-story" :class="{bigFont: (settings.fontSize === '大'), superFont: (settings.fontSize === '特大')}">
-      <notice v-bind:title="storyInfo.title" v-bind:more="moreList" v-bind:id="id" v-on:getMark="getMark" :mark="markActive" v-on:openFontSettings="openFont"></notice>
+      <notice v-bind:title="storyInfo.title" v-bind:more="moreList" v-bind:id="id" v-on:getMark="getMark" :mark="markActive" v-on:openFontSettings="openFont" v-on:openSearch="openSearch"></notice>
       <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight">
         <div class="context"><p v-for="item in storyInfo.content">{{item}}</p></div>
         <div class="related-info">
@@ -41,7 +41,7 @@
           <img src="../../img/icon/yellowcomment.png" />
           <div>评论</div>
         </div>
-        <div class="button" @click="">
+        <div class="button" @click="openMark">
           <img src="../../img/icon/index.png" />
           <div>书签</div>
         </div>
@@ -54,7 +54,7 @@
           <img src="../../img/icon/right_arrow.png" alt="" v-if="rightNode">
         </div>
       </div>
-      <div class="read-search">
+      <div class="read-search" v-if="searchBoard">
         <div class="entry-triangle-top"></div>
         <div class="main-search">
           <div class="search-content">
@@ -62,34 +62,49 @@
               <img src="../../img/icon/search_gray.png" alt="">
             </div>
             <div class="input">
-              <input type="text" placeholder="输入一段文字或作者名">
+              <form action="javascript:void(0)">
+                <input type="text" placeholder="输入一段文字或作者名" v-model="smallSearch" @input="search">
+              </form>
             </div>
           </div>
         </div>
         <div class="read-search-content">
           <div class="select-bar">
-            <span class="words">文本</span>
-            <span class="author">作者</span>
+            <span class="words" :class="{active: contentActive}" @click="changeActive('content')">文本</span>
+            <span class="author" :class="{active: authorActive}" @click="changeActive('author')">作者</span>
           </div>
           <div class="search-content">
-            <div class="search-id">3434355</div>
-            <div class="search-words">十年生死两茫茫。不思量。自难忘。千里孤坟，无处话凄凉。纵使相逢应不识，尘满面，鬓如霜。</div>
-          </div>
-          <div class="a-content">
-            <div></div>
+            <scroll-lock :lock="true" :bodyLock="true" class="lock">
+              <div class="one-search" v-for="item in readSearchResult" @click="goStory2(item.id)">
+              <div class="search-id">{{item.id}}</div>
+                <div class="search-words" v-html="item.highlight"></div>
+              </div>
+            </scroll-lock>
           </div>
         </div>
       </div>
       <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
       <mt-radio ref="radio" v-on:refresh= 'getSettings' v-bind:id="id"></mt-radio>
+      <div class="mask" v-if="searchBoard"></div>
     <router-view></router-view>
     </div>
 </template>
 <style lang='scss'>
   @import "../../scss/config";
+  .mask {
+    background: rgba(0,0,0,0.5);
+    position: absolute;
+    width: 100%;
+    height: calc(100vh - 42px);
+    margin-top: 42px;
+    top: 0;
+    left: 0;
+    z-index: 990;
+  }
   .read-search {
     .entry-triangle-top{
       position:absolute;
+      z-index: 999;
       top: 42px;
       right:37px;
       width:0;
@@ -98,8 +113,61 @@
       border-style: solid;
       border-color:transparent transparent white;/*透明 透明  灰*/
     }
+    @media screen and (max-width: 370px) {
+      .main-search {
+        width: 240px;
+        .search-content {
+          width: 210px;
+        }
+      }
+      .read-search-content {
+        width: 240px;
+        height: 300px;
+        .search-content {
+          height: 270px;
+          overflow: hidden;
+        }
+      }
+    }
+    @media screen and (max-width: 500px) {
+      .main-search {
+        width: 275px;
+        .search-content {
+          width: 255px;
+          input {
+            width: 200px;
+          }
+        }
+      }
+      .read-search-content {
+        width: 275px;
+        height: 355px;
+        .search-content {
+          height: 325px;
+          overflow: hidden;
+        }
+      }
+    }
+    @media screen and (min-width: 501px) {
+      .main-search {
+        width: 415px;
+        .search-content {
+          width: 385px;
+          input {
+            width: 335px;
+          }
+        }
+      }
+      .read-search-content {
+        width: 415px;
+        height: 505px;
+        .search-content {
+          height: 475px;
+          overflow: hidden;
+        }
+      }
+    }
     .main-search {
-      width: 240px;
       height: 50px;
       background: white;
       position: absolute;
@@ -109,26 +177,28 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      z-index: 999;
       .search-content {
         display: flex;
         border-radius: 10px;
-        width: 210px;
-        height: 32px;
+        height: 38px;
         background: rgb(223, 223, 223);
         align-items: center;
         .search-icon {
           margin-left: 8px;
-          margin-top: 3px;
+          margin-top: 4px;
           img {
             width: 22px;
           }
         }
         .input {
+          height: 28px;
+          margin-top: -4px;
           input {
             border: none;
             background: rgb(223, 223, 223);
             outline: none;
-            height: 30px;
+            height: 28px;
             padding-left: 5px;
             font-size: 14px;
           }
@@ -137,13 +207,19 @@
     }
    .read-search-content {
      position: absolute;
+     z-index: 999;
      top: 99px;
      right: 5px;
-     width: 240px;
-     min-height: 300px;
      background: white;
      border-bottom-left-radius: 10px;
      border-bottom-right-radius: 10px;
+     .search-content {
+       .lock {
+         width: 100%;
+         overflow: scroll;
+         height: 100%;
+       }
+     }
      .select-bar {
        height: 20px;
        margin-top: 10px;
@@ -180,16 +256,25 @@
          border-bottom: 1px solid $font-dark;
        }
      }
-     .search-content {
+     .one-search {
        width: 92%;
        margin: 0 auto;
        padding: 5px;
        font-size: 12px;
        color: $font-dark;
        border-bottom: 1px solid $border-gray;
+       .search-words {
+         display: -webkit-box;
+         display: -moz-box;
+         -webkit-box-orient: vertical;
+         -webkit-line-clamp: 3;
+         -moz-box-orient: vertical;
+         -moz-line-clamp: 3;
+         overflow: hidden;
+       }
        em {
          color: $main-red;
-       };
+       }
      }
    }
   }
@@ -420,6 +505,7 @@
   </style>
 <script>
   import Axios from 'axios'
+  import debounce from '../../js/debounce.js'
   import notice from '../../components/notice/notice.vue'
   import { Toast, MessageBox } from 'mint-ui'
   import writeStory from '../../components/story/writeStory.vue'
@@ -434,6 +520,8 @@
       return {
         settings: {}, // 设置
         id: this.$route.params.id,
+        smallSearch: '',
+        readSearchResult: [],    // 搜索内容
         storyInfo: {
           title: '',
           content: [],
@@ -442,6 +530,7 @@
           date: '',
           ftNode: ''
         },
+        searchBoard: false,
         hasFocus: false, // 关注红星,
         showFocus: false,
         markActive: false,
@@ -455,7 +544,10 @@
         downList: [],  // 下层候选节点
         frontNode: null,
         leftNode: null,
-        rightNode: null
+        rightNode: null,
+        contentActive: true,    // 文本搜索激活
+        authorActive: false,
+        active: 'content'
       }
     },
     created: function () {
@@ -483,6 +575,42 @@
       }
     },
     methods: {
+      onMaskTouchMove (e) {
+        e.preventDefault()
+        return false
+      },
+      changeActive (params) {
+        if (params === 'content') {
+          this.contentActive = true
+          this.authorActive = false
+          this.active = 'content'
+          this.search()
+        } else if (params === 'author') {
+          this.contentActive = false
+          this.authorActive = true
+          this.active = 'author'
+          this.search()
+        }
+      },
+      search: debounce(function () {
+        if (this.smallSearch.length > 0) {
+          Axios.post('/story/readSearch', {
+            id: this.$route.params.id,
+            content: this.smallSearch,
+            style: this.active
+          }).then(response => {
+            if (response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 800
+              })
+            } else {
+              this.readSearchResult = response.data.result
+            }
+          })
+        }
+      }, 500),
       swipeUp () {
         if (this.downList.length > 0) {
           this.$router.replace(`/story/${this.downList[0].id}`)
@@ -769,8 +897,22 @@
       goStory (id) {
         this.$router.push('/story/' + id)
       },
+      goStory2 (id) {
+        this.searchBoard = false
+        this.smallSearch = ''
+        this.readSearchResult = []
+        this.$router.push('/story/' + id)
+      },
       openComment () {
         this.$router.push(this.$route.path + '/comment')
+      },
+      openMark () {
+        this.$router.push(this.$route.path + '/mark')
+      },
+      openSearch () {
+        this.smallSearch = ''
+        this.readSearchResult = []
+        this.searchBoard = !this.searchBoard
       },
       addHistory () {
         Axios.post('/history/addHistory', {

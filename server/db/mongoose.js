@@ -3,11 +3,13 @@
  */
 const mongoose = require('mongoose')
 mongoose.Promise = global.Promise
-var uri = 'mongodb://localhost:27017/andromeda,mongodb://localhost:27027/andromeda,mongodb://localhost:27037/andromeda'
+const uri = `mongodb://swallow:andromeda2019@localhost:27017,localhost:27027,localhost:27037/andromeda?replicaSet=-and1`
 // mongoose.connect('mongodb://localhost:27017', {
 //   useMongoClient: true
 // })
-var opts = {}
-global.db = mongoose.createConnection(uri, opts)
-mongoose.connection = global.db
+const options = {
+  useMongoClient: true
+}
+
+mongoose.connect(uri, options)
 module.exports = mongoose

@@ -26,7 +26,12 @@
       "edge_ngram_filter": {
         "type": "edge_ngram",
           "min_gram": "1",
-          "max_gram": "50"
+          "max_gram": "20"
+      },
+      "ngram_filter": {
+        "type": "ngram",
+          "min_gram": "1",
+          "max_gram": "10"
       }
     },
     "analyzer": {
@@ -34,7 +39,7 @@
         "type": "custom",
           "tokenizer": "standard"
       },
-      "pinyiFullIndexAnalyzer": {
+      "pinyinFullIndexAnalyzer": {
         "filter": [
           "pinyin_full_filter"
           ,
@@ -42,7 +47,7 @@
         ],
           "tokenizer": "keyword"
       },
-      "pinyiSimpleIndexAnalyzer": {
+      "pinyinSimpleIndexAnalyzer": {
         "filter": [
           "pinyin_simple_filter"
           ,
@@ -52,7 +57,7 @@
         ],
           "tokenizer": "keyword"
       },
-      "pinyiFullSearchAnalyzer": {
+      "pinyinFullSearchAnalyzer": {
         "filter": [
           "pinyin_full_filter"
           ,
@@ -84,7 +89,16 @@
           "type": "custom",
           "tokenizer": "keyword"
       },
-      "pinyiSimpleSearchAnalyzer": {
+      "ngIndexAnalyzer": {
+        "filter": [
+          "ngram_filter"
+          ,
+          "lowercase"
+        ],
+          "type": "custom",
+          "tokenizer": "keyword"
+      },
+      "pinyinSimpleSearchAnalyzer": {
         "filter": [
           "pinyin_simple_filter"
           ,
@@ -119,16 +133,21 @@
               "analyzer": "ngramIndexAnalyzer",
               "type": "text"
           },
+          "NG": {
+            "search_analyzer": "ngIndexAnalyzer",
+              "analyzer": "ngIndexAnalyzer",
+              "type": "text"
+          },
           "EN": {
             "analyzer": "standard",
               "type": "text"
           },
           "SPY": {
-            "analyzer": "pinyiSimpleIndexAnalyzer",
+            "analyzer": "pinyinSimpleIndexAnalyzer",
               "type": "text"
           },
           "FPY": {
-            "analyzer": "pinyiFullIndexAnalyzer",
+            "analyzer": "pinyinFullIndexAnalyzer",
               "type": "text"
           }
         }
@@ -139,6 +158,16 @@
           "IKS": {
             "search_analyzer": "ikSearchAnalyzer",
               "analyzer": "ikIndexAnalyzer",
+              "type": "text"
+          },
+          "words": {
+            "search_analyzer": "ngramSearchAnalyzer",
+              "analyzer": "ngramIndexAnalyzer",
+              "type": "text"
+          },
+          "NG": {
+            "search_analyzer": "ngIndexAnalyzer",
+              "analyzer": "ngIndexAnalyzer",
               "type": "text"
           }
         }
@@ -193,3 +222,78 @@ db.grantRolesToUser( "swallow" , [ { role: "dbOwner", db: "admin" },{role: "clus
 db.grantRolesToUser( "es" , [ { role: "dbOwner", db: "admin" },{role: "clusterAdmin", db: "admin" },
   { role: "userAdminAnyDatabase", db: "admin" },
   { role: "dbAdminAnyDatabase", db: "admin" }, { role: "restore", db: "admin" }, {role: 'dbOwner', db: 'andromeda'} ])
+
+
+{
+  "settings" : {
+  "refresh_interval" : "5s",
+    "analysis": {
+    "filter": {
+      "edge_ngram_filter": {
+        "type": "edge_ngram",
+          "min_gram": "1",
+          "max_gram": "15"
+      }
+    },
+    "analyzer": {
+      "standard": {
+        "type": "custom",
+          "tokenizer": "standard"
+      },
+      "ikIndexAnalyzer": {
+        "type": "custom",
+          "tokenizer": "ik_max_word"
+      },
+      "ikSearchAnalyzer": {
+        "type": "custom",
+          "tokenizer": "ik_smart"
+      },
+      "ngramIndexAnalyzer": {
+        "filter": [
+          "edge_ngram_filter"
+          ,
+          "lowercase"
+        ],
+          "type": "custom",
+          "tokenizer": "keyword"
+      },
+      "ngramSearchAnalyzer": {
+        "filter": [
+          "lowercase"
+        ],
+          "type": "custom",
+          "tokenizer": "keyword"
+      }
+    },
+    "tokenizer": {
+      "ik_smart": {
+        "type": "ik_smart"
+      },
+      "ik_max_word": {
+        "type": "ik_max_word"
+      }
+    }
+  }
+},
+  "mappings": {
+  "_doc": {
+    "properties": {
+      "content": {
+        "type": "keyword",
+          "fields": {
+          "IKS": {
+            "search_analyzer": "ikSearchAnalyzer",
+              "analyzer": "ikIndexAnalyzer",
+              "type": "text"
+          },
+          "words": {
+            "search_analyzer": "ngramSearchAnalyzer",
+              "analyzer": "ngramIndexAnalyzer",
+              "type": "text"
+          }
+        }
+      }
+    }
+  }
+}
+}

@@ -2040,8 +2040,8 @@ router.post('/story/search', (req, res) => {
     const reg = /^[\u4e00-\u9fa5]+$/  // 全是中文
     return reg.test(s)
   }
-  const cnBegin = /^[\u4e00-\u9fa5]/
-  // 以中文开头
+  // const cnBegin = /^[\u4e00-\u9fa5]/
+  // // 以中文开头
   async function allChinese (content) {
     try {
       const response = await client.search({
@@ -2079,7 +2079,7 @@ router.post('/story/search', (req, res) => {
       res.send({error: true, type: 'ES', message: '请求超时'})
     }
   }
-  async function ChineseAndPinyinorEnglish (prefix) {
+  async function ChineseAndPinyinorEnglish () {
     try {
       let fullPinyin = pinyin(content, {
         heteronym: true, // 多音字
@@ -2107,38 +2107,39 @@ router.post('/story/search', (req, res) => {
         body: {
           query: {
             bool: {
-              must: [
-                {
-                  match: {
-                    'nickname.IKS': {
-                      query: prefix
-                    }
-                  }
-                }
-              ],
               should: [
                 {
                   term: {
-                    'nickname.SPY': newsP
-                  }
-                },
-                {
-                  match: {
-                    'nickname.FPY': {
-                      query: newfP,
+                    nickname: {
+                      value: content,
                       boost: 1.5
                     }
                   }
+                },
+                {
+                  term: {
+                    'nickname.SPY': {
+                      value: newsP,
+                      boost: 1
+                    }
+                  }
+                },
+                {
+                  term: {
+                    'nickname.FPY': {
+                      value: newfP,
+                      boost: 1
+                    }
+                  }
                 }
-              ],
-              minimum_should_match: '50%'
+              ]
             }
           },
           highlight: {
             fields: {
               'nickname.SPY': {},
               'nickname.FPY': {},
-              'nickname.IKS': {}
+              'nickname': {}
             }
           }
         }
@@ -2146,102 +2147,11 @@ router.post('/story/search', (req, res) => {
       for (const item of fpSearch.hits.hits) {
         if (item) {
           result.push({
-            name: (item && item.highlight && item.highlight['nickname.IKS']) ? item.highlight['nickname.IKS'][0] : item._source.nickname,
+            name: (item && item.highlight && item.highlight.nickname) ? item.highlight.nickname[0] : item._source.nickname,
             raw: item._source.nickname,
             head: item._source.headImg ? tool.formImg(item._source.headImg) : 'default',
             id: item._source.id
           })
-        }
-      }
-      res.send({error: false, result: result})
-    } catch (e) {
-      console.log(e)
-    }
-  }
-  async function mixSearch (content) {
-    try {
-      let fullPinyin = pinyin(content, {
-        heteronym: true, // 多音字
-        style: pinyin.STYLE_NORMAL
-      })
-      let simplePinyin = pinyin(content, {
-        heteronym: true, // 多音字
-        style: pinyin.STYLE_FIRST_LETTER
-      })
-      let newfP = ''
-      let newsP = ''
-      for (let i = 0; i < fullPinyin.length; i++) {
-        if (i === 0) {
-          newfP = fullPinyin[0].toString()
-          newsP = simplePinyin[0].toString()
-        } else {
-          newfP = newfP + fullPinyin[i]
-          newsP = newsP + simplePinyin[i]
-        }
-      }
-      newfP = newfP.toLowerCase()
-      newsP = newsP.toLowerCase()
-      const mix = await client.search({
-        index: 'andromeda.users',
-        type: '_doc',
-        body: {
-          query: {
-            bool: {
-              should: [
-                {
-                  match: {
-                    'nickname.IKS': {
-                      query: content.toLowerCase(),
-                      boost: 0.8
-                    }
-                  }
-                },
-                {
-                  match: {
-                    'nickname.FPY': {
-                      query: newfP,
-                      boost: 1
-                    }
-                  }
-                },
-                {
-                  match: {
-                    'nickname.SPY': {
-                      query: newsP,
-                      boost: 1
-                    }
-                  }
-                }
-              ],
-              minimum_should_match: 1
-            }
-          },
-          highlight: {
-            fields: {
-              'nickname.IKS': {},
-              'nickname.SPY': {},
-              'nickname.PY': {}
-            }
-          }
-        }
-      })
-      for (const item of mix.hits.hits) {
-        if (item && item.highlight) {
-          if (item.highlight['nickname.IKS'] && item.highlight['nickname.IKS'][0]) {
-            result.push({
-              name: item.highlight['nickname.IKS'][0],
-              raw: item._source.nickname,
-              head: item._source.headImg ? tool.formImg(item._source.headImg) : 'default',
-              id: item._source.id
-            })
-          } else {
-            result.push({
-              name: item._source.nickname,
-              raw: item._source.nickname,
-              head: item._source.headImg ? tool.formImg(item._source.headImg) : 'default',
-              id: item._source.id
-            })
-          }
         }
       }
       res.send({error: false, result: result})
@@ -2318,31 +2228,32 @@ router.post('/story/search', (req, res) => {
         body: {
           query: {
             bool: {
-              must: [
-                {
-                  match: {
-                    'name.IKS': {
-                      query: prefix
-                    }
-                  }
-                }
-              ],
               should: [
                 {
                   term: {
-                    'name.SPY': newsP
-                  }
-                },
-                {
-                  match: {
-                    'name.FPY': {
-                      query: newfP,
+                    nickname: {
+                      value: content,
                       boost: 1.5
                     }
                   }
+                },
+                {
+                  term: {
+                    'name.SPY': {
+                      value: newsP,
+                      boost: 1
+                    }
+                  }
+                },
+                {
+                  term: {
+                    'name.FPY': {
+                      value: newfP,
+                      boost: 1
+                    }
+                  }
                 }
-              ],
-              minimum_should_match: '50%'
+              ]
             }
           },
           highlight: {
@@ -2386,105 +2297,6 @@ router.post('/story/search', (req, res) => {
       console.log(e)
     }
   }
-  async function mixSearchTitle (content) {
-    try {
-      let fullPinyin = pinyin(content, {
-        heteronym: true, // 多音字
-        style: pinyin.STYLE_NORMAL
-      })
-      let simplePinyin = pinyin(content, {
-        heteronym: true, // 多音字
-        style: pinyin.STYLE_FIRST_LETTER
-      })
-      let newfP = ''
-      let newsP = ''
-      for (let i = 0; i < fullPinyin.length; i++) {
-        if (i === 0) {
-          newfP = fullPinyin[0].toString()
-          newsP = simplePinyin[0].toString()
-        } else {
-          newfP = newfP + fullPinyin[i]
-          newsP = newsP + simplePinyin[i]
-        }
-      }
-      newfP = newfP.toLowerCase()
-      newsP = newsP.toLowerCase()
-      const mix = await client.search({
-        index: 'andromeda.storyroots',
-        type: '_doc',
-        body: {
-          query: {
-            bool: {
-              should: [
-                {
-                  match: {
-                    'name.IKS': {
-                      query: content.toLowerCase(),
-                      boost: 0.8
-                    }
-                  }
-                },
-                {
-                  match: {
-                    'name.FPY': {
-                      query: newfP,
-                      boost: 1
-                    }
-                  }
-                },
-                {
-                  match: {
-                    'name.SPY': {
-                      query: newsP,
-                      boost: 1
-                    }
-                  }
-                }
-              ],
-              minimum_should_match: 1
-            }
-          },
-          highlight: {
-            fields: {
-              'name.IKS': {},
-              'name.SPY': {},
-              'name.PY': {}
-            }
-          }
-        }
-      })
-      for (const item of mix.hits.hits) {
-        if (item && item.highlight) {
-          if (item.highlight['name.IKS'] && item.highlight['name.IKS'][0]) {
-            result.push({
-              name: item.highlight['name.IKS'][0],
-              raw: item._source.name,
-              coverImg: item._source.coverImg ? tool.formImg(item._source.coverImg) : 'default',
-              subNumber: item._source.subscribe ? item._source.subscribe.length : 0,
-              date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
-              author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
-              id: item._source.id,
-              content: item._source.content
-            })
-          } else {
-            result.push({
-              name: item._source.name,
-              raw: item._source.name,
-              coverImg: item._source.coverImg ? tool.formImg(item._source.coverImg) : 'default',
-              subNumber: item._source.subscribe ? item._source.subscribe.length : 0,
-              date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
-              author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
-              id: item._source.id,
-              content: item._source.content
-            })
-          }
-        }
-      }
-      res.send({error: false, result: result})
-    } catch (e) {
-      console.log(e)
-    }
-  }
   async function mixSearchContent (content) {
     try {
       const mix = await client.search({
@@ -2497,6 +2309,20 @@ router.post('/story/search', (req, res) => {
                 {
                   match: {
                     'content.IKS': {
+                      query: content.toLowerCase()
+                    }
+                  }
+                },
+                {
+                  match: {
+                    'content.words': {
+                      query: content.toLowerCase()
+                    }
+                  }
+                },
+                {
+                  match: {
+                    'content.NG': {
                       query: content.toLowerCase()
                     }
                   }
@@ -2562,23 +2388,18 @@ router.post('/story/search', (req, res) => {
       allChinese(content).catch(err => {
         console.log(err)
       })
-    } else if (cnBegin.test(content)) {
-      // 中文开头
-      let message = content.split('')
-      let arr = message
-      for (let i = 0; i < message.length; i++) {
-        if (!cnBegin.test(message[i])) {
-          arr.splice(i, message.length)
-          break
-        }
-      }
-      let prefix = arr.join('')
-      ChineseAndPinyinorEnglish(prefix).catch(err => {
-        console.log(err)
-      })
     } else {
-      // 非中文开头
-      mixSearch(content).catch(err => {
+      // 中文开头
+      // let message = content.split('')
+      // let arr = message
+      // for (let i = 0; i < message.length; i++) {
+      //   if (!cnBegin.test(message[i])) {
+      //     arr.splice(i, message.length)
+      //     break
+      //   }
+      // }
+      // let prefix = arr.join('')
+      ChineseAndPinyinorEnglish().catch(err => {
         console.log(err)
       })
     }
@@ -2588,23 +2409,8 @@ router.post('/story/search', (req, res) => {
       allChineseTitle(content).catch(err => {
         console.log(err)
       })
-    } else if (cnBegin.test(content)) {
-      // 中文开头
-      let message = content.split('')
-      let arr = message
-      for (let i = 0; i < message.length; i++) {
-        if (!cnBegin.test(message[i])) {
-          arr.splice(i, message.length)
-          break
-        }
-      }
-      let prefix = arr.join('')
-      ChineseAndPinyinorEnglishTitle(prefix).catch(err => {
-        console.log(err)
-      })
     } else {
-      // 非中文开头
-      mixSearchTitle(content).catch(err => {
+      ChineseAndPinyinorEnglishTitle().catch(err => {
         console.log(err)
       })
     }

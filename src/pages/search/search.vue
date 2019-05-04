@@ -622,7 +622,7 @@
         .right-part {
           margin-left: 10px;
           margin-top: 8px;
-          flex: 3;
+          flex: 6;
           .story-name {
             color: $font-dark;
             font-size: 15px;

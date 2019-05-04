@@ -25,11 +25,11 @@
               <img src="../../../img/icon/gray_thumb.png" v-if="!item.hasZan" @click="addZan(item.id, 'main', index)">
               <img src="../../../img/icon/yellowthumb.png" v-else @click="cancelZan(item.id, 'main', index)">{{item.zan}}
             </span>
-            <span class="reply" @click="replyComment(item.id, item.id, index)">回复</span>
+            <span class="reply" @click="replyComment(item.id, item.id, index, item.people)">回复</span>
             <span class="time">{{item.date}}</span>
             <span class="time" v-if="item.isYours" @click="deleteComment('main', item.id)">删除</span>
             <!--<span class="showBtn" v-if="item.lc > 3" @click="showComment(index)">{{item.notShow ? '展开' : '收起'}}</span>-->
-            <span class="showBtn" @click=showSubComment(index) v-if="item.subComment && item.subComment.length > 0 && !item.showSubComment">共{{item.subComment.length}}条评论</span>
+            <span class="showBtn" @click=showSubComment(index) v-if="item.subComment && item.subComment.length > 0 && !item.showSubComment">共{{item.subComment.length}}条评论 ></span>
           </div>
           <div class="sub-comment" v-if="item.showSubComment">
             <div class="one-sub-comment" v-for="(q, j) in item.subComment">
@@ -49,9 +49,9 @@
               <img src="../../../img/icon/gray_thumb.png" v-if="!q.hasZan" @click="addZan(q.id, 'sub', index, j)">
               <img src="../../../img/icon/yellowthumb.png" v-else @click="cancelZan(q.id, 'sub', index, j)">{{q.zan}}
             </span>
-                  <span class="sub-reply" @click="replyComment(item.id, q.id, index)">回复</span>
+                  <span class="sub-reply" @click="replyComment(item.id, q.id, index, q.people)">回复</span>
                   <span class="sub-time">{{q.date}}</span>
-                  <span class="sub-time" v-if="q.isYours" @click="deleteComment('sub', q.id)">删除</span>
+                  <span class="sub-time" v-if="q.isYours" @click="deleteComment('sub', q.id, index)">删除</span>
                   <span class="sub-showBtn" v-if="item.subComment && j === item.subComment.length - 1" @click=showSubComment(index)>收起评论</span>
                 </div>
               </div>
@@ -62,7 +62,7 @@
       <div class="blank"></div>
     </div>
     <div class="comment-input">
-      <textarea id="textArea" v-model="comment" rows="1" placeholder="写下你的评论。。。" @focus="showButton"></textarea>
+      <textarea id="textArea" v-model="comment" rows="1" :placeholder="tempPlaceHolder" @focus="showButton"></textarea>
       <span class="fake submit" v-if="fakeSubmit && !commentCheck">发送</span>
       <span class="submit" v-if="commentCheck" @click="submitComment(toId, mainId)">发送</span>
     </div>
@@ -164,7 +164,7 @@
             .showBtn {
               float: right;
               display: inline-block;
-              margin-top: 8px;
+              margin-top: 7px;
               color: $main-color;
             }
           }
@@ -228,7 +228,7 @@
                 .sub-showBtn {
                   float: right;
                   display: inline-block;
-                  margin-top: 8px;
+                  margin-top: 2px;
                   color: $main-color;
                 }
               }
@@ -308,7 +308,8 @@
         toId: '',  // 回复的具体对象，
         mainId: '', // 回复的主对象
         author: '',
-        temp: -1  // 用于保存当前回复对象的主窗口
+        temp: -1,  // 用于保存当前回复对象的主窗口
+        tempPlaceHolder: '写下你的评论。。。'
       }
     },
     computed: {
@@ -348,33 +349,38 @@
         this.commentList[index].showSubComment = !this.commentList[index].showSubComment
         this.$set(this.commentList, index, this.commentList[index])
       },
-      deleteComment (type, id) {
+      deleteComment (type, id, index) {
         if (type === 'main') {
           MessageBox({
             title: '提示',
             message: '删除评论将连带删除关于本条的所有评论，您确定这样做吗?',
             showCancelButton: true
           }).then(action => {
-            Axios.post('/comment/deleteComment', {
-              id: id
-            }).then(response => {
-              if (!response.data.error) {
-                this.getData()
-                Toast({
-                  position: 'middle',
-                  message: response.data.message,
-                  duration: 1000
-                })
-              } else {
-                Toast({
-                  position: 'middle',
-                  message: response.data.message,
-                  duration: 1000
-                })
-              }
-            })
+            if (action === 'confirm') {
+              Axios.post('/comment/deleteComment', {
+                storyId: this.$route.params.id,
+                type: type,
+                id: id
+              }).then(response => {
+                if (!response.data.error) {
+                  this.temp = index
+                  this.getData()
+                  Toast({
+                    position: 'middle',
+                    message: response.data.message,
+                    duration: 1000
+                  })
+                } else {
+                  Toast({
+                    position: 'middle',
+                    message: response.data.message,
+                    duration: 1000
+                  })
+                }
+              })
+            }
           }).catch(e => {
-            return 0
+            return false
           })
         } else if (type === 'sub') {
           MessageBox({
@@ -382,26 +388,30 @@
             message: '确定删除本条评论吗?',
             showCancelButton: true
           }).then(action => {
-            Axios.post('/comment/deleteComment', {
-              id: id
-            }).then(response => {
-              if (!response.data.error) {
-                this.getData()
-                Toast({
-                  position: 'middle',
-                  message: response.data.message,
-                  duration: 1000
-                })
-              } else {
-                Toast({
-                  position: 'middle',
-                  message: response.data.message,
-                  duration: 1000
-                })
-              }
-            })
+            if (action === 'confirm') {
+              Axios.post('/comment/deleteComment', {
+                storyId: this.$route.params.id,
+                type: type,
+                id: id
+              }).then(response => {
+                if (!response.data.error) {
+                  this.getData()
+                  Toast({
+                    position: 'middle',
+                    message: response.data.message,
+                    duration: 1000
+                  })
+                } else {
+                  Toast({
+                    position: 'middle',
+                    message: response.data.message,
+                    duration: 1000
+                  })
+                }
+              })
+            }
           }).catch(e => {
-            return 0
+            return false
           })
         }
       },
@@ -486,17 +496,12 @@
             message: response.data.message,
             duration: 1000
           })
+          this.comment = ''
+          document.getElementById('textArea').style.height = 28 + 'px'
+          this.toId = ''
+          this.mainId = ''
+          this.tempPlaceHolder = '写下你的评论。。。'
           this.getData()
-          this.$nextTick(function () {
-            this.commentList[this.temp].showSubComment = true
-            this.$set(this.commentList, this.temp, this.commentList[this.temp])
-            console.log(this.temp)
-            console.log(this.commentList[this.temp].showSubComment)
-            this.comment = ''
-            document.getElementById('textArea').style.height = 28 + 'px'
-            this.toId = ''
-            this.mainId = ''
-          }.bind(this))
         })
       },
       countLines (ele) {
@@ -534,7 +539,6 @@
             //   })
             // }.bind(this))
             this.author = response.data.author
-            console.log(this.author)
           } else {
             Toast({
               position: 'middle',
@@ -544,12 +548,13 @@
           }
         })
       },
-      replyComment (main, to, index) {
+      replyComment (main, to, index, people) {
         this.comment = ''
         this.toId = to
         this.mainId = main
         this.temp = index
         document.getElementById('textArea').focus()
+        this.tempPlaceHolder = `回复${people} :`
       },
       setErrorImg (x) {
         this.commentList[x].headImg = require('../../../img/images/defaultHeadImg.png')

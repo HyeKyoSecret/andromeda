@@ -383,7 +383,7 @@
             }
           }
           .story-content {
-            margin-top: 3px;
+            margin-top: 5px;
             min-height: 50px;
             color: $font-dark;
             font-size: 14px;

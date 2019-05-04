@@ -57,6 +57,7 @@
   .rq-content .mint-cell-title {
     flex: 1;
     text-align: center;
+    font-size: 12px;
   }
   .request-template {
     width: 100%;

@@ -159,18 +159,20 @@ router.get('/comment/getComment', (req, res) => {
             }
             if (comment.subComment && comment.subComment.length > 0) {
               for (let i = 0; i < comment.subComment.length; i++) {
-                subContent.push({
-                  id: comment.subComment[i]._id,
-                  people: comment.subComment[i].people.nickname,
-                  content: comment.subComment[i].content,
-                  zan: comment.subComment[i].zan ? comment.subComment[i].zan.length : 0,
-                  commentTo: comment.subComment[i].commentTo ? comment.subComment[i].commentTo.people.nickname : '',
-                  date: moment(comment.subComment[i].date).fromNow(),
-                  hasZan: comment.subComment[i].zan.some(function (item) {
-                    return item.username === user
-                  }),
-                  isYours: comment.subComment[i].people.username === user
-                })
+                if (comment.subComment[i].display) {
+                  subContent.push({
+                    id: comment.subComment[i]._id,
+                    people: comment.subComment[i].people.nickname,
+                    content: comment.subComment[i].content,
+                    zan: comment.subComment[i].zan ? comment.subComment[i].zan.length : 0,
+                    commentTo: comment.subComment[i].commentTo ? comment.subComment[i].commentTo.people.nickname : '',
+                    date: moment(comment.subComment[i].date).fromNow(),
+                    hasZan: comment.subComment[i].zan.some(function (item) {
+                      return item.username === user
+                    }),
+                    isYours: comment.subComment[i].people.username === user
+                  })
+                }
               }
             }
             if (comment && !comment.commentTo) {
@@ -264,6 +266,85 @@ router.post('/comment/cancelZan', (req, res) => {
           })
       }
     })
+  }
+})
+router.post('/comment/deleteComment', (req, res) => {
+  let storyId = req.body.storyId
+  let id = mongoose.Types.ObjectId(req.body.id)
+  const rootReg = /^R([0-9]){7}$/
+  const storyReg = /^S([0-9]){7}$/
+  let type = req.body.type
+  let exe = function () {
+    if (rootReg.test(storyId)) {
+      return Root
+    } else if (storyReg.test(storyId)) {
+      return Story
+    }
+  }
+  async function deleteComment (cid) {
+    return new Promise((resolve, reject) => {
+      console.log(cid)
+      Comment.deleteOne({_id: cid})
+        .exec(err => {
+          if (err) {
+            console.log(err)
+            reject(err)
+          } else {
+            resolve(true)
+          }
+        })
+    })
+  }
+  async function getSubCommentList () {
+    return new Promise((resolve, reject) => {
+      exe().updateOne({id: storyId}, {$pull: { comment: id }})
+        .exec(err => {
+          if (err) {
+            reject(err)
+          } else {
+            Comment.findOne({_id: id}, (err2, comment) => {
+              if (err2) {
+                reject(err2)
+              } else {
+                resolve(comment.subComment)
+              }
+            })
+          }
+        })
+    })
+  }
+  async function mainDelete () {
+    try {
+      let clist = await getSubCommentList()
+      for (let i = 0; i < clist.length; i++) {
+        await deleteComment(clist[i])
+      }
+      Comment.deleteOne({_id: id})
+        .exec(err => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误'})
+          } else {
+            res.send({error: false, message: '删除成功'})
+          }
+        })
+    } catch (err) {
+      if (err) {
+        console.log(err)
+        res.send({error: true, type: 'DB', message: '发生错误'})
+      }
+    }
+  }
+  if (type === 'main') {
+    mainDelete()
+  } else if (type === 'sub') {
+    Comment.updateOne({_id: id}, {$set: {display: false}})
+      .exec(err => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误'})
+        } else {
+          res.send({error: false, message: '删除成功'})
+        }
+      })
   }
 })
 module.exports = router

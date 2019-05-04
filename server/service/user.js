@@ -1740,7 +1740,6 @@ router.get('/user/getFontSize', (req, res) => {
   } else {
     res.send({error: false, size: '正常'})
   }
-
 })
 router.get('/user/getSettings', (req, res) => {
   let user

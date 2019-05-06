@@ -10,8 +10,10 @@
       </router-link>
     </div>
     <router-link tag ='div' class="button" to='/people'>
-      <div class="f-me pic"></div>
+      <div class="n-me" v-if="existNewMessage"></div>
+      <div class="f-me pic" v-else></div>
       <div class="words">我</div>
+      <div class="new-info"></div>
     </router-link>
     <slot></slot>
   </div>
@@ -23,6 +25,7 @@
     height: 48px;
     background: white;
     position: fixed;
+    z-index: 999;
     bottom: 0;
     display: flex;
     color: $menu-color;
@@ -34,6 +37,29 @@
       background-repeat: no-repeat;
       background-size: 23px 23px;
       background-position:center;
+    }
+    .n-me {
+      height: 35px;
+      background-repeat: no-repeat;
+      background-size: 25px 25px;
+      background-position:center;
+      background-image: url(../img/icon/me_news_unactivated.png);
+      margin-left: 2px;
+    }
+    .router-link-active .n-me {
+      height: 35px;
+      background-repeat: no-repeat;
+      background-size: 25px 25px;
+      background-position:center;
+      background-image: url(../img/icon/me_news_activated.png);
+      margin-left: 3px;
+    }
+    .n-me {
+      height: 35px;
+      background-repeat: no-repeat;
+      background-size: 25px 25px;
+      background-position:center;
+      background-image: url(../img/icon/me_news_unactivated.png);
     }
     .f-begin {
       background-image: url(../img/icon/foot_begin.png);
@@ -88,6 +114,11 @@
 </style>
 <script>
   export default {
-    name: 'foot-menu'
+    name: 'foot-menu',
+    data () {
+      return {
+        existNewMessage: true
+      }
+    }
   }
 </script>

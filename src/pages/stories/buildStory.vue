@@ -453,8 +453,8 @@
     },
     mounted () {
       // 初始化这个裁剪框
-      var self = this
-      var image = document.getElementById('image')
+      let self = this
+      let image = document.getElementById('image')
       this.cropper = new Cropper(image, {
         dragMode: 'move',
         aspectRatio: 3 / 4,

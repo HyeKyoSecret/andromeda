@@ -3,8 +3,9 @@
     <notice title="我的消息"></notice>
     <div class="button-bar">
       <div class="button">
-        <div v-for="item in btn">
+        <div v-for="(item,index) in btn">
           <router-link tag='span' :to='item.path' :class="item.className" replace>{{item.name}}</router-link>
+          <span class="newNum" :style="{left: 12.5 * (2*index + 1) + '%'}">{{item.newNum}}</span>
         </div>
       </div>
     </div>
@@ -27,22 +28,26 @@
           {
             name: '留言',
             className: 'words',
-            path: '/people/message/words'
+            path: '/people/message/words',
+            newNum: 1
           },
           {
             name: '请求',
             className: 'request',
-            path: '/people/message/request'
+            path: '/people/message/request',
+            newNum: 2
           },
           {
             name: '通知',
             className: 'promote',
-            path: '/people/message/promote'
+            path: '/people/message/promote',
+            newNum: 3
           },
           {
             name: '公告',
             className: 'announcement',
-            path: '/people/message/announcement'
+            path: '/people/message/announcement',
+            newNum: 4
           }
         ],
         transitionName: 'slide-left'
@@ -99,49 +104,67 @@
     position: absolute;
     top: 0;
     left: 0;
-    margin-top: 42px;
-    min-height: calc(100vh - 84px);
+    padding-top: 42px;
+    min-height: calc(100vh - 42px);
     width: 100%;
     background: $bg-gray;
+    overflow: scroll;
     .button-bar {
+      z-index: 999;
       width: 100%;
+      position: fixed;
+      top: 42px;
       background: white;
       height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
       .button {
-        width: 90%;
+        width: 100%;
         height: 26px;
         margin: 0 auto;
         display: flex;
         align-items: center;
         justify-content: center;
+        .newNum {
+          display: inline-block;
+          color: white;
+          background: $main-red;
+          opacity: 0.85;
+          font-size: 12px;
+          width: 16px;
+          height: 16px;
+          line-height: 16px;
+          border-radius: 200px;
+          position: absolute;
+          top: 5px;
+          margin-left: 13px;
+        }
         .words.router-link-active {
-          border: 2px solid $dark-green;
-          color: $dark-green;
+          border-bottom: 2px solid $font-dark;
+          color: $font-dark;
           line-height: 22px;
           font-weight: 600;
           opacity: 1;
         }
         .request.router-link-active {
-          border: 2px solid $dark-red;
-          color: $dark-red;
+          border-bottom: 2px solid $font-dark;
+          color: $font-dark;
           line-height: 22px;
           font-weight: 600;
           opacity: 1;
         }
         .promote.router-link-active {
-          border: 2px solid $icon-blue;
+          border-bottom: 2px solid $font-dark;
           line-height: 22px;
-          color: $icon-blue;
+          color: $font-dark;
           font-weight: 600;
           opacity: 1;
         }
         .announcement.router-link-active {
-          border: 2px solid $dark-yellow;
+          border-bottom: 2px solid $font-dark;
           line-height: 22px;
-          color: $dark-yellow;
+          color: $font-dark;
           font-weight: 600;
           opacity: 1;
         }
@@ -154,25 +177,9 @@
           span {
             display: inline-block;
             width: 48px;
-            height: 26px;
-            color: white;
-            border-radius: 5px;
+            height: 33px;
             box-sizing: border-box;
-          }
-          .words {
-            color: rgb(183, 223, 178);
-            font-weight: 600;
-          }
-          .request {
-            color: rgb(242, 168, 170);
-            font-weight: 600;
-          }
-          .promote {
-            color: rgb(125, 153, 203);
-            font-weight: 600;
-          }
-          .announcement {
-            color: rgb(248, 215, 174);
+            color: $w-gray;
             font-weight: 600;
           }
         }
@@ -181,17 +188,38 @@
   }
   .child-view {
     position: absolute;
+    z-index: 200;
     width:100%;
     transition: all .3s cubic-bezier(.35,.2,.7,1);
   }
-  .slide-left-enter, .slide-right-leave-active {
-    opacity: 0;
-    -webkit-transform: translate(380px, 0);
-    transform: translate(380px, 0);
+  .slide-right-enter-active,
+  .slide-right-leave-active,
+  .slide-left-enter-active,
+  .slide-left-leave-active {
+    will-change: transform;
+    transition: all 500ms;
+    position: absolute;
   }
-  .slide-left-leave-active, .slide-right-enter {
+  .slide-right-enter {
     opacity: 0;
-    -webkit-transform: translate(-400px, 0);
-    transform: translate(-400px, 0);
+    transform: translate3d(-100%, 0, 0);
+  }
+  .slide-right-leave-active {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+  .slide-left-enter {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+  .slide-left-leave-active {
+    opacity: 0;
+    transform: translate3d(-100%, 0, 0);
+  }
+
+  @media (min-width: 768px) {
+    .button-bar {
+      max-width: 700px;
+    }
   }
 </style>

@@ -78,6 +78,9 @@
             删除好友
           </div>
         </div>
+      <div class="new-message-info">
+        New!
+      </div>
     </div>
     <keep-alive>
       <router-view v-if="$route.meta.keepAlive"></router-view>
@@ -93,6 +96,14 @@
   .me {
     min-height: calc(100vh - 42px);
     background: $bg-gray;
+    .new-message-info {
+      font-style: italic;
+      color: $main-red;
+      position: absolute;
+      z-index: 198;
+      top: 200px;
+      left: 45%;
+    }
     .me-content {
       margin-top: 40px;
       .user-main {

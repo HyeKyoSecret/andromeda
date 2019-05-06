@@ -417,7 +417,8 @@
           line-height: 26px;
         }
         .author.active {
-          border: 2px solid $dark-red;
+          color: $font-dark;
+          border-bottom: 2px solid $font-dark;
           line-height: 22px;
           opacity: 1;
         }
@@ -425,7 +426,8 @@
           line-height: 26px;
         }
         .name.active {
-          border: 2px solid $dark-blue;
+          color: $font-dark;
+          border-bottom: 2px solid $font-dark;
           line-height: 22px;
           opacity: 1;
         }
@@ -433,7 +435,8 @@
           line-height: 26px;
         }
         .content.active {
-          border: 2px solid $dark-yellow;
+          color: $font-dark;
+          border-bottom: 2px solid $font-dark;
           line-height: 22px;
           opacity: 1;
         }
@@ -447,22 +450,8 @@
             display: inline-block;
             width: 50px;
             height: 26px;
-            background: red;
-            color: white;
-            border-radius: 5px;
+            color: $w-gray;
             box-sizing: border-box;
-          }
-          .author {
-            background: $icon-red;
-            opacity: 0.5;
-          }
-          .name {
-            background: $icon-blue;
-            opacity: 0.5;
-          }
-          .content {
-            background: $icon-yellow;
-            opacity: 0.55;
           }
         }
       }

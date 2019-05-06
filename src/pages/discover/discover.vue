@@ -149,7 +149,7 @@
       align-items: center;
       justify-content: center;
       .button {
-        width: 90%;
+        width: 100%;
         height: 26px;
         margin: 0 auto;
         display: flex;
@@ -177,21 +177,9 @@
             display: inline-block;
             width: 48px;
             height: 26px;
-            color: white;
+            color: $w-gray;
             border-radius: 5px;
             box-sizing: border-box;
-          }
-          .default {
-            color: rgb(193, 227, 189);
-          }
-          .subscribe {
-            color: rgb(242, 168, 170);
-          }
-          .friend {
-            color: rgb(125, 153, 203);
-          }
-          .nova {
-            color: rgb(248, 215, 174);
           }
         }
       }

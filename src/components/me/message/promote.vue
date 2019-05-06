@@ -25,9 +25,9 @@
 <style lang='scss'>
   @import "../../../scss/config";
   .promote-template{
-    margin-top:  10px;
+    margin-top:  42px;
     width: 100%;
-    min-height: calc(100vh - 150px);
+    min-height: calc(100vh - 82px);
     .promoteList {
       margin-top: 5px;
       &:last-child {
@@ -54,6 +54,7 @@
           display: flex;
           justify-content: center;
           align-items: center;
+          height: 16px;
           .pass-btn {
             flex: 1;
             text-align: center;
@@ -85,6 +86,8 @@
           span {
             margin-left: 5px;
             font-size: 12px;
+            display: inline-block;
+            height: 16px;
           }
           .date {
             /*display: inline-flex;*/
@@ -98,7 +101,7 @@
           .title {
             color: $icon-blue;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 12px;
             flex: 2;
             text-align: center;
             overflow: hidden;

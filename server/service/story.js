@@ -1513,7 +1513,7 @@ router.get('/story/prepareTraversal', (req, res) => {
               if (root) {
                 resolve(root)
               } else {
-                resolve(null)
+                resolve('error')
               }
             })
           }
@@ -1537,7 +1537,7 @@ router.get('/story/prepareTraversal', (req, res) => {
               if (root) {
                 resolve(root)
               } else {
-                resolve(null)
+                resolve('error')
               }
             })
           }
@@ -1549,7 +1549,6 @@ router.get('/story/prepareTraversal', (req, res) => {
       User.findOne({username: user})
         .exec((err, doc) => {
           if (err) {
-            console.log(err)
             reject('error')
           } else {
             if (doc) {
@@ -2052,7 +2051,7 @@ router.post('/story/search', (req, res) => {
             multi_match: {
               query: content,
               type: 'best_fields',
-              fields: ['nickname.IKS', 'nickname.words^5'],
+              fields: ['nickname.IKS^4', 'nickname.NG'],
               tie_breaker: 0.3,
               operator: 'and'
             }
@@ -2061,14 +2060,15 @@ router.post('/story/search', (req, res) => {
           size: 10,
           highlight: {
             fields: {
-              'nickname.IKS': {}
+              'nickname.IKS': {},
+              'nickname.NG': {}
             }
           }
         }
       })
       for (const item of response.hits.hits) {
         result.push({
-          name: (item && item.highlight) ? item.highlight['nickname.IKS'][0] : item._source.nickname,
+          name: (item.highlight && item.highlight['nickname.IKS']) ? item.highlight['nickname.IKS'][0] : ((item.highlight && item.highlight['nickname.NG']) ? item.highlight['nickname.NG'][0] : item._source.nickname),
           raw: item._source.nickname,
           head: item._source.headImg ? tool.formImg(item._source.headImg) : 'default',
           id: item._source.id
@@ -2118,6 +2118,14 @@ router.post('/story/search', (req, res) => {
                 },
                 {
                   term: {
+                    'nickname.IKS': {
+                      value: newsP,
+                      boost: 1
+                    }
+                  }
+                },
+                {
+                  term: {
                     'nickname.SPY': {
                       value: newsP,
                       boost: 1
@@ -2137,8 +2145,7 @@ router.post('/story/search', (req, res) => {
           },
           highlight: {
             fields: {
-              'nickname.SPY': {},
-              'nickname.FPY': {},
+              'nickname.NG': {},
               'nickname': {}
             }
           }
@@ -2147,7 +2154,7 @@ router.post('/story/search', (req, res) => {
       for (const item of fpSearch.hits.hits) {
         if (item) {
           result.push({
-            name: (item && item.highlight && item.highlight.nickname) ? item.highlight.nickname[0] : item._source.nickname,
+            name: (item.highlight && item.highlight['nickname.NG']) ? item.highlight['nickname.NG'][0] : item._source.nickname,
             raw: item._source.nickname,
             head: item._source.headImg ? tool.formImg(item._source.headImg) : 'default',
             id: item._source.id
@@ -2169,7 +2176,7 @@ router.post('/story/search', (req, res) => {
             multi_match: {
               query: content,
               type: 'best_fields',
-              fields: ['name.IKS', 'name.words^5'],
+              fields: ['name.IKS', 'name.words^5', 'name.NG'],
               tie_breaker: 0.3,
               operator: 'and'
             }
@@ -2178,14 +2185,15 @@ router.post('/story/search', (req, res) => {
           size: 10,
           highlight: {
             fields: {
-              'name.IKS': {}
+              'name.IKS': {},
+              'name.NG': {}
             }
           }
         }
       })
       for (const item of response.hits.hits) {
         result.push({
-          name: (item && item.highlight) ? item.highlight['name.IKS'][0] : item._source.name,
+          name: (item.highlight && item.highlight['name.IKS']) ? item.highlight['name.IKS'][0] : ((item.highlight && item.highlight['name.NG']) ? item.highlight['name.NG'][0] : item._source.nickname),
           raw: item._source.name,
           coverImg: item._source.coverImg ? tool.formImg(item._source.coverImg) : 'default',
           subNumber: item._source.subscribe ? item._source.subscribe.length : 0,
@@ -2200,7 +2208,7 @@ router.post('/story/search', (req, res) => {
       console.log(err)
     }
   }
-  async function ChineseAndPinyinorEnglishTitle (prefix) {
+  async function ChineseAndPinyinorEnglishTitle () {
     try {
       let fullPinyin = pinyin(content, {
         heteronym: true, // 多音字
@@ -2231,9 +2239,17 @@ router.post('/story/search', (req, res) => {
               should: [
                 {
                   term: {
-                    nickname: {
+                    name: {
                       value: content,
-                      boost: 1.5
+                      boost: 3
+                    }
+                  }
+                },
+                {
+                  term: {
+                    'name.NG': {
+                      value: content,
+                      boost: 1
                     }
                   }
                 },
@@ -2258,8 +2274,7 @@ router.post('/story/search', (req, res) => {
           },
           highlight: {
             fields: {
-              'name.SPY': {},
-              'name.FPY': {},
+              'name.NG': {},
               'name.IKS': {}
             }
           }
@@ -2267,9 +2282,9 @@ router.post('/story/search', (req, res) => {
       })
       for (const item of fpSearch.hits.hits) {
         if (item) {
-          if (item.highlight && item.highlight['name.IKS']) {
+          if (item.highlight && (item.highlight['name.IKS'] || item.highlight['name.NG'])) {
             result.push({
-              name: item.highlight['name.IKS'][0],
+              name: item.highlight['name.IKS'] ? item.highlight['name.IKS'][0] : item.highlight['name.NG'][0],
               raw: item._source.name,
               coverImg: item._source.coverImg ? tool.formImg(item._source.coverImg) : 'default',
               subNumber: item._source.subscribe ? item._source.subscribe.length : 0,
@@ -2315,13 +2330,6 @@ router.post('/story/search', (req, res) => {
                 },
                 {
                   match: {
-                    'content.words': {
-                      query: content.toLowerCase()
-                    }
-                  }
-                },
-                {
-                  match: {
                     'content.NG': {
                       query: content.toLowerCase()
                     }
@@ -2329,6 +2337,12 @@ router.post('/story/search', (req, res) => {
                 }
               ],
               minimum_should_match: 1
+            }
+          },
+          highlight: {
+            fields: {
+              'content.IKS': {},
+              'content.NG': {}
             }
           }
         }
@@ -2358,7 +2372,7 @@ router.post('/story/search', (req, res) => {
           date: moment(item._source.date).format('YYYY年M月D日 HH:mm'),
           author: await getPeople(mongoose.Types.ObjectId(item._source.author)),
           id: item._source.id,
-          content: item._source.content
+          content: item.highlight['content.IKS'] ? item.highlight['content.IKS'][0] : item._source.content
         })
       }
       res.send({error: false, result: result})

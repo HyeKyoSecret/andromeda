@@ -184,26 +184,19 @@
           span {
             display: inline-block;
             width: 80px;
-            height: 26px;
-            color: white;
-            border-radius: 5px;
+            height: 37px;
+            color: $font-gray;
+            line-height: 38px;
             box-sizing: border-box;
           }
           .root.active {
-            background: $icon-red;
-            opacity: 1;
+            color: $font-dark;
+            border-bottom: 2px solid $font-dark;
           }
           .story.active {
-            background: $icon-blue;
-            opacity: 1;
-          }
-          .root{
-            background: $icon-red;
-            opacity: 0.3;
-          }
-          .story{
-            background: $icon-blue;
-            opacity: 0.3;
+            color: $font-dark;
+            border-bottom: 2px solid $font-dark;
+
           }
         }
       }

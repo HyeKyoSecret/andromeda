@@ -61,7 +61,8 @@
   }
   .request-template {
     width: 100%;
-    min-height: calc(100vh - 250px);
+    margin-top: 42px;
+    min-height: calc(100vh - 82px);
     .label {
       margin-bottom: 5px;
     }

@@ -50,6 +50,7 @@
         </div>
       </div>
     </div>
+    <blank v-if="requestList.request.length < 1 && requestList.addFriend.length < 1"></blank>
   </div>
 </template>
 <style lang='scss'>
@@ -62,7 +63,7 @@
   .request-template {
     width: 100%;
     margin-top: 42px;
-    min-height: calc(100vh - 82px);
+    min-height: calc(100vh - 92px);
     .label {
       margin-bottom: 5px;
     }
@@ -153,17 +154,20 @@
 </style>
 <script>
   import Axios from 'axios'
+  import blank from '../../blank/blank'
   import { Toast, MessageBox } from 'mint-ui'
   export default {
     name: 'request',
+    components: {
+      blank
+    },
     data () {
       return {
         requestList: {
           request: [],
           addFriend: []
         },
-        count: 0,
-        qwert: '333333'
+        count: 0
       }
     },
     created: function () {

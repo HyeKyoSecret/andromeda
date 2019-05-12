@@ -140,13 +140,15 @@ const UserSchema = new Schema({
     style: String,
     id: String
   }],
-  commentTo: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Comment'
-  }],
   commentFrom: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Comment'
+    comment: {
+      type: Schema.Types.ObjectId,
+      ref: 'Comment'
+    },
+    readed: {
+      type: Boolean,
+      default: false
+    }
   }],
   headImg: String,
   focus: [{

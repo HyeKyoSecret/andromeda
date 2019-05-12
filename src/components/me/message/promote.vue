@@ -1,130 +1,81 @@
 <template>
   <div class="promote-template">
-    <div v-for='(item, index) in promoteList' class="promoteList">
-      <div class="pr-content" v-if="item.vis">
-        <mt-cell-swipe class='pr'
-                       :right="[
-          {
-            content: '删除',
-            style: { background: 'red', color: '#fff', width: '50px', textAlign: 'center'},
-            handler: function () {
-              return deletePromote(index, item.id)
-            }
-          }
-        ]">
-          <div class='add-request'>
-            <span class="title" @click.self="showUser(item.content_1)">{{item.content_1}}</span>
-            <span class="info">{{item.content_2}} <label class='novel-name' v-if="item.description === 'recommend'" @click="goStory(item.content_4)">《{{item.content_3}}》</label></span>
-            <span class="date">{{item.date}}</span>
-          </div>
-        </mt-cell-swipe>
+     <router-link tag="div" to='promote/fc' class="content">
+       <div class="left-part">
+         <img src="../../../img/icon/my_friend.png" alt="">
+       </div>
+       <div class="right-part">
+         <div class="words">好友验证</div>
+         <div class="new">
+           <div class="point"></div>
+         </div>
+       </div>
+     </router-link>
+    <router-link tag="div" to='promote/cm' class="content">
+      <div class="left-part">
+        <img src="../../../img/icon/my_subscription.png" alt="">
       </div>
-    </div>
+      <div class="right-part">
+        <div class="words">订阅内容</div>
+        <div class="new">
+          <div class="point"></div>
+        </div>
+      </div>
+    </router-link>
+    <router-link tag="div" to='promote/cm' class="content">
+      <div class="left-part">
+        <img src="../../../img/icon/my_comment.png" alt="">
+      </div>
+      <div class="right-part">
+        <div class="words">评论</div>
+        <div class="new">
+          <div class="point"></div>
+        </div>
+      </div>
+    </router-link>
+    <router-view></router-view>
   </div>
 </template>
-<style lang='scss'>
+<style lang='scss' scoped>
   @import "../../../scss/config";
   .promote-template{
     margin-top:  42px;
     width: 100%;
-    min-height: calc(100vh - 82px);
-    .promoteList {
-      margin-top: 5px;
-      &:last-child {
-        padding-bottom: 100px;
-      }
-    }
-    .pr-content {
+    min-height: calc(100vh - 132px);
+    .content {
       width: 100%;
-      display: flex;
+      height: 55px;
       align-items: center;
-      border-bottom: 1px solid $border-gray;
-      &:last-child {
-        border: none;
+      display: flex;
+      background: white;
+      margin-top: 8px;
+      .left-part {
+        flex: 1;
+        margin-left: 16px;
+        img {
+          width: 36px;
+        }
       }
-      .pr {
-        width: 100%;
-        height: 50px;
-        background: white;
-        color: $icon-blue;
-        font-weight: 600;
-        font-size: 14px;
-        .add-request {
-          width: 100%;
-          display: flex;
+      .right-part {
+        flex: 8;
+        margin-left: 12px;
+        display: flex;
+        .words {
+          flex: 7;
+        }
+        .new {
+          flex: 1;
           justify-content: center;
           align-items: center;
-          height: 16px;
-          .pass-btn {
-            flex: 1;
-            text-align: center;
-          }
-          .btn {
-            width: 60px;
-            height: 30px;
-            text-align: center;
-            line-height: 30px;
-            border-radius: 5px;
-            font-size: 14px;
-            letter-spacing: 2px;
-            color: #ffffff;
-            background: $main-color;
-            margin-right: 8px;
-          }
-          .confirm {
-            width: 60px;
-            height: 30px;
-            text-align: center;
-            line-height: 30px;
-            border-radius: 5px;
-            font-size: 14px;
-            letter-spacing: 3px;
-            color: $w-gray;
-            background: $bg-gray;
-            margin-right: 8px;
-          }
-          span {
-            margin-left: 5px;
-            font-size: 12px;
-            display: inline-block;
-            height: 16px;
-          }
-          .date {
-            /*display: inline-flex;*/
-            height: 50px;
-            margin-left: 3px;
-            font-size: 12px;
-            flex: 1;
-            line-height: 50px;
-            margin-right: 8px;
-          }
-          .title {
-            color: $icon-blue;
-            font-weight: 600;
-            font-size: 12px;
-            flex: 2;
-            text-align: center;
-            overflow: hidden;
-          }
-          .info {
-            flex: 4;
-            text-align: center;
-            .novel-name {
-              color: $icon-blue;
-              font-weight: 600;
-              font-size: 14px;
-            }
+          display: flex;
+          .point {
+            width: 5px;
+            height: 5px;
+            border-radius: 1000px;
+            background: $main-red;
           }
         }
       }
-    }
-    .mint-cell-title {
-      flex: 0;
-      text-align: center;
-      margin-left: 5px;
-    }
-    .mint-cell-value {
-      flex: 4.5;
     }
   }
 
@@ -132,7 +83,7 @@
 </style>
 <script>
   import Axios from 'axios'
-  import { Toast, MessageBox } from 'mint-ui'
+  import { Toast } from 'mint-ui'
   export default {
     name: 'promote',
     data () {
@@ -171,35 +122,7 @@
           })
       },
       getData () {
-        Axios.get('/user/getPromote')
-          .then(response => {
-            this.promoteList = response.data.result
-            this.promoteList = this.promoteList.reverse()
-          })
-      },
-      deletePromote (index, id) {
-        MessageBox.confirm('确定删除吗？').then(action => {
-          if (action === 'confirm') {
-            Axios.post('/user/delPendingPromote', {
-              id: id
-            }).then(response => {
-              if (response.data.error) {
-                Toast({
-                  message: response.data.message,
-                  position: 'middle',
-                  duration: 1000
-                })
-              } else {
-                this.promoteList[index].vis = false
-              }
-            })
-          }
-        }).catch(cancel => {
-          return null
-        })
-      },
-      goStory (id) {
-        this.$router.push(`/story/${id}`)
+        //
       }
     }
   }

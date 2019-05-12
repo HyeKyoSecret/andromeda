@@ -25,7 +25,7 @@
     height: 48px;
     background: white;
     position: fixed;
-    z-index: 999;
+    z-index: 998;
     bottom: 0;
     display: flex;
     color: $menu-color;

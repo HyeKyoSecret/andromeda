@@ -245,45 +245,49 @@ router.get('/history/getHistory', (req, res) => {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
       }
       if (doc && doc.username === user) {
-        let beginNumber = (doc.history && doc.history.data.length) ? doc.history.data.length - 1 - 4 * val : 0
-        let endNumber = (doc.history && doc.history.data.length) ? doc.history.data.length - 4 * val - 4 : 0
-        if (endNumber < 0) {
-          endNumber = 0
-        }
-        for (let i = beginNumber; i >= endNumber; i--) {
-          let m = beginNumber - i
-          if (doc.history.data[i].date.getTime() === today.getTime()) {
-            result.push({
-              date: '今天',
-              rootPack: []
-            })
-          } else {
-            result.push({
-              date: moment(doc.history.data[i].date).fromNow(),
-              rootPack: []
-            })
+        if (doc.history) {
+          let beginNumber = (doc.history && doc.history.data.length) ? doc.history.data.length - 1 - 4 * val : 0
+          let endNumber = (doc.history && doc.history.data.length) ? doc.history.data.length - 4 * val - 4 : 0
+          if (endNumber < 0) {
+            endNumber = 0
           }
-          for (let j = 0; j < doc.history.data[i].rootPack.length; j++) {
-            result[m].rootPack[j] = {
-              rootId: doc.history.data[i].rootPack[j].rootId.name,
-              coverImg: tool.formImg(doc.history.data[i].rootPack[j].rootId.coverImg),
-              story: [],
-              update: moment(doc.history.data[i].rootPack[j].update).format('HH:mm'),
-              updateTime: doc.history.data[i].rootPack[j].update,
-              showList: false
+          for (let i = beginNumber; i >= endNumber; i--) {
+            let m = beginNumber - i
+            if (doc.history.data[i].date.getTime() === today.getTime()) {
+              result.push({
+                date: '今天',
+                rootPack: []
+              })
+            } else {
+              result.push({
+                date: moment(doc.history.data[i].date).fromNow(),
+                rootPack: []
+              })
             }
-            for (let k = 0; k < doc.history.data[i].rootPack[j].story.length; k++) {
-              result[m].rootPack[j].story[k] = {
-                storyId: doc.history.data[i].rootPack[j].story[k].storyId,
-                date: moment(doc.history.data[i].rootPack[j].story[k].date).fromNow(),
-                time: doc.history.data[i].rootPack[j].story[k].date
+            for (let j = 0; j < doc.history.data[i].rootPack.length; j++) {
+              result[m].rootPack[j] = {
+                rootId: doc.history.data[i].rootPack[j].rootId.name,
+                coverImg: tool.formImg(doc.history.data[i].rootPack[j].rootId.coverImg),
+                story: [],
+                update: moment(doc.history.data[i].rootPack[j].update).format('HH:mm'),
+                updateTime: doc.history.data[i].rootPack[j].update,
+                showList: false
               }
+              for (let k = 0; k < doc.history.data[i].rootPack[j].story.length; k++) {
+                result[m].rootPack[j].story[k] = {
+                  storyId: doc.history.data[i].rootPack[j].story[k].storyId,
+                  date: moment(doc.history.data[i].rootPack[j].story[k].date).fromNow(),
+                  time: doc.history.data[i].rootPack[j].story[k].date
+                }
+              }
+              dateBubbleSort(result[m].rootPack[j].story)
             }
-            dateBubbleSort(result[m].rootPack[j].story)
+            bubbleSort(result[m].rootPack)
           }
-          bubbleSort(result[m].rootPack)
+          res.send({error: false, result: result})
+        } else {
+          res.send({error: false, result: []})
         }
-        res.send({error: false, result: result})
       } else {
         if (typeof id === 'undefined') {
           res.send({error: false, result: []})

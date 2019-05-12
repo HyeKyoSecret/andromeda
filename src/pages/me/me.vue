@@ -78,9 +78,9 @@
             删除好友
           </div>
         </div>
-      <div class="new-message-info">
-        New!
-      </div>
+      <!--<div class="new-message-info">-->
+        <!--New!-->
+      <!--</div>-->
     </div>
     <keep-alive>
       <router-view v-if="$route.meta.keepAlive"></router-view>
@@ -207,8 +207,8 @@
         }
       }
       .user-operation {
-        margin-top: 25px;
-        padding-bottom: 100px;
+        margin-top: 20px;
+        padding-bottom: 90px;
         .line {
           display: flex;
           align-items: center;

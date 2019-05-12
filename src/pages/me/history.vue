@@ -36,6 +36,7 @@
         </div>
       </div>
     </div>
+    <blank v-if="history.length < 1"></blank>
     <foot-menu></foot-menu>
   </div>
 </template>
@@ -44,10 +45,12 @@
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
   import { Toast } from 'mint-ui'
+  import blank from '../../components/blank/blank.vue'
   export default {
     components: {
       FootMenu,
-      notice
+      notice,
+      blank
     },
     data () {
       return {

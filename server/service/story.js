@@ -2549,15 +2549,22 @@ router.post('/story/readSearch', (req, res) => {
                     query: content.toLowerCase()
                   }
                 }
+              },
+              {
+                match: {
+                  'content.NG': {
+                    query: content.toLowerCase()
+                  }
+                }
               }
-            ]
+            ],
+            minimum_should_match: 1
           }
         },
-        from: 0,
-        size: 10,
         highlight: {
           fields: {
-            'content.IKS': {}
+            'content.IKS': {},
+            'content.NG': {}
           }
         }
       }

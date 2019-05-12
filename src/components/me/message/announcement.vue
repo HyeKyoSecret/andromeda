@@ -10,14 +10,13 @@
         <div class="time">2017-11-5</div>
       </div>
     </div>
-    <div class="blank"></div>
+    <div class="blank" v-if="acList.length < 1"></div>
   </div>
 </template>
-
 <style lang='scss' scoped>
   @import "../../../scss/config";
   .announcement-template {
-    min-height: calc(100vh - 82px);
+    min-height: calc(100vh - 92px);
     margin-top: 50px;
     overflow: scroll;
     .content {
@@ -62,8 +61,17 @@
   }
 </style>
 <script>
+  import blank from '../../blank/blank.vue'
   export default {
     name: 'announcement',
+    data () {
+      return {
+        acList: []
+      }
+    },
+    components: {
+      blank
+    },
     methods: {
       swipe (e) {
         if (e.direction === 'Right') {

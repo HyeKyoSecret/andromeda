@@ -179,11 +179,11 @@
     }
     .logo-show{
       width: 100%;
-      height: 150px;
+      height: 130px;
       text-align: center;
       img {
         margin-top: 30px;
-        width: 90px;
+        width: 80px;
       }
     }
     .login-input {

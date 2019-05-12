@@ -37,6 +37,7 @@
                 <div class="name">{{item.name}}</div>
             </div>
         </div>
+      <blank v-if="focusList.length < 1"></blank>
     </div>
 </template>
 <style lang="scss" scoped>
@@ -45,9 +46,10 @@
         position: absolute;
         top: 0;
         left: 0;
-        height: 100%;
+        min-height: calc(100vh - 90px);
         width: 100%;
         background: $bg-gray;
+        margin-top: 42px;
         .search {
             background-color: white;
             height: 42px;
@@ -151,9 +153,11 @@
   import debounce from '../../js/debounce.js'
   import notice from '../../components/notice/notice.vue'
   import { Toast } from 'mint-ui'
+  import blank from '../../components/blank/blank.vue'
   export default {
     components: {
-      notice
+      notice,
+      blank
     },
     data () {
       return {

@@ -31,7 +31,17 @@ export default [
           {
             path: 'promote',
             name: 'message_promote',
-            component: resolve => require(['../components/me/message/promote.vue'], resolve)
+            component: resolve => require(['../components/me/message/promote.vue'], resolve),
+            children: [
+              {
+                path: 'fc',
+                component: resolve => require(['../components/me/message/fc.vue'], resolve)
+              },
+              {
+                path: 'cm',
+                component: resolve => require(['../components/me/message/cm.vue'], resolve)
+              }
+            ]
           },
           {
             path: 'request',

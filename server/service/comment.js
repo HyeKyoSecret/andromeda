@@ -48,25 +48,50 @@ router.post('/comment/storyComment', (req, res) => {
                 if (err3) {
                   res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                 } else {
-                  User.updateOne({username: user}, {$addToSet: {'commentTo': comment._id}})
-                    .exec(err4 => {
-                      if (err4) {
-                        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-                      } else {
-                        if (main) {
-                          Comment.updateOne({_id: mongoose.Types.ObjectId(main)}, {$addToSet: {subComment: comment._id}})
-                            .exec(err5 => {
-                              if (err5) {
+                  if (main) {
+                    // 评论有主评论(一定有to)
+                    Comment.updateOne({_id: mongoose.Types.ObjectId(main)}, {$addToSet: {subComment: comment._id}})
+                      .exec((err5) => {
+                        if (err5) {
+                          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                        } else {
+                          // 自己的评论不通知
+                          Comment.findOne({_id: mongoose.Types.ObjectId(to)})
+                            .exec((err7, cm) => {
+                              if (err7) {
                                 res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                               } else {
-                                res.send({error: false, message: '评论成功'})
+                                if (cm.people.toString() === people._id.toString()) {
+                                  res.send({error: false, message: '评论成功'})
+                                } else {
+                                  User.updateOne({_id: mongoose.Types.ObjectId(cm.people)}, {$addToSet: {commentFrom: { comment: comment._id }}})
+                                    .exec(err6 => {
+                                      if (err6) {
+                                        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                      } else {
+                                        res.send({error: false, message: '评论成功'})
+                                      }
+                                    })
+                                }
                               }
                             })
-                        } else {
-                          res.send({error: false, message: '评论成功'})
                         }
-                      }
-                    })
+                      })
+                  } else {
+                    // 评论非主评论
+                    if (people.nickname === node.author.nickname) {
+                      res.send({error: false, message: '评论成功'})
+                    } else {
+                      User.updateOne({username: node.author.username}, {$addToSet: {commentFrom: { comment: comment._id }}})
+                        .exec(err6 => {
+                          if (err6) {
+                            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                          } else {
+                            res.send({error: false, message: '评论成功'})
+                          }
+                        })
+                    }
+                  }
                 }
               })
           }
@@ -346,5 +371,141 @@ router.post('/comment/deleteComment', (req, res) => {
         }
       })
   }
+})
+router.get('/comment/getMessageComment', (req, res) => {
+  let user
+  let result = []
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  let getStoryObj = async function (id) {
+    return new Promise((resolve, reject) => {
+      Story.findOne({id: id})
+        .populate('author')
+        .exec((err, story) => {
+          if (err) {
+            reject(err)
+          }
+          if (story) {
+            resolve(story)
+          } else {
+            Root.findOne({id: id})
+              .populate('author')
+              .exec((err, root) => {
+                if (err) {
+                  reject(err)
+                }
+                if (root) {
+                  resolve(root)
+                } else {
+                  resolve(null)
+                }
+              })
+          }
+        })
+    })
+  }
+  async function getRootObj (fid) {
+    return new Promise((resolve, reject) => {
+      if (rootReg.test(fid)) {
+        Root.findOne({id: fid})
+          .exec((err, root) => {
+            if (err) {
+              console.log(err)
+            }
+            if (root) {
+              resolve(root)
+            } else {
+              reject(null)
+            }
+          })
+      } else if (storyReg.test(fid)) {
+        Story.findOne({id: fid})
+          .exec((err, story) => {
+            if (err) {
+              console.log(err)
+            }
+            if (story) {
+              Root.findOne({_id: story.root})
+                .exec((err, root) => {
+                  if (err) {
+                    console.log(err)
+                  }
+                  if (root) {
+                    resolve(root)
+                  } else {
+                    reject(null)
+                  }
+                })
+            } else {
+              reject(null)
+            }
+          })
+      } else {
+        reject(null)
+      }
+    })
+  }
+  User.findOne({username: user})
+    .populate({
+      path: 'commentFrom.comment',
+      populate: {
+        path: 'people'
+      }
+    })
+    .populate({
+      path: 'commentFrom.comment',
+      populate: {
+        path: 'commentTo',
+        populate: {
+          path: 'people'
+        }
+      }
+    })
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误'})
+      } else {
+        if (doc) {
+          let exe = async function () {
+            for (let i = 0; i < doc.commentFrom.length; i++) {
+              if (doc.commentFrom[i].comment && doc.commentFrom[i].comment.commentTo) {
+                let obj = await getRootObj(doc.commentFrom[i].comment.about)
+                result.push({
+                  type: 'comment',
+                  people: doc.commentFrom[i].comment.people.nickname,
+                  peopleHead: tool.formImg(doc.commentFrom[i].comment.people.headImg),
+                  date: moment(doc.commentFrom[i].comment.date).format('YYYY.MM.DD HH:mm'),
+                  commentTo: doc.commentFrom[i].comment.commentTo.people.nickname,
+                  commentContent: doc.commentFrom[i].comment.content,
+                  coverImg: tool.formImg(obj.coverImg),
+                  subPeople: doc.commentFrom[i].comment.commentTo.people.nickname,
+                  subContent: doc.commentFrom[i].comment.commentTo.content
+                })
+              } else {
+                let obj = await getRootObj(doc.commentFrom[i].comment.about)
+                let sub = await getStoryObj(doc.commentFrom[i].comment.about)
+                result.push({
+                  type: 'story',
+                  people: doc.commentFrom[i].comment.people.nickname,
+                  peopleHead: tool.formImg(doc.commentFrom[i].comment.people.headImg),
+                  date: moment(doc.commentFrom[i].comment.date).format('YYYY.MM.DD HH:mm'),
+                  commentContent: doc.commentFrom[i].comment.content,
+                  coverImg: tool.formImg(obj.coverImg),
+                  subPeople: sub.author.nickname,
+                  subContent: sub.content
+                })
+              }
+            }
+            res.send({error: false, result: result})
+          }
+          exe()
+        } else {
+          res.send({error: true, type: 'DB', message: '发生错误, 请重新登录'})
+        }
+      }
+    })
 })
 module.exports = router

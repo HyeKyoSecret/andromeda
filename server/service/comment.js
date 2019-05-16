@@ -99,6 +99,82 @@ router.post('/comment/storyComment', (req, res) => {
       }
     })
 })
+router.post('/comment/addComment', (req, res) => {
+  let commentId = req.body.id
+  let content = req.body.content
+  let to = req.body.to
+  let main = req.body.main
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (commentId.length === 24) {
+    User.findOne({username: user})
+      .exec((err, people) => {
+        if (err) {
+          res.send({error: true, message: '发生错误', type: 'db'})
+        } else {
+          Comment.findOne({_id: mongoose.Types.ObjectId(commentId)})
+            .populate('people')
+            .exec((err2, mainComment) => {
+              if (err2) {
+                res.send({error: true, message: '发生错误', type: 'db'})
+              } else {
+                let newComment = new Comment({
+                  people: people._id,
+                  about: mainComment.about,
+                  content: content,
+                  commentTo: to || null
+                })
+                newComment.save(function (err2, comment) {
+                  if (err2) {
+                    res.send({error: true, message: '发生错误', type: 'db'})
+                  } else {
+                    if (main) {
+                      // 评论有主评论(一定有to)
+                      Comment.updateOne({_id: mongoose.Types.ObjectId(main)}, {$addToSet: {subComment: comment._id}})
+                        .exec((err5) => {
+                          if (err5) {
+                            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                          } else {
+                            // 自己的评论不通知
+                            Comment.findOne({_id: mongoose.Types.ObjectId(to)})
+                              .exec((err7, cm) => {
+                                if (err7) {
+                                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                } else {
+                                  if (cm.people.toString() === people._id.toString()) {
+                                    res.send({error: false, message: '评论成功'})
+                                  } else {
+                                    User.updateOne({_id: mongoose.Types.ObjectId(cm.people)}, {$addToSet: {commentFrom: { comment: comment._id }}})
+                                      .exec(err6 => {
+                                        if (err6) {
+                                          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                        } else {
+                                          res.send({error: false, message: '评论成功'})
+                                        }
+                                      })
+                                  }
+                                }
+                              })
+                          }
+                        })
+                    } else {
+                      // 不应该出现没有主评论的情况
+                      res.send({error: true, message: '发生错误', type: 'value'})
+                    }
+                  }
+                })
+              }
+            })
+        }
+      })
+  } else {
+    res.send({error: true, type: 'id', message: '找不到该评论'})
+  }
+})
 router.get('/comment/getComment', (req, res) => {
   const id = req.query.id
   let result = []
@@ -174,7 +250,7 @@ router.get('/comment/getComment', (req, res) => {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
       } else {
         doc.comment.forEach((comment) => {
-          let subContent = []
+          let subCount = 0
           if (comment.display) {
             let hasZan = false
             for (let i = 0; i < comment.zan.length; i++) {   // 检查是否赞过
@@ -182,23 +258,12 @@ router.get('/comment/getComment', (req, res) => {
                 hasZan = true
               }
             }
-            if (comment.subComment && comment.subComment.length > 0) {
-              for (let i = 0; i < comment.subComment.length; i++) {
-                if (comment.subComment[i].display) {
-                  subContent.push({
-                    id: comment.subComment[i]._id,
-                    people: comment.subComment[i].people.nickname,
-                    content: comment.subComment[i].content,
-                    zan: comment.subComment[i].zan ? comment.subComment[i].zan.length : 0,
-                    commentTo: comment.subComment[i].commentTo ? comment.subComment[i].commentTo.people.nickname : '',
-                    date: moment(comment.subComment[i].date).fromNow(),
-                    hasZan: comment.subComment[i].zan.some(function (item) {
-                      return item.username === user
-                    }),
-                    isYours: comment.subComment[i].people.username === user
-                  })
+            if (comment.subComment) {
+              comment.subComment.forEach(x => {
+                if (x.display) {
+                  subCount++
                 }
-              }
+              })
             }
             if (comment && !comment.commentTo) {
               result.push({
@@ -210,8 +275,7 @@ router.get('/comment/getComment', (req, res) => {
                 commentTo: comment.commentTo ? comment.commentTo.people.nickname : null,
                 date: moment(comment.date).fromNow(),
                 hasZan: hasZan,
-                subComment: subContent.reverse(),
-                showSubComment: false,
+                subComment: comment.subComment ? subCount : 0,
                 isYours: comment.people.username === user
               })
             }
@@ -308,7 +372,6 @@ router.post('/comment/deleteComment', (req, res) => {
   }
   async function deleteComment (cid) {
     return new Promise((resolve, reject) => {
-      console.log(cid)
       Comment.deleteOne({_id: cid})
         .exec(err => {
           if (err) {
@@ -476,13 +539,16 @@ router.get('/comment/getMessageComment', (req, res) => {
                 result.push({
                   type: 'comment',
                   people: doc.commentFrom[i].comment.people.nickname,
+                  peopleId: doc.commentFrom[i].comment.people.id,
                   peopleHead: tool.formImg(doc.commentFrom[i].comment.people.headImg),
                   date: moment(doc.commentFrom[i].comment.date).format('YYYY.MM.DD HH:mm'),
                   commentTo: doc.commentFrom[i].comment.commentTo.people.nickname,
                   commentContent: doc.commentFrom[i].comment.content,
+                  commentId: doc.commentFrom[i].comment._id,
                   coverImg: tool.formImg(obj.coverImg),
                   subPeople: doc.commentFrom[i].comment.commentTo.people.nickname,
-                  subContent: doc.commentFrom[i].comment.commentTo.content
+                  subContent: doc.commentFrom[i].comment.commentTo.content,
+                  subId: doc.commentFrom[i].comment.about
                 })
               } else {
                 let obj = await getRootObj(doc.commentFrom[i].comment.about)
@@ -490,15 +556,19 @@ router.get('/comment/getMessageComment', (req, res) => {
                 result.push({
                   type: 'story',
                   people: doc.commentFrom[i].comment.people.nickname,
+                  peopleId: doc.commentFrom[i].comment.people.id,
                   peopleHead: tool.formImg(doc.commentFrom[i].comment.people.headImg),
                   date: moment(doc.commentFrom[i].comment.date).format('YYYY.MM.DD HH:mm'),
                   commentContent: doc.commentFrom[i].comment.content,
+                  commentId: doc.commentFrom[i].comment._id,
                   coverImg: tool.formImg(obj.coverImg),
                   subPeople: sub.author.nickname,
-                  subContent: sub.content
+                  subContent: sub.content,
+                  subId: doc.commentFrom[i].comment.about
                 })
               }
             }
+            result.reverse()
             res.send({error: false, result: result})
           }
           exe()
@@ -507,5 +577,80 @@ router.get('/comment/getMessageComment', (req, res) => {
         }
       }
     })
+})
+router.get('/comment/commentDetails', (req, res) => {
+  let user
+  let id = req.query.id
+  let subContent = []
+  let result = {}
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (id && id.length === 24) {
+    id = mongoose.Types.ObjectId(req.query.id)
+
+    Comment.findOne({ _id: id })
+      .populate('zan')
+      .populate('people')
+      .populate({
+        path: 'subComment',
+        populate: {
+          path: 'people'
+        }
+      })
+      .populate({
+        path: 'subComment',
+        populate: {
+          path: 'commentTo',
+          populate: {
+            path: 'people'
+          }
+        }
+      })
+      .exec((err, comment) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+        } else {
+          if (comment.display && comment.subComment && comment.subComment.length > 0) {
+            for (let i = 0; i < comment.subComment.length; i++) {
+              if (comment.subComment[i].display) {
+                subContent.push({
+                  id: comment.subComment[i]._id,
+                  people: comment.subComment[i].people.nickname,
+                  peopleId: comment.subComment[i].people.id,
+                  headImg: tool.formImg(comment.subComment[i].people.headImg),
+                  content: comment.subComment[i].content,
+                  zan: comment.subComment[i].zan ? comment.subComment[i].zan.length : 0,
+                  commentTo: comment.subComment[i].commentTo ? comment.subComment[i].commentTo.people.nickname : '',
+                  date: moment(comment.subComment[i].date).format('YYYY-M-D HH:mm'),
+                  timeStamp: comment.subComment[i].date.getTime(),
+                  hasZan: comment.subComment[i].zan.some(function (item) {
+                    return item.username === user
+                  }),
+                  isYours: comment.subComment[i].people.username === user
+                })
+              }
+            }
+          }
+          result = {
+            id: comment._id,
+            headImg: tool.formImg(comment.people.headImg),
+            people: comment.people.nickname,
+            peopleId: comment.people.peopleId,
+            content: comment.content,
+            zan: comment.zan ? comment.zan.length : 0,
+            date: moment(comment.date).format('YYYY-M-D HH:mm'),
+            hasZan: comment.zan.username === user,
+            subComment: subContent,
+            isYours: comment.people.username === user
+          }
+          res.send({error: false, result: result})
+        }
+      })
+  } else {
+    res.send({error: true, type: 'id', message: '找不到该评论'})
+  }
 })
 module.exports = router

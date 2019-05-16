@@ -188,7 +188,7 @@
       height: 145px;
       width: 100%;
       background-color: white;
-      margin-top: 15px;
+      margin-top: 10px;
       &:last-child:after {
         content: '';
         display: block;

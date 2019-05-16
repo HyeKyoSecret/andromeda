@@ -121,7 +121,11 @@ const UserSchema = new Schema({
       content_1: String,
       content_2: String,
       content_3: String,
-      content_4: String
+      content_4: String,
+      readed: {
+        type: Boolean,
+        default: false
+      }
     }
   ],
   mark: [

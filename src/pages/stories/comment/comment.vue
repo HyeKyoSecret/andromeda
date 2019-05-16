@@ -1,11 +1,11 @@
 <template>
   <div class="comment">
-    <notice title="评论"></notice>
+    <notice title="评论1"></notice>
     <div class="comment-number">
       评论（{{commentList.length}}）
     </div>
     <div class="all-comment">
-      <div class="one-comment" v-for="(item, index) in commentList">
+      <div class="one-comment" v-for="(item, index) in commentList" :id="index">
         <div class="critic-pic">
           <img :src="item.headImg" @error="setErrorImg(index)">
         </div>
@@ -17,7 +17,7 @@
             </span>
             <span class="re-critic" v-if="item.commentTo">{{item.commentTo}}</span>
           </div>
-          <div class="content" :class="{notshow: commentList[index].notShow}" :id="item.id" @click="replyComment(item.id, item.id)">
+          <div class="content" :class="{notshow: commentList[index].notShow}" :id="item.id">
             {{item.content}}
           </div>
           <div class="information">
@@ -25,41 +25,15 @@
               <img src="../../../img/icon/gray_thumb.png" v-if="!item.hasZan" @click="addZan(item.id, 'main', index)">
               <img src="../../../img/icon/yellowthumb.png" v-else @click="cancelZan(item.id, 'main', index)">{{item.zan}}
             </span>
-            <span class="reply" @click="replyComment(item.id, item.id, index, item.people)">回复</span>
             <span class="time">{{item.date}}</span>
+            <span class="reply" @click="replyComment(item.id, item.id, item.people)">回复</span>
             <span class="time" v-if="item.isYours" @click="deleteComment('main', item.id)">删除</span>
             <!--<span class="showBtn" v-if="item.lc > 3" @click="showComment(index)">{{item.notShow ? '展开' : '收起'}}</span>-->
-            <span class="showBtn" @click=showSubComment(index) v-if="item.subComment && item.subComment.length > 0 && !item.showSubComment">共{{item.subComment.length}}条评论 ></span>
+            <span class="showBtn" @click=goComment(item.id) v-if="item.subComment && item.subComment > 0">共{{item.subComment}}条评论 ></span>
           </div>
-          <div class="sub-comment" v-if="item.showSubComment">
-            <div class="one-sub-comment" v-for="(q, j) in item.subComment">
-              <div class="sub-comment-content">
-                <div class="sub-critic-name">
-                  <span class="sub-critic">{{q.people}}</span>
-                  <span class="sub-to">
-              <img src="../../../img/icon/gray_triangle.png">
-            </span>
-                  <span class="sub-re-critic">{{q.commentTo}}</span>
-                </div>
-                <div class="sub-content">
-                  {{q.content}}
-                </div>
-                <div class="sub-information">
-            <span class="sub-thumb-up" >
-              <img src="../../../img/icon/gray_thumb.png" v-if="!q.hasZan" @click="addZan(q.id, 'sub', index, j)">
-              <img src="../../../img/icon/yellowthumb.png" v-else @click="cancelZan(q.id, 'sub', index, j)">{{q.zan}}
-            </span>
-                  <span class="sub-reply" @click="replyComment(item.id, q.id, index, q.people)">回复</span>
-                  <span class="sub-time">{{q.date}}</span>
-                  <span class="sub-time" v-if="q.isYours" @click="deleteComment('sub', q.id, index)">删除</span>
-                  <span class="sub-showBtn" v-if="item.subComment && j === item.subComment.length - 1" @click=showSubComment(index)>收起评论</span>
-                </div>
-              </div>
-          </div>
-        </div>
       </div>
     </div>
-      <div class="blank"></div>
+      <div class="blank" id="3"></div>
     </div>
     <div class="comment-input">
       <textarea id="textArea" v-model="comment" rows="1" :placeholder="tempPlaceHolder" @focus="showButton"></textarea>
@@ -75,17 +49,17 @@
     position: absolute;
     top: 0;
     left: 0;
-    min-height: calc(100vh - 42px);
+    min-height: calc(100vh - 40px);
     width: 100%;
     background: white;
-    margin-top: 42px;
+    margin-top: 40px;
     z-index: 901;
     .comment-number {
       font-size: 14px;
       color: $font-gray;
       padding-left: 20px;
       height: 30px;
-      background-color: $bg-gray;
+      background-color: $content-gray;
       vertical-align: middle;
       line-height: 30px;
       font-weight: 800;
@@ -94,7 +68,6 @@
       .one-comment {
         background-color: white;
         padding: 10px 10px 0 10px;
-        border-top: 1px solid $line-gray;
         &:first-child{
           border: none;
         }
@@ -114,6 +87,7 @@
           display: inline-block;
           margin-left: 10px;
           color: $font-dark;
+          border-bottom: 1px solid $bg-gray;
           .critic-name {
             font-size: 13px;
             font-weight: 600;
@@ -169,72 +143,6 @@
             }
           }
         }
-        .sub-comment {
-          .one-sub-comment {
-            &:last-child {
-              border-bottom: none !important;
-            }
-            border-top: 1px solid $line-gray;
-            background-color: white;
-            display: flex;
-            padding: 10px 10px 10px 0;
-            .sub-comment-content {
-              flex: 8;
-              color: $font-dark;
-              .sub-critic-name {
-                font-size: 13px;
-                font-weight: 600;
-                img {
-                  height: 8px;
-                  width: 8px;
-                }
-              }
-              .sub-content{
-                font-size: 13px;
-                color: $font-dark;
-                margin-top: 5px;
-                word-break: break-all;
-                overflow: visible;
-                max-height: 300px;
-                display: inline-block;
-              }
-              .sub-content.notshow {
-                font-size: 13px;
-                color: $font-dark;
-                margin-top: 5px;
-                max-height: 60px;
-                word-break: break-all;
-                display: -webkit-box;
-                display: -moz-box;
-                -webkit-box-orient: vertical;
-                -webkit-line-clamp: 3;
-                -moz-box-orient: vertical;
-                -moz-line-clamp: 3;
-                overflow: hidden;
-              }
-              .sub-information {
-                margin-top: 8px;
-                span {
-                  height: 14px;
-                  line-height: 14px;
-                  color: $font-gray;
-                  margin-right: 5px;
-                  img {
-                    margin-right: 5px;
-                    height: 14px;
-                    width: 14px;
-                  }
-                }
-                .sub-showBtn {
-                  float: right;
-                  display: inline-block;
-                  margin-top: 2px;
-                  color: $main-color;
-                }
-              }
-            }
-          }
-        }
       }
       .blank {
         width: 100%;
@@ -250,7 +158,6 @@
       bottom: 0;
       border-top: 1px solid $border-gray;
       width: 100%;
-      max-width: 700px;
       min-height: 50px;
       background: #ffffff;
       display: flex;
@@ -291,6 +198,11 @@
         line-height: 25px;
       }
     }
+    @media (min-width: 768px) {
+      .comment-input {
+        max-width: 700px;
+      }
+    }
   }
 </style>
 <script>
@@ -301,6 +213,7 @@
   export default {
     data () {
       return {
+        name: this.$route.path.split('/'),
         comment: '',
         fakeSubmit: false,
         submit: false,
@@ -308,7 +221,6 @@
         toId: '',  // 回复的具体对象，
         mainId: '', // 回复的主对象
         author: '',
-        temp: -1,  // 用于保存当前回复对象的主窗口
         tempPlaceHolder: '写下你的评论。。。'
       }
     },
@@ -331,11 +243,6 @@
             duration: 1000
           })
         }
-        // if (!this.tempWord || this.tempWord !== `${this.comment.split('：')[0]}：`) {   // 检查是否有回复人
-        //   this.tempWord = ''
-        //   this.toId = ''
-        //   this.mainId = ''
-        // }
       }
     },
     mounted: function () {
@@ -343,11 +250,18 @@
     },
     created: function () {
       this.getData()
+      this.getPath()
     },
     methods: {
-      showSubComment (index) {
-        this.commentList[index].showSubComment = !this.commentList[index].showSubComment
-        this.$set(this.commentList, index, this.commentList[index])
+      getPath () {
+        // let sp = this.$route.path.split('/')
+        // let id
+        // if (sp.length === 5) {
+        //   id = sp[4]
+        // }
+      },
+      goComment (id) {
+        this.$router.push(`/comment/${id}`)
       },
       deleteComment (type, id, index) {
         if (type === 'main') {
@@ -363,7 +277,6 @@
                 id: id
               }).then(response => {
                 if (!response.data.error) {
-                  this.temp = index
                   this.getData()
                   Toast({
                     position: 'middle',
@@ -517,12 +430,6 @@
           }
         }).then(response => {
           if (!response.data.error) {
-            if (this.temp > -1) {
-              response.data.result[this.temp].showSubComment = true
-              this.commentList = response.data.result
-            } else {
-              this.commentList = response.data.result
-            }
             // this.$nextTick(function () {
             //   for (let i = 0; i < this.commentList.length; i++) {
             //     let f = document.getElementById(this.commentList[i].id)
@@ -538,6 +445,7 @@
             //     }
             //   })
             // }.bind(this))
+            this.commentList = response.data.result
             this.author = response.data.author
           } else {
             Toast({
@@ -548,11 +456,10 @@
           }
         })
       },
-      replyComment (main, to, index, people) {
+      replyComment (main, to, people) {
         this.comment = ''
         this.toId = to
         this.mainId = main
-        this.temp = index
         document.getElementById('textArea').focus()
         this.tempPlaceHolder = `回复${people} :`
       },

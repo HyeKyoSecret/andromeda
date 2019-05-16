@@ -3,17 +3,17 @@
        <div class="cm-content" v-for="(item, index) in commentList">
          <div class="user">
            <div class="head">
-             <img :src="item.peopleHead" alt="" @error="setErrorImg(index)">
+             <img :src="item.peopleHead" alt="" @error="setErrorImg(index)" @click="goPeople(item.peopleId)">
            </div>
            <div class="info">
-             <div class="name">{{item.people}}</div>
+             <div class="name" @click="goPeople(item.peopleId)">{{item.people}}</div>
              <div class="date">{{item.date}}</div>
            </div>
            <div class="reply">
              <span>回复</span>
            </div>
          </div>
-         <div class="comment-content">
+         <div class="comment-content" @click="goComment(item.type, item.subId, item.commentId)">
            <span class="word" v-if="item.type === 'comment'">回复</span>
            <span class="at" v-if="item.type === 'comment'">@{{item.commentTo}}</span>
            <span class="content">{{item.commentContent}}</span>
@@ -24,7 +24,7 @@
            <span class="at">{{item.commentTo}}</span>
            <span class="content">{{item.commentContent}}</span>
          </div>
-         <div class="comment-theme">
+         <div class="comment-theme" @click="goStory(item.subId)">
            <div class="left">
              <img :src="item.coverImg" alt="">
            </div>
@@ -50,9 +50,19 @@
     },
     created: function () {
       this.getData()
-      console.log(this.commentList)
     },
     methods: {
+      goStory (id) {
+        this.$router.push(`/story/${id}`)
+      },
+      goPeople (id) {
+        this.$router.push(`/people/${id}`)
+      },
+      goComment (type, story, id) {
+        if (type !== 'comment') {
+          this.$router.push(`/story/${story}/comment/#${id}`)
+        }
+      },
       setErrorImg (x) {
         this.commentList[x].peopleHead = require('../../../img/images/defaultHeadImg.png')
       },
@@ -89,7 +99,7 @@
       margin: 0 auto;
       margin-top: 10px;
       box-sizing: content-box;
-      background: rgb(249,249,249);
+      background: $content-gray;
       .user {
         height: 50px;
         display: flex;
@@ -147,7 +157,7 @@
       }
     }
     .former-comment {
-      background: rgb(249,249,249);
+      background: $content-gray;
       box-sizing: border-box;
       padding: 8px 10px 8px 10px;
       font-size: 13px;

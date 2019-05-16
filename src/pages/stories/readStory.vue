@@ -331,7 +331,7 @@
   .read-story {
     min-height: calc(100vh - 42px);
     margin-top: 42px;
-    background: $bg-gray;
+    background: $content-gray;
     .marker {
       position: absolute;
       top: 27px;

@@ -148,6 +148,14 @@ export default [
   {
     path: '/test',
     name: 'test',
+    beforeEnter (to, from, next) {
+      document.body.scrollTop = 3100
+      next()
+    },
+    scrollBehavior (to, from, savePosition) { // 在点击浏览器的“前进/后退”，或者切换导航的时候触发。
+      console.log(to)
+      return { x: 0, y: 1000 }
+    },
     component: resolve => require(['../pages/test.vue'], resolve),
     meta: { keepAlive: true }
   },
@@ -162,7 +170,7 @@ export default [
     component: resolve => require(['../pages/stories/readStory.vue'], resolve),
     children: [
       {
-        path: 'comment',
+        path: 'comment/',
         component: resolve => require(['../pages/stories/comment/comment.vue'], resolve),
         meta: { requiresAuth: true }
       },
@@ -172,6 +180,10 @@ export default [
         meta: { requiresAuth: true }
       }
     ]
+  },
+  {
+    path: '/comment/:id/',
+    component: resolve => require(['../pages/comment/comment.vue'], resolve)
   },
   {
     path: '/buildStoryRecommend',         // 阅读

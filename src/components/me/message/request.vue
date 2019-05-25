@@ -2,10 +2,9 @@
   <div class="request-template">
     <div v-if="requestList.request.length">
       <div class="label">待验证请求</div>
-      <div v-for='(item, index) in requestList.request' class="request-template">
+      <div v-for='(item, index) in requestList.request' class="rq-template">
         <div class="rq-content" v-if='item.vis'>
           <mt-cell-swipe class='rq'
-                         :title= item.to
                          :right="[
           {
             content: '删除',
@@ -17,6 +16,7 @@
         ]">
             <slot>
               <div class='add-request'>
+                <span class="title" @click.self="showUser(item.to)">{{item.to}}</span>
                 <span class="info">请求已发送</span>
                 <span class="date">{{item.date}}</span>
                 <span class="date">验证中···</span>
@@ -31,7 +31,6 @@
       <div v-for='(item, index) in requestList.addFriend' :key="item.fromId">
         <div class="rq-content" v-if='item.vis'>
           <mt-cell-swipe class='rq'
-                         :title= item.from
                          :right="[
           {
             content: '删除',
@@ -42,6 +41,7 @@
           }
         ]">
           <div class='add-request'>
+            <span class="title" @click.self="showUser(item.from)">{{item.from}}</span>
             <span class="info">添加您为好友</span>
             <div class="date">{{item.date}}</div>
             <span v-if = "item.state === 'pending'" class="btn" @click="acceptFriend(item.fromId)">通过</span>
@@ -56,14 +56,17 @@
 <style lang='scss'>
   @import "../../../scss/config";
   .rq-content .mint-cell-title {
-    flex: 1;
+    flex: 0;
     text-align: center;
-    font-size: 12px;
+    margin-left: 5px;
+  }
+  .rq-content .mint-cell-value {
+    flex: 4.5;
   }
   .request-template {
     width: 100%;
-    margin-top: 42px;
-    min-height: calc(100vh - 92px);
+    margin-top: 47px;
+    min-height: calc(100vh - 140px);
     .label {
       margin-bottom: 5px;
     }
@@ -146,7 +149,6 @@
       }
     }
     .label {
-      margin-top: 15px;
       margin-left: 5px;
       color: $w-gray;
     }
@@ -174,6 +176,22 @@
       this.getData()
     },
     methods: {
+      showUser (name) {
+        Axios.post('/user/getUserByName', {
+          name: name
+        })
+          .then(response => {
+            if (!response.data.error) {
+              this.$router.push(`/people/${response.data.id}`)
+            } else {
+              Toast({
+                message: '发生错误',
+                position: 'middle',
+                duration: 1000
+              })
+            }
+          })
+      },
       swipe (e) {
         if (e.target.className !== 'request-template child-view') {
           return null

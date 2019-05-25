@@ -1,7 +1,6 @@
-
 <template>
   <div class="announcement-template">
-    <div class="content">
+    <div class="content" v-for="n in 20">
       <div class="right">
         <div class="name">HyeKyo</div>
         <div class="words">
@@ -16,9 +15,9 @@
 <style lang='scss' scoped>
   @import "../../../scss/config";
   .announcement-template {
-    min-height: calc(100vh - 92px);
-    margin-top: 50px;
-    overflow: scroll;
+    margin-top: 48px;
+    width: 100%;
+    height: calc(100vh - 140px);
     .content {
       min-height: 100px;
       margin-bottom: 10px;

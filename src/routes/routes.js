@@ -40,6 +40,10 @@ export default [
               {
                 path: 'cm',
                 component: resolve => require(['../components/me/message/cm.vue'], resolve)
+              },
+              {
+                path: 'sub',
+                component: resolve => require(['../components/me/message/sub.vue'], resolve)
               }
             ]
           },
@@ -148,14 +152,6 @@ export default [
   {
     path: '/test',
     name: 'test',
-    beforeEnter (to, from, next) {
-      document.body.scrollTop = 3100
-      next()
-    },
-    scrollBehavior (to, from, savePosition) { // 在点击浏览器的“前进/后退”，或者切换导航的时候触发。
-      console.log(to)
-      return { x: 0, y: 1000 }
-    },
     component: resolve => require(['../pages/test.vue'], resolve),
     meta: { keepAlive: true }
   },
@@ -184,6 +180,11 @@ export default [
   {
     path: '/comment/:id/',
     component: resolve => require(['../pages/comment/comment.vue'], resolve)
+  },
+  {
+    path: '/reply/:id/',
+    component: resolve => require(['../pages/comment/reply.vue'], resolve),
+    meta: { requiresAuth: true }
   },
   {
     path: '/buildStoryRecommend',         // 阅读

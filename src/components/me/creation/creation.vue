@@ -25,7 +25,7 @@
             <span><img src="../../../img/icon/gray_pen.png" /></span>
             <span>{{item.num}}篇</span>
           </div>
-          <div class="info-quantity">
+          <div class="info-quantity zan">
             <span><img src="../../../img/icon/gray_thumb.png" /></span>
             <span>{{item.zanCounts}}次</span>
           </div>
@@ -139,7 +139,7 @@
           img {
             width:18px;
             height:18px;
-            vertical-align: text-bottom;
+            vertical-align: center;
             margin-right: 5px;
           }
         }

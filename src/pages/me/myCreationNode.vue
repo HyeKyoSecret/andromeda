@@ -330,7 +330,7 @@
       height: 145px;
       width: 100%;
       background-color: white;
-      margin-top: 25px;
+      margin-top: 15px;
       .story-information {
         margin-left: 10px;
         margin-right: 10px;

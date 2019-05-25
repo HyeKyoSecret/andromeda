@@ -16,16 +16,10 @@ const rootReg = /^R([0-9]){7}$/
 const storyReg = /^S([0-9]){7}$/
 router.get('/user/getMySubscription', (req, res) => {
   'use strict'
-  // let sysUser
-  // if (req.session.user) {
-  //   sysUser = req.session.user
-  // } else if (req.cookies.And) {
-  //   sysUser = req.cookies.And.user
-  // }
   let user = req.query.user
   let result = []
   User.findOne({id: user})
-    .populate('subscribe')
+    .populate('subscribe.root')
     .exec((err, user) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -34,10 +28,10 @@ router.get('/user/getMySubscription', (req, res) => {
         for (let i = 0; i < user.subscribe.length; i++) {
           let sub = user.subscribe
           result.push({
-            id: sub[i].id,
-            name: sub[i].name,
-            follower: sub[i].subscribe ? sub[i].subscribe.length : 0,
-            coverImg: tool.formImg(sub[i].coverImg)
+            id: sub[i].root.id,
+            name: sub[i].root.name,
+            follower: sub[i].root.subscribe ? sub[i].root.subscribe.length : 0,
+            coverImg: tool.formImg(sub[i].root.coverImg)
           })
         }
         res.send({error: false, result: result})
@@ -373,6 +367,12 @@ router.get('/user/acceptFriend', (req, res) => {
 router.get('/user/getMessageData', (req, res) => {
   'use strict'
   let user
+  let result = {
+    words: 0,
+    request: 0,
+    promote: 0,
+    announcement: 0
+  }
   if (req.session.user) {
     user = req.session.user
   } else if (req.cookies.And && req.cookies.And.user) {
@@ -384,7 +384,26 @@ router.get('/user/getMessageData', (req, res) => {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
       }
       if (duser) {
-        res.send({error: false, user: duser.id})
+        for (let i = 0; i < duser.commentFrom.length; i++) {
+          if (!duser.commentFrom[i].readed) {
+            result.promote ++        // 通知数量（只记录了评论通知）
+          }
+        }
+        if (duser.pending && duser.pending.request) {
+          for (let i = 0; i < duser.pending.request.length; i++) {
+            if (!duser.pending.request[i].readed) {
+              result.request ++
+            }
+          }
+        }
+        if (duser.pending && duser.pending.addFriend) {
+          for (let i = 0; i < duser.pending.addFriend.length; i++) {
+            if (!duser.pending.addFriend[i].readed) {
+              result.request ++
+            }
+          }
+        }
+        res.send({error: false, user: duser.id, result: result})
       } else {
         res.send({error: true, type: 'user', message: '发生错误，请检查url'})
       }

@@ -1,48 +1,58 @@
 <template>
     <div class="cm">
-       <div class="cm-content" v-for="(item, index) in commentList">
-         <div class="user">
-           <div class="head">
-             <img :src="item.peopleHead" alt="" @error="setErrorImg(index)" @click="goPeople(item.peopleId)">
-           </div>
-           <div class="info">
-             <div class="name" @click="goPeople(item.peopleId)">{{item.people}}</div>
-             <div class="date">{{item.date}}</div>
-           </div>
-           <div class="reply">
-             <span>回复</span>
-           </div>
-         </div>
-         <div class="comment-content" @click="goComment(item.type, item.subId, item.commentId)">
-           <span class="word" v-if="item.type === 'comment'">回复</span>
-           <span class="at" v-if="item.type === 'comment'">@{{item.commentTo}}</span>
-           <span class="content">{{item.commentContent}}</span>
-         </div>
-         <div class="former-comment" v-if="item.type === 'comment'">
-           <span class="at">{{item.people}}</span>
-           <span class="word">回复</span>
-           <span class="at">{{item.commentTo}}</span>
-           <span class="content">{{item.commentContent}}</span>
-         </div>
-         <div class="comment-theme" @click="goStory(item.subId)">
-           <div class="left">
-             <img :src="item.coverImg" alt="">
-           </div>
-           <div class="right">
-             <div class="people">@{{item.subPeople}}</div>
-             <div class="story-content">
-               {{item.subContent}}
-             </div>
-           </div>
-         </div>
-       </div>
+      <notice title="评论消息"></notice>
+      <mt-loadmore :top-method="loadTop" class="my-creation-content" ref="loadmore"
+                   infinite-scroll-disabled = true
+                   infinite-scroll-distance = "10">
+        <div class="cm-content" v-for="(item, index) in commentList">
+          <div class="user">
+            <div class="head">
+              <img :src="item.peopleHead" alt="" @error="setErrorImg(index)" @click="goPeople(item.peopleId)">
+            </div>
+            <div class="info">
+              <div class="name" @click="goPeople(item.peopleId)">{{item.people}}</div>
+              <div class="date">{{item.date}}</div>
+            </div>
+            <div class="reply">
+              <span @click="goReply(item.commentId)">回复</span>
+            </div>
+          </div>
+          <div class="comment-content" @click="goComment(item.type, item.subId, item.commentId)">
+            <span class="word" v-if="item.type === 'comment'">回复</span>
+            <span class="at" v-if="item.type === 'comment'">@{{item.commentTo}}</span>
+            <span class="content">{{item.commentContent}}</span>
+          </div>
+          <div class="former-comment" v-if="item.type === 'comment'">
+            <span class="at">{{item.people}}</span>
+            <span class="word">回复</span>
+            <span class="at">{{item.commentTo}}</span>
+            <span class="content">{{item.commentContent}}</span>
+          </div>
+          <div class="comment-theme" @click="goStory(item.subId)">
+            <div class="left">
+              <img :src="item.coverImg" alt="">
+            </div>
+            <div class="right">
+              <div class="people">@{{item.subPeople}}</div>
+              <div class="story-content">
+                {{item.subContent}}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="blank"></div>
+      </mt-loadmore>
     </div>
 </template>
 <script>
+  import notice from '../../notice/notice'
   import Axios from 'axios'
   import { Toast } from 'mint-ui'
   export default {
     name: 'cm',
+    components: {
+      notice
+    },
     data () {
       return {
         commentList: []
@@ -50,8 +60,16 @@
     },
     created: function () {
       this.getData()
+      this.changeReadState()
     },
     methods: {
+      loadTop () {
+        this.getData()
+        this.$refs.loadmore.onTopLoaded()
+      },
+      goReply (id) {
+        this.$router.push('/reply/' + id)
+      },
       goStory (id) {
         this.$router.push(`/story/${id}`)
       },
@@ -60,7 +78,22 @@
       },
       goComment (type, story, id) {
         if (type !== 'comment') {
-          this.$router.push(`/story/${story}/comment/#${id}`)
+          this.$router.push(`/story/${story}/comment#${id}`)
+        } else {
+          Axios.post('/comment/getMainId', {
+            story: story,
+            id: id
+          }).then(response => {
+            if (response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            } else {
+              this.$router.push(`/comment/${response.data.mainId}`)
+            }
+          })
         }
       },
       setErrorImg (x) {
@@ -79,6 +112,18 @@
               this.commentList = response.data.result
             }
           })
+      },
+      changeReadState () {
+        Axios.post('/comment/changeReadState')
+          .then(response => {
+            if (response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            }
+          })
       }
     }
   }
@@ -86,14 +131,18 @@
 
 <style lang="scss" scoped>
   @import "../../../scss/config";
+  @import "../../../scss/style.css";
   .cm {
     position: absolute;
-    z-index: 999;
+    z-index: 997;
     top: 0;
     left: 0;
     width: 100%;
     min-height: calc(100vh - 100px);
     background: $bg-gray;
+    .my-creation-content {
+      margin-top: 46px;
+    }
     .cm-content {
       width: 96%;
       margin: 0 auto;
@@ -207,6 +256,10 @@
           font-size: 12px;
         }
       }
+    }
+    .blank {
+      width: 100%;
+      height: 100px;
     }
   }
 </style>

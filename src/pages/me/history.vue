@@ -115,7 +115,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
+    min-height: calc(100vh - 42px);
     width: 100%;
     background: $bg-gray;
     @media (min-width: 768px) {
@@ -146,14 +146,14 @@
         }
         .title {
           border-bottom: 1px solid $line-gray;
-          font-size: 22px;
+          font-size: 20px;
           margin-left: 8px;
           padding-bottom: 8px;
           color: $font-dark;
         }
         .story-pack {
-          margin-top: 15px;
-          margin-bottom: 15px;
+          margin-top: 12px;
+          margin-bottom: 12px;
           .left {
             position: absolute;
             left: 15px;

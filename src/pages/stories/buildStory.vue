@@ -99,7 +99,7 @@
   @import "../../scss/style.css";
   @import "../../scss/cropper.css";
     .first-step {
-      height: 100%;
+      height: 100vh;
       width: 100%;
       background: white;
       .notice {           // 新建notice

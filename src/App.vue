@@ -1,11 +1,11 @@
 <template>
   <div id="app">
-    <transition name="slide-left">
+    <transition>
       <keep-alive>
         <router-view v-on:error="closeSelf" v-if="!errorPage && $route.meta.keepAlive"></router-view>
       </keep-alive>
     </transition>
-    <transition name="slide-left">
+    <transition>
       <router-view v-on:error="closeSelf" v-if="!errorPage && !$route.meta.keepAlive"></router-view>
     </transition>
     <ErrorPage v-if="errorPage"></ErrorPage>
@@ -45,6 +45,7 @@
     padding: 0;
     height: 100%;
   }
+  html { overflow-x: hidden; overflow-y: auto; }
   em {
     color: #FC464E;
     font-style: normal;
@@ -57,13 +58,12 @@
     position: absolute;
     top: 0;
     right: 0;
-    bottom: 0;
     left: 0;
+    bottom: 0;
     z-index: 2;
     max-width: 640px;
     margin: auto;
     font-size: 13px;
-    background: #fff;
     -webkit-tap-highlight-color: transparent;
   }
   @media (min-width: 768px) {
@@ -73,21 +73,5 @@
         max-width: 700px;
       }
     }
-  }
-  .fade-enter-active, .fade-leave-active {
-    transition: opacity .3s
-  }
-  .fade-enter, .fade-leave-to /* .fade-leave-active in below version 2.1.8 */ {
-    opacity: 0
-  }
-  .slide-left-enter, .slide-right-leave-active {
-    opacity: 0;
-    -webkit-transform: translate(380px, 0);
-    transform: translate(380px, 0);
-  }
-  .slide-left-leave-active, .slide-right-enter {
-    opacity: 0;
-    -webkit-transform: translate(-400px, 0);
-    transform: translate(-400px, 0);
   }
 </style>

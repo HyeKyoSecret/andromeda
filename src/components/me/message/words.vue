@@ -18,11 +18,12 @@
 <style lang='scss' scoped>
   @import "../../../scss/config";
   .word-template {
-    min-height: calc(100vh - 92px);
+    width: 100%;
+    min-height: calc(100vh - 140px);
     margin-top: 50px;
-    overflow: scroll;
     .content {
       min-height: 100px;
+      width: 100%;
       margin-bottom: 10px;
       background: white;
       display: flex;

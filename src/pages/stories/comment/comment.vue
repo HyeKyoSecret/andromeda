@@ -1,23 +1,23 @@
 <template>
   <div class="comment">
-    <notice title="评论1"></notice>
+    <notice title="评论"></notice>
     <div class="comment-number">
       评论（{{commentList.length}}）
     </div>
     <div class="all-comment">
-      <div class="one-comment" v-for="(item, index) in commentList" :id="index">
+      <article class="one-comment" v-for="(item, index) in commentList" :name="item.id" :key="item.id.toString()">
         <div class="critic-pic">
           <img :src="item.headImg" @error="setErrorImg(index)">
         </div>
         <div class="comment-content">
           <div class="critic-name">
-            <span class="critic">{{item.people}}</span>
+            <span class="critic">{{item.people}} {{item.id}}</span>
             <span class="to" v-if="item.commentTo">
               <img src="../../../img/icon/gray_triangle.png">
             </span>
             <span class="re-critic" v-if="item.commentTo">{{item.commentTo}}</span>
           </div>
-          <div class="content" :class="{notshow: commentList[index].notShow}" :id="item.id">
+          <div class="content" :class="{notshow: commentList[index].notShow}">
             {{item.content}}
           </div>
           <div class="information">
@@ -32,8 +32,8 @@
             <span class="showBtn" @click=goComment(item.id) v-if="item.subComment && item.subComment > 0">共{{item.subComment}}条评论 ></span>
           </div>
       </div>
-    </div>
-      <div class="blank" id="3"></div>
+    </article>
+      <div class="blank" id="2223333"></div>
     </div>
     <div class="comment-input">
       <textarea id="textArea" v-model="comment" rows="1" :placeholder="tempPlaceHolder" @focus="showButton"></textarea>
@@ -221,12 +221,14 @@
         toId: '',  // 回复的具体对象，
         mainId: '', // 回复的主对象
         author: '',
-        tempPlaceHolder: '写下你的评论。。。'
+        tempPlaceHolder: '写下你的评论。。。',
+        position: '',
+        jump: true
       }
     },
     computed: {
       commentCheck: function () {
-        if (this.comment.length > 0 && this.comment.length <= 160) {
+        if (this.comment.length > 0 && this.comment.length <= 140) {
           this.fakeSubmit = false
           return true
         } else {
@@ -236,10 +238,10 @@
     },
     watch: {
       comment: function () {
-        if (this.comment && this.comment.length > 160) {
+        if (this.comment && this.comment.length > 140) {
           Toast({
             position: 'middle',
-            message: `已超过最大字数` + (this.comment.length - 160) + '字',
+            message: `已超过最大字数` + (this.comment.length - 140) + '字',
             duration: 1000
           })
         }
@@ -250,16 +252,13 @@
     },
     created: function () {
       this.getData()
-      this.getPath()
+    },
+    beforeRouteEnter (to, from, next) {
+      next(vm => {
+        vm.position = to.hash.split('#')[1]
+      })
     },
     methods: {
-      getPath () {
-        // let sp = this.$route.path.split('/')
-        // let id
-        // if (sp.length === 5) {
-        //   id = sp[4]
-        // }
-      },
       goComment (id) {
         this.$router.push(`/comment/${id}`)
       },

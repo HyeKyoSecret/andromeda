@@ -71,11 +71,22 @@
     },
     computed: {
       commentCheck: function () {
-        if (this.comment.length > 0 && this.comment.length <= 160) {
+        if (this.comment.length > 0 && this.comment.length <= 140) {
           this.fakeSubmit = false
           return true
         } else {
           return false
+        }
+      }
+    },
+    watch: {
+      comment: function () {
+        if (this.comment && this.comment.length > 140) {
+          Toast({
+            position: 'middle',
+            message: `已超过最大字数` + (this.comment.length - 140) + '字',
+            duration: 1000
+          })
         }
       }
     },

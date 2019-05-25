@@ -653,4 +653,203 @@ router.get('/comment/commentDetails', (req, res) => {
     res.send({error: true, type: 'id', message: '找不到该评论'})
   }
 })
+router.post('/comment/getMainId', (req, res) => {
+  let story = req.body.story
+  let id = req.body.id
+  let mainId = ''
+  let exe = function () {
+    if (rootReg.test(story)) {
+      return Root
+    } else if (storyReg.test(story)) {
+      return Story
+    }
+  }
+  exe().findOne({id: story})
+    .populate('comment')
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误'})
+      } else {
+        for (let i = 0; i < doc.comment.length; i++) {
+          if (mainId.length === 0) {
+            if (doc.comment[i].subComment) {
+              for (let j = 0; j < doc.comment[i].subComment.length; j++) {
+                if (doc.comment[i].subComment[j].toString() === id.toString()) {
+                  mainId = doc.comment[i]._id
+                  break
+                }
+              }
+            }
+          } else {
+            break
+          }
+        }
+        res.send({error: false, mainId: mainId})
+      }
+    })
+})
+router.post('/comment/replyComment', (req, res) => {
+  let commentId = req.body.commentId
+  let toId
+  let content = req.body.content
+  let user
+  let mainId = ''
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  let exe = function (story) {
+    if (rootReg.test(story)) {
+      return Root
+    } else if (storyReg.test(story)) {
+      return Story
+    }
+  }
+  if (commentId.length === 24) {
+    toId = mongoose.Types.ObjectId(commentId)
+  }
+  User.findOne({username: user})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+      } else {
+        if (doc) {
+          Comment.findOne({_id: toId})
+            .populate('people')
+            .exec((err2, cm) => {
+              if (err2) {
+                res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+              } else {
+                if (cm) {
+                  exe(cm.about).findOne({id: cm.about})
+                    .populate('comment')
+                    .exec((err3, story) => {
+                      if (err3) {
+                        res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                      } else {
+                        if (story) {
+                          for (let i = 0; i < story.comment.length; i++) {
+                            if (mainId.length === 0) {
+                              if (story.comment[i].subComment) {
+                                for (let j = 0; j < story.comment[i].subComment.length; j++) {
+                                  if (story.comment[i].subComment[j].toString() === toId.toString()) {
+                                    mainId = story.comment[i]._id
+                                    break
+                                  }
+                                }
+                              }
+                            } else {
+                              break
+                            }
+                          }
+                          let newComment = new Comment({
+                            people: doc._id,
+                            about: cm.about,
+                            content: content,
+                            commentTo: toId || null
+                          })
+                          newComment.save((err4, comment) => {
+                            if (err4) {
+                              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                            } else {
+                              exe(cm.about).updateOne({id: cm.about}, {$addToSet: { comment: comment._id }})
+                                .exec(err5 => {
+                                  if (err5) {
+                                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                  } else {
+                                    if (mainId) {
+                                      mainId = mongoose.Types.ObjectId(mainId)
+                                      Comment.updateOne({_id: mainId}, {$addToSet: {subComment: comment._id}})
+                                        .exec(err7 => {
+                                          if (err7) {
+                                            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                          } else {
+                                            if (cm.people.username === user) {
+                                              res.send({error: false, message: '评论成功'})
+                                            } else {
+                                              User.updateOne({username: cm.people.username}, {$addToSet: {commentFrom: { comment: comment._id }}})
+                                                .exec(err6 => {
+                                                  if (err6) {
+                                                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                                  } else {
+                                                    res.send({error: false, message: '评论成功'})
+                                                  }
+                                                })
+                                            }
+                                          }
+                                        })
+                                    } else {
+                                      // 当前toId 就是主评论
+                                      cm.subComment.push(comment._id)       // 向主评论添加本评论
+                                      if (cm.people.username === user) {
+                                        cm.save(err6 => {
+                                          if (err6) {
+                                            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                          } else {
+                                            res.send({error: false, message: '评论成功'})
+                                          }
+                                        })
+                                      } else {
+                                        cm.save(err8 => {
+                                          if (err8) {
+                                            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                          } else {
+                                            User.updateOne({username: cm.people.username}, {$addToSet: {commentFrom: { comment: comment._id }}})
+                                              .exec(err9 => {
+                                                if (err9) {
+                                                  res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                                } else {
+                                                  res.send({error: false, message: '评论成功'})
+                                                }
+                                              })
+                                          }
+                                        })
+                                      }
+                                    }
+                                  }
+                                })
+                            }
+                          })
+                        }
+                      }
+                    })
+                } else {
+                  res.send({error: true, type: 'value', message: '发生错误'})
+                }
+              }
+            })
+        }
+      }
+    })
+})
+router.post('/comment/changeReadState', (req, res) => {
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  User.findOne({username: user})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'db', message: '发生错误'})
+      } else {
+        if (doc.commentFrom) {
+          let temp = doc.commentFrom
+          temp.forEach(item => {
+            item.readed = true
+          })
+          User.findOneAndUpdate({username: user}, {$set: {'commentFrom': temp}})
+            .exec((err2, x) => {
+              if (err2) {
+                res.send({error: true, type: 'db', message: '发生错误'})
+              } else {
+                res.send({error: false})
+              }
+            })
+        }
+      }
+    })
+})
 module.exports = router

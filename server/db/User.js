@@ -56,8 +56,16 @@ const UserSchema = new Schema({
   },
   subscribe: [
     {
-      type: Schema.Types.ObjectId,
-      ref: 'StoryRoot'
+      root: {
+        type: Schema.Types.ObjectId,
+        ref: 'StoryRoot'
+      },
+      new: [
+        {
+          id: String,
+          readed: {type: Boolean, default: false}
+        }
+      ]
     }
   ],
   depth: [
@@ -91,7 +99,11 @@ const UserSchema = new Schema({
           type: Schema.Types.ObjectId,
           ref: 'User'
         },
-        state: { type: String, default: 'pending' }
+        state: { type: String, default: 'pending' },
+        readed: {
+          type: Boolean,
+          default: false
+        }
       }
     ],
     addFriend: [
@@ -101,7 +113,11 @@ const UserSchema = new Schema({
           type: Schema.Types.ObjectId,
           ref: 'User'
         },
-        state: { type: String, default: 'pending' }
+        state: { type: String, default: 'pending' },
+        readed: {
+          type: Boolean,
+          default: false
+        }
       }
     ]
   },

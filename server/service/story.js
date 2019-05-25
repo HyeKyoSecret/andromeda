@@ -729,8 +729,16 @@ router.post('/story/buildStory', (req, res) => {
                                               .exec((err7) => {
                                                 if (err7) {
                                                   res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
+                                                } else {
+                                                  Root.findOne({_id: mongoose.Types.ObjectId(nStory.root)})
+                                                    .exec((err8, storyRoot) => {
+                                                      if (err8) {
+                                                        res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
+                                                      } else {
+                                                        res.send({success: true, message: '发布成功'})
+                                                      }
+                                                    })
                                                 }
-                                                res.send({success: true, message: '发布成功'})
                                               })
                                           })
                                         })
@@ -1186,7 +1194,7 @@ router.get('/story/getSubscribe', (req, res) => {
           }
           if (user) {
             let result = user.subscribe.some((item) => {
-              return item.toString() === id.toString()
+              return item.root.toString() === id.toString()
             })
             res.send({login: true, success: true, result: result})
           } else {
@@ -1245,7 +1253,7 @@ router.post('/story/addSubscribe', (req, res) => {
             if (err2) {
               res.send({login: true, success: false})
             }
-            user.update({$addToSet: {'subscribe': root._id}})
+            user.update({$addToSet: {'subscribe': {'root': root._id}}})
               .exec((err3) => {
                 if (err3) {
                   res.send({login: true, success: false})
@@ -1311,7 +1319,7 @@ router.post('/story/cancelSubscribe', (req, res) => {
                 res.send({login: false, success: false})
               } else {
                 for (let i = 0; i < userId.subscribe.length; i++) {
-                  if (userId.subscribe[i].toString() === root._id.toString()) {
+                  if (userId.subscribe[i].root.toString() === root._id.toString()) {
                     userId.subscribe.splice(i, 1)
                     break
                   }

@@ -11,12 +11,12 @@
          </div>
        </div>
      </router-link>
-    <router-link tag="div" to='promote/cm' class="content">
+    <router-link tag="div" to='promote/sub' class="content">
       <div class="left-part">
         <img src="../../../img/icon/my_subscription.png" alt="">
       </div>
       <div class="right-part">
-        <div class="words">订阅内容</div>
+        <div class="words">订阅消息</div>
         <div class="new">
           <div class="point"></div>
         </div>
@@ -39,9 +39,9 @@
 <style lang='scss' scoped>
   @import "../../../scss/config";
   .promote-template{
-    margin-top:  42px;
+    margin-top:  48px;
     width: 100%;
-    min-height: calc(100vh - 132px);
+    min-height: calc(100vh - 140px);
     .content {
       width: 100%;
       height: 55px;

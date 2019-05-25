@@ -5,14 +5,13 @@
       <div class="button">
         <div v-for="(item,index) in btn">
           <router-link tag='span' :to='item.path' :class="item.className" replace>{{item.name}}</router-link>
-          <span class="newNum" :style="{left: 12.5 * (2*index + 1) + '%'}">{{item.newNum}}</span>
+          <span class="newNum" :style="{left: 12.5 * (2*index + 1) + '%'}" :class="{two: item.newNum > 9 && item.newNum < 100, three: item.newNum > 99}" v-if="item.newNum > 0">{{item.newNum < 99 ? item.newNum : '99+' }}</span>
         </div>
       </div>
     </div>
     <transition :name="transitionName">
       <router-view class="child-view"></router-view>
     </transition>
-    <foot-menu></foot-menu>
   </div>
 </template>
 <script>
@@ -29,7 +28,7 @@
             name: '留言',
             className: 'words',
             path: '/people/message/words',
-            newNum: 1
+            newNum: 11
           },
           {
             name: '请求',
@@ -41,16 +40,16 @@
             name: '通知',
             className: 'promote',
             path: '/people/message/promote',
-            newNum: 3
+            newNum: 4
           },
           {
             name: '公告',
             className: 'announcement',
             path: '/people/message/announcement',
-            newNum: 4
+            newNum: 444
           }
         ],
-        transitionName: 'slide-left'
+        transitionName: 'fade'
       }
     },
     components: {
@@ -92,6 +91,8 @@
                 let pathArray = this.btn[i].path.split('/people')
                 this.btn[i].path = `/people/${response.data.user}${pathArray[1]}`
               }
+              this.btn[1].newNum = response.data.result.request       // 设置未读消息数量
+              this.btn[2].newNum = response.data.result.promote       // 设置未读消息数量
             }
           })
       }
@@ -108,9 +109,8 @@
     min-height: calc(100vh - 42px);
     width: 100%;
     background: $bg-gray;
-    overflow: scroll;
     .button-bar {
-      z-index: 999;
+      z-index: 996;
       width: 100%;
       position: fixed;
       top: 42px;
@@ -126,6 +126,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        .newNum.two {
+          width: 20px;
+        }
+        .newNum.three {
+          width: 26px;
+        }
         .newNum {
           display: inline-block;
           color: white;
@@ -186,13 +192,13 @@
       }
     }
   }
-  .child-view {
-    position: absolute;
-    z-index: 200;
-    width:100%;
-    transition: all .3s cubic-bezier(.35,.2,.7,1);
-  }
-  .slide-right-enter-active,
+  /*.child-view {*/
+    /*position: absolute;*/
+    /*z-index: 200;*/
+    /*width:100%;*/
+    /*transition: all .3s cubic-bezier(.35,.2,.7,1);*/
+  /*}*/
+/*  .slide-right-enter-active,
   .slide-right-leave-active,
   .slide-left-enter-active,
   .slide-left-leave-active {
@@ -215,7 +221,7 @@
   .slide-left-leave-active {
     opacity: 0;
     transform: translate3d(-100%, 0, 0);
-  }
+  }*/
 
   @media (min-width: 768px) {
     .button-bar {

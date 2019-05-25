@@ -1,5 +1,6 @@
 <template>
     <div class="fc">
+      <notice title="好友验证"></notice>
       <div v-for='(item, index) in promoteList' class="promoteList">
         <div class="pr-content" v-if="item.vis">
           <mt-cell-swipe class='pr'
@@ -25,12 +26,14 @@
 
 <script>
   import Axios from 'axios'
+  import notice from '../../notice/notice'
   import blank from '../../blank/blank.vue'
   import { Toast, MessageBox } from 'mint-ui'
   export default {
     name: 'fc',
     components: {
-      blank
+      blank,
+      notice
     },
     data () {
       return {
@@ -109,14 +112,14 @@
   }
   .fc{
     position: absolute;
-    z-index: 999;
+    z-index: 997;
     top: 0;
     left: 0;
     width: 100%;
-    min-height: calc(100vh - 100px);
+    min-height: calc(100vh - 58px);
     background: $bg-gray;
   .promoteList {
-    margin-top: 5px;
+    margin-top: 50px;
   &:last-child {
      padding-bottom: 100px;
    }

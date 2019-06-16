@@ -6,7 +6,7 @@ export default [
   {
     path: '/',
     redirect: to => {
-      return '/discover'
+      return '/discover/selected'
     }
   },
   {
@@ -35,15 +35,23 @@ export default [
             children: [
               {
                 path: 'fc',
-                component: resolve => require(['../components/me/message/fc.vue'], resolve)
+                component: resolve => require(['../components/me/message/fc.vue'], resolve),
+                meta: { requiresAuth: true }
               },
               {
                 path: 'cm',
-                component: resolve => require(['../components/me/message/cm.vue'], resolve)
+                component: resolve => require(['../components/me/message/cm.vue'], resolve),
+                meta: { requiresAuth: true }
               },
               {
                 path: 'sub',
-                component: resolve => require(['../components/me/message/sub.vue'], resolve)
+                component: resolve => require(['../components/me/message/sub.vue'], resolve),
+                meta: { requiresAuth: true }
+              },
+              {
+                path: 'subMessage/:id',
+                component: resolve => require(['../components/me/message/rs.vue'], resolve),
+                meta: { requiresAuth: true }
               }
             ]
           },
@@ -88,15 +96,7 @@ export default [
       {
         path: 'history',
         component: resolve => require(['../pages/me/history.vue'], resolve),
-        meta: { requiresAuth: true, keepAlive: true },
-        beforeEnter: (to, from, next) => {
-          if (from.name === 'people') {
-            to.meta.keepAlive = false
-            next()
-          } else {
-            next()
-          }
-        }
+        meta: { requiresAuth: true, keepAlive: true }
       },
       {
         path: 'subscribe',
@@ -193,7 +193,29 @@ export default [
   {
     path: '/discover',
     component: resolve => require(['../pages/discover/discover.vue'], resolve),
-    meta: { keepAlive: false }
+    meta: { keepAlive: true },
+    children: [
+      {
+        path: 'selected/',
+        component: resolve => require(['../components/discover/selected.vue'], resolve),
+        meta: { requiresAuth: true, keepAlive: true }
+      },
+      {
+        path: 'focus/',
+        component: resolve => require(['../components/discover/focus.vue'], resolve),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'friend/',
+        component: resolve => require(['../components/discover/friend.vue'], resolve),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'fresh/',
+        component: resolve => require(['../components/discover/fresh.vue'], resolve),
+        meta: { requiresAuth: true }
+      }
+    ]
   },
   {
     path: '/start',

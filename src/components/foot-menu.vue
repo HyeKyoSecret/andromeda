@@ -5,7 +5,7 @@
       <div class="words">开始</div>
     </router-link>
     <div class="discovery">
-      <router-link tag='div' class="circle" to='/discover'>
+      <router-link tag='div' class="circle" to='/discover/selected'>
         <div class="f-discover"></div>
       </router-link>
     </div>
@@ -113,11 +113,26 @@
   }
 </style>
 <script>
+  import Axios from 'axios'
   export default {
     name: 'foot-menu',
     data () {
       return {
         existNewMessage: true
+      }
+    },
+    created: function () {
+      this.getData()
+    },
+    methods: {
+      getData () {
+        Axios.get('/user/getMessageData')
+          .then(response => {
+            if (!response.data.error) {
+              let doc = response.data.result
+              this.existNewMessage = (doc.words + doc.request + doc.promote + doc.announcement === 0)
+            }
+          })
       }
     }
   }

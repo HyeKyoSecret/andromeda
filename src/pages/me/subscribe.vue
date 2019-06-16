@@ -46,7 +46,7 @@
     left: 0;
     min-height: calc(100vh - 42px);
     width: 100%;
-    margin-top: 42px;
+    margin-top: 40px;
     background: $bg-gray;
     .show-story {
       margin: 20px auto 0 auto;

@@ -16,7 +16,7 @@
             <div class="root-list" @click="showDetails(index, index2)">
               <div class="circle"></div>
               <div class="package">
-                <div class="root-cover"><img :src="rootPack.coverImg" alt=""></div>
+                <div class="root-cover"><img :src="rootPack.coverImg" alt="" @error="setErrorImg(index, index2)"></div>
                 <div class="root-name">{{rootPack.rootId}}</div>
                 <div class="records">
                   <div><img src="../../img/icon/records.png" alt=""></div>
@@ -105,6 +105,9 @@
       },
       goStory (id) {
         this.$router.push('/story/' + id)
+      },
+      setErrorImg (i, j) {
+        this.history[i].rootPack[j].coverImg = require('../../img/photo/defaultPic.png')
       }
     }
   }

@@ -55,7 +55,7 @@ router.post('/story/buildRoot', (req, res) => {
   if (author) {
     form.parse(req, function (err, fields, files) {
       if (err) {
-        console.log(err)
+        res.send({permit: false, message: '发生错误,请稍后再试'})
       } else {
         let fileName
         if (files.file) {
@@ -72,8 +72,11 @@ router.post('/story/buildRoot', (req, res) => {
           content: fields.content,
           // content: rootContent.replace(/\$/g, '&dl').replace(/</g, '&lt').replace(/>/g, '&gt'),
           writePermit: fields.writePermit,
-          recommend: fields.recommend,
-          coverImg: savePath
+          coverImg: savePath,
+          recommend: []
+        }
+        for (let i = 0; i < fields.recommendLength; i++) {
+          rootStory.recommend.push(fields[`recommend[${i}]`])
         }
         User.findOne({username: author}, (err, user) => {
           'use strict'
@@ -84,7 +87,7 @@ router.post('/story/buildRoot', (req, res) => {
             Root.findOne({name: rootStory.name})
               .exec((err2, oldRoot) => {
                 if (err2) {
-                  console.log(err2)
+                  res.send({permit: false, message: '服务器忙，请稍后再试'})
                 } else {
                   if (oldRoot) {
                     res.send({permit: false, message: '故事名重复'})
@@ -92,7 +95,6 @@ router.post('/story/buildRoot', (req, res) => {
                     let newRoot = new Root(rootStory)
                     newRoot.save((err3, root) => {
                       if (err3) {
-                        console.log(err3)
                         res.send({permit: false, message: '服务器忙，请稍后再试'})
                       } else {
                         user.update({$push: {'myCreation.root': root._id}})
@@ -105,10 +107,10 @@ router.post('/story/buildRoot', (req, res) => {
                                 if (saveError) {
                                   res.send({permit: false, message: '发生错误，请稍后再试'})
                                 } else {
-                                  if (rootStory.recommend) {
+                                  if (rootStory.recommend.length > 0) {
                                     for (let i = 0; i < rootStory.recommend.length; i++) {
-                                      User.update({id: rootStory.recommend[i].id}, {$push:
-                                          {'promote': {'description': 'recommend', 'content_1': author, 'content_2': '向您推荐了', 'content_3': root.name, 'content_4': root.id}}
+                                      User.update({id: rootStory.recommend[i]}, {$push:
+                                          {'promote': {'description': 'recommend', 'content_1': user.nickname, 'content_2': '向您推荐了', 'content_3': root.name, 'content_4': root.id}}
                                       }).exec((err) => {
                                         if (err) {
                                           res.send({permit: false, message: '服务器忙，请稍后再试'})
@@ -120,7 +122,8 @@ router.post('/story/buildRoot', (req, res) => {
                                                 res.send({permit: false, type: 'gm', message: '发生错误'})
                                               } else {
                                                 copyIt(thumbSavePath, usePath)     // 拷贝文件
-                                                res.send({permit: true, message: '发布成功'})                                              }
+                                                res.send({permit: true, message: '发布成功', id: root.id})
+                                              }
                                             })
                                         }
                                       })
@@ -132,7 +135,8 @@ router.post('/story/buildRoot', (req, res) => {
                                           res.send({permit: false, type: 'gm', message: '发生错误'})
                                         } else {
                                           copyIt(thumbSavePath, usePath)     // 拷贝文件
-                                          res.send({permit: true, message: '发布成功'})                                              }
+                                          res.send({permit: true, message: '发布成功', id: root.id})
+                                        }
                                       })
                                   }
                                 }
@@ -681,6 +685,68 @@ router.post('/story/buildStory', (req, res) => {
   let story = {
     content: content
   }
+  let sendSuccess = function (rootId, storyId) {    // 向故事的订阅人推送消息
+    Root.findOne({_id: rootId})
+      .populate('subscribe')
+      .exec((err, root) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+        } else {
+          if (root.subscribe.length === 0) {
+            res.send({error: false, success: true, message: '发布成功'})
+          } else {
+            try {
+              for (let i = 0; i < root.subscribe.length; i++) {
+                User.findOne({username: root.subscribe[i].username})
+                  .exec((err, user) => {
+                    if (err) {
+                      res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                    } else {
+                      Story.findOne({_id: storyId})
+                        .populate('author')
+                        .exec((err, story) => {
+                          if (err) {
+                            res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                          } else {
+                            if (story.author.username !== user.username) {
+                              // 不向自己推送
+                              let mySubscribe = user.subscribe
+                              mySubscribe.forEach(item => {
+                                if (item.root.toString === rootId.toString) {
+                                  item.new.push({
+                                    id: storyId
+                                  })
+                                }
+                              })
+                              User.updateOne({username: root.subscribe[i].username}, {$set: {subscribe: mySubscribe}})
+                                .exec(err2 => {
+                                  if (err2) {
+                                    res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+                                  } else {
+                                    if (i === root.subscribe.length - 1) {
+                                      res.send({error: false, success: true, message: '发布成功'})
+                                    }
+                                  }
+                                })
+                            } else {
+                              if (i === root.subscribe.length - 1) {
+                                res.send({error: false, success: true, message: '发布成功'})
+                              }
+                            }
+                          }
+                        })
+                    }
+                  })
+              }
+            } catch (e) {
+              if (e) {
+                res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+              }
+            }
+          }
+        }
+      })
+  }
   User.findOne({username: author})
     .exec((err, user) => {
       if (err) {
@@ -730,14 +796,7 @@ router.post('/story/buildStory', (req, res) => {
                                                 if (err7) {
                                                   res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                                 } else {
-                                                  Root.findOne({_id: mongoose.Types.ObjectId(nStory.root)})
-                                                    .exec((err8, storyRoot) => {
-                                                      if (err8) {
-                                                        res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
-                                                      } else {
-                                                        res.send({success: true, message: '发布成功'})
-                                                      }
-                                                    })
+                                                  sendSuccess(nStory.root, doc._id)
                                                 }
                                               })
                                           })
@@ -765,7 +824,7 @@ router.post('/story/buildStory', (req, res) => {
                                           if (err7) {
                                             res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                           }
-                                          res.send({success: true, message: '发布成功'})
+                                          sendSuccess(root._id, story._id)
                                         })
                                     })
                                   })
@@ -800,7 +859,7 @@ router.post('/story/buildStory', (req, res) => {
                               if (err7) {
                                 res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                               }
-                              res.send({success: true, message: '发布成功'})
+                              sendSuccess(root._id, doc._id)
                             })
                         })
                       })
@@ -846,7 +905,7 @@ router.post('/story/buildStory', (req, res) => {
                                                   if (err7) {
                                                     res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                                   }
-                                                  res.send({success: true, message: '发布成功'})
+                                                  sendSuccess(nStory.root, doc._id)
                                                 })
                                             })
                                           })
@@ -873,7 +932,7 @@ router.post('/story/buildStory', (req, res) => {
                                             if (err7) {
                                               res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                             }
-                                            res.send({success: true, message: '发布成功'})
+                                            sendSuccess(story.root, doc._id)
                                           })
                                       })
                                     })
@@ -908,7 +967,7 @@ router.post('/story/buildStory', (req, res) => {
                                 if (err7) {
                                   res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                 }
-                                res.send({success: true, message: '发布成功'})
+                                sendSuccess(odstory.root, doc._id)
                               })
                           })
                         })
@@ -1353,6 +1412,7 @@ router.get('/story/getDefaultDiscovery', (req, res) => {
       path: 'author'
     })
     .limit(8)
+    .sort({'date': -1})
     .skip(existLength)
     .exec((err, root) => {
       if (err) {
@@ -1375,6 +1435,186 @@ router.get('/story/getDefaultDiscovery', (req, res) => {
           res.send({result: result})
         }
       } else {
+        res.send({result: result})
+      }
+    })
+})
+router.get('/story/getFocusDiscovery', (req, res) => {
+  let user
+  let result = []
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  let temp = []
+  let existLength = req.query.storyLength * 8
+  function bubbleSort (arr) {   // 排序算法，从大到小
+    for (let i = 0; i < arr.length - 1; i++) {
+      for (let j = 0; j < arr.length - 1 - i; j++) {
+        if (arr[j]['timeStamp'] < arr[j + 1]['timeStamp']) {
+          let tmp = arr[j]
+          arr[j] = arr[j + 1]
+          arr[j + 1] = tmp
+        }
+      }
+    }
+    return arr
+  }
+  User.findOne({username: user})
+    .populate({
+      path: 'focus',
+      populate: {
+        path: 'myCreation.root'
+      }
+    })
+    .populate({
+      path: 'focus',
+      populate: {
+        path: 'myCreation.story',
+        populate: {
+          path: 'root'
+        }
+      }
+    })
+    .populate({
+      path: 'focus',
+      populate: {
+        path: 'myCreation.story',
+        populate: {
+          path: 'author'
+        }
+      }
+    })
+    .populate({
+      path: 'focus',
+      populate: {
+        path: 'myCreation.root',
+        populate: {
+          path: 'author'
+        }
+      }
+    })
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+      } else {
+        for (let i = 0; i < doc.focus.length; i++) {
+          for (let j = 0; j < doc.focus[i].myCreation.root.length; j++) {
+            temp.push({
+              storyName: doc.focus[i].myCreation.root[j].name,
+              content: doc.focus[i].myCreation.root[j].content,
+              author: doc.focus[i].myCreation.root[j].author.nickname,
+              date: moment(doc.focus[i].myCreation.root[j].date).format('YYYY.MM.DD HH:mm'),
+              path: doc.focus[i].myCreation.root[j].id,
+              cover: tool.formImg(doc.focus[i].myCreation.root[j].coverImg),
+              timeStamp: doc.focus[i].myCreation.root[j].date.getTime()
+            })
+          }
+          for (let j = 0; j < doc.focus[i].myCreation.story.length; j++) {
+            temp.push({
+              storyName: doc.focus[i].myCreation.story[j].root.name,
+              content: doc.focus[i].myCreation.story[j].content,
+              author: doc.focus[i].myCreation.story[j].author.nickname,
+              date: moment(doc.focus[i].myCreation.story[j].date).format('YYYY.MM.DD HH:mm'),
+              path: doc.focus[i].myCreation.story[j].id,
+              cover: tool.formImg(doc.focus[i].myCreation.story[j].root.coverImg),
+              timeStamp: doc.focus[i].myCreation.story[j].date.getTime()
+            })
+          }
+        }
+        bubbleSort(temp)
+        result = temp.slice(existLength, existLength + 8)
+        res.send({result: result})
+      }
+    })
+})
+router.get('/story/getFriendDiscovery', (req, res) => {
+  let user
+  let result = []
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  let temp = []
+  let existLength = req.query.storyLength * 8
+  function bubbleSort (arr) {   // 排序算法，从大到小
+    for (let i = 0; i < arr.length - 1; i++) {
+      for (let j = 0; j < arr.length - 1 - i; j++) {
+        if (arr[j]['timeStamp'] < arr[j + 1]['timeStamp']) {
+          let tmp = arr[j]
+          arr[j] = arr[j + 1]
+          arr[j + 1] = tmp
+        }
+      }
+    }
+    return arr
+  }
+  User.findOne({username: user})
+    .populate({
+      path: 'friendList.friend',
+      populate: {
+        path: 'myCreation.root'
+      }
+    })
+    .populate({
+      path: 'friendList.friend',
+      populate: {
+        path: 'myCreation.story',
+        populate: {
+          path: 'root'
+        }
+      }
+    })
+    .populate({
+      path: 'friendList.friend',
+      populate: {
+        path: 'myCreation.story',
+        populate: {
+          path: 'author'
+        }
+      }
+    })
+    .populate({
+      path: 'friendList.friend',
+      populate: {
+        path: 'myCreation.root',
+        populate: {
+          path: 'author'
+        }
+      }
+    })
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+      } else {
+        for (let i = 0; i < doc.friendList.length; i++) {
+          for (let j = 0; j < doc.friendList[i].friend.myCreation.root.length; j++) {
+            temp.push({
+              storyName: doc.friendList[i].friend.myCreation.root[j].name,
+              content: doc.friendList[i].friend.myCreation.root[j].content,
+              author: doc.friendList[i].friend.myCreation.root[j].author.nickname,
+              date: moment(doc.friendList[i].friend.myCreation.root[j].date).format('YYYY.MM.DD HH:mm'),
+              path: doc.friendList[i].friend.myCreation.root[j].id,
+              cover: tool.formImg(doc.friendList[i].friend.myCreation.root[j].coverImg),
+              timeStamp: doc.friendList[i].friend.myCreation.root[j].date.getTime()
+            })
+          }
+          for (let j = 0; j < doc.friendList[i].friend.myCreation.story.length; j++) {
+            temp.push({
+              storyName: doc.friendList[i].friend.myCreation.story[j].root.name,
+              content: doc.friendList[i].friend.myCreation.story[j].content,
+              author: doc.friendList[i].friend.myCreation.story[j].author.nickname,
+              date: moment(doc.friendList[i].friend.myCreation.story[j].date).format('YYYY.MM.DD HH:mm'),
+              path: doc.friendList[i].friend.myCreation.story[j].id,
+              cover: tool.formImg(doc.friendList[i].friend.myCreation.story[j].root.coverImg),
+              timeStamp: doc.friendList[i].friend.myCreation.story[j].date.getTime()
+            })
+          }
+        }
+        bubbleSort(temp)
+        result = temp.slice(existLength, existLength + 8)
         res.send({result: result})
       }
     })
@@ -2804,5 +3044,56 @@ router.get('/story/getMark', (req, res) => {
     }
   }
   exe()
+})
+router.post('/story/checkWritePermit', (req, res) => {
+  let user
+  let story = req.body.id
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (rootReg.test(story)) {
+    Root.findOne({id: story})
+      .populate('author')
+      .exec((err, root) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+        } else {
+          if (root.writePermit) {
+            res.send({error: false})
+          } else {
+            if (root.author.username === user) {
+              res.send({error: false})
+            } else {
+              res.send({error: true, type: 'DB', message: '故事被设置为不可续写'})
+            }
+          }
+        }
+      })
+  } else if (storyReg.test(story)) {
+    Story.findOne({id: story})
+      .populate({
+        path: 'root',
+        populate: {
+          path: 'author'
+        }
+      })
+      .exec((err, doc) => {
+        if (err) {
+          res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+        } else {
+          if (doc && doc.root.writePermit) {
+            res.send({error: false})
+          } else {
+            if (doc && doc.root && doc.root.author && doc.root.author.username === user) {
+              res.send({error: false})
+            } else {
+              res.send({error: true, type: 'auth', message: '故事被设置为不可续写'})
+            }
+          }
+        }
+      })
+  }
 })
 module.exports = router

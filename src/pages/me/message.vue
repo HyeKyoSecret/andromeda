@@ -28,25 +28,25 @@
             name: '留言',
             className: 'words',
             path: '/people/message/words',
-            newNum: 11
+            newNum: 0
           },
           {
             name: '请求',
             className: 'request',
             path: '/people/message/request',
-            newNum: 2
+            newNum: 0
           },
           {
             name: '通知',
             className: 'promote',
             path: '/people/message/promote',
-            newNum: 4
+            newNum: 0
           },
           {
             name: '公告',
             className: 'announcement',
             path: '/people/message/announcement',
-            newNum: 444
+            newNum: 0
           }
         ],
         transitionName: 'fade'
@@ -182,7 +182,7 @@
           line-height: 22px;
           span {
             display: inline-block;
-            width: 48px;
+            width: 60px;
             height: 33px;
             box-sizing: border-box;
             color: $w-gray;

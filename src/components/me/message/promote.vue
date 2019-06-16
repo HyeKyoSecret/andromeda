@@ -6,7 +6,7 @@
        </div>
        <div class="right-part">
          <div class="words">好友验证</div>
-         <div class="new">
+         <div class="new" v-if="state.friend">
            <div class="point"></div>
          </div>
        </div>
@@ -17,7 +17,7 @@
       </div>
       <div class="right-part">
         <div class="words">订阅消息</div>
-        <div class="new">
+        <div class="new" v-if="state.subscribe">
           <div class="point"></div>
         </div>
       </div>
@@ -28,7 +28,7 @@
       </div>
       <div class="right-part">
         <div class="words">评论</div>
-        <div class="new">
+        <div class="new" v-if="state.comment">
           <div class="point"></div>
         </div>
       </div>
@@ -78,8 +78,6 @@
       }
     }
   }
-
-
 </style>
 <script>
   import Axios from 'axios'
@@ -88,7 +86,17 @@
     name: 'promote',
     data () {
       return {
-        promoteList: []
+        promoteList: [],
+        state: {
+          comment: false,
+          subscribe: false,
+          friend: false
+        }
+      }
+    },
+    watch: {
+      '$route': function () {
+        this.getData()
       }
     },
     created: function () {
@@ -122,7 +130,18 @@
           })
       },
       getData () {
-        //
+        Axios.get('/user/getPromoteState')
+          .then(response => {
+            if (response.data.error) {
+              Toast({
+                message: '发生错误',
+                position: 'middle',
+                duration: 1000
+              })
+            } else {
+              this.state = response.data.result
+            }
+          })
       }
     }
   }

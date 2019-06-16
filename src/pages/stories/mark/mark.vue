@@ -1,15 +1,17 @@
 <template>
     <div class="mark">
       <notice title="书签"></notice>
-      <div class="one-mark" v-for="item in mark" @click="goStory(item.id)">
+      <div class="one-mark" v-for="item in mark" @click="goStory(item.id)" v-if="mark.length">
         <div class="markId">{{item.id}}</div>
         <div class="markContent">{{item.content}}</div>
         <div class="markDate">添加时间： {{item.date}}</div>
       </div>
+      <blank v-if="!mark.length"></blank>
     </div>
 </template>
 <script>
   import notice from '../../../components/notice/notice.vue'
+  import blank from '../../../components/blank/blank.vue'
   import Axios from 'axios'
   import { Toast } from 'mint-ui'
   export default {
@@ -18,6 +20,10 @@
         mark: [],
         id: this.$route.params.id
       }
+    },
+    components: {
+      notice,
+      blank
     },
     methods: {
       getData () {
@@ -43,9 +49,6 @@
     },
     created: function () {
       this.getData()
-    },
-    components: {
-      notice
     }
   }
 </script>

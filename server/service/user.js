@@ -386,7 +386,19 @@ router.get('/user/getMessageData', (req, res) => {
       if (duser) {
         for (let i = 0; i < duser.commentFrom.length; i++) {
           if (!duser.commentFrom[i].readed) {
-            result.promote ++        // 通知数量（只记录了评论通知）
+            result.promote ++        // 通知数量 评论
+          }
+        }
+        for (let i = 0; i < duser.subscribe.length; i++) {
+          for (let j = 0; j < duser.subscribe[i].new.length; j++) {
+            if (!duser.subscribe[i].new[j].readed) {
+              result.promote ++     // 通知数量 订阅
+            }
+          }
+        }
+        for (let i = 0; i < duser.promote.length; i++) {
+          if (!duser.promote[i].readed) {
+            result.promote ++       // 通知数量 好友验证
           }
         }
         if (duser.pending && duser.pending.request) {
@@ -401,6 +413,11 @@ router.get('/user/getMessageData', (req, res) => {
             if (!duser.pending.addFriend[i].readed) {
               result.request ++
             }
+          }
+        }
+        for (let i = 0; i < duser.announcement.length; i++) {
+          if (!duser.announcement.readed) {
+            result.announcement ++
           }
         }
         res.send({error: false, user: duser.id, result: result})
@@ -465,6 +482,7 @@ router.post('/user/delPendingReq', (req, res) => {
 })
 router.get('/user/getPromote', (req, res) => {
   let user
+  let temp
   let result = []
   if (req.session.user) {
     user = req.session.user
@@ -472,24 +490,37 @@ router.get('/user/getPromote', (req, res) => {
     user = req.cookies.And.user
   }
   User.findOne({username: user})
-    .exec((err, user) => {
+    .exec((err, doc) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
       } else {
-        if (user) {
-          for (let i = 0; i < user.promote.length; i++) {
+        if (doc) {
+          for (let i = 0; i < doc.promote.length; i++) {
             result.push({
-              id: user.promote[i]._id,
-              content_1: user.promote[i].content_1,
-              content_2: user.promote[i].content_2,
-              content_3: user.promote[i].content_3,
-              content_4: user.promote[i].content_4,
-              description: user.promote[i].description,
-              date: moment(user.promote[i].date).fromNow(),
+              id: doc.promote[i]._id,
+              content_1: doc.promote[i].content_1,
+              content_2: doc.promote[i].content_2,
+              content_3: doc.promote[i].content_3,
+              content_4: doc.promote[i].content_4,
+              description: doc.promote[i].description,
+              date: moment(doc.promote[i].date).fromNow(),
               vis: true
             })
           }
-          res.send({error: false, result: result})
+          temp = doc.promote
+          temp.forEach(item => {
+            if (!item.readed) {
+              item.readed = true
+            }
+          })
+          User.updateOne({username: user}, {$set: {'promote': temp}})
+            .exec(err => {
+              if (err) {
+                res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+              } else {
+                res.send({error: false, result: result})
+              }
+            })
         }
       }
     })
@@ -1802,5 +1833,228 @@ router.post('/user/clearSearchHistory', (req, res) => {
     res.cookie('AndSH', {sh: []}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
     res.send({error: false})
   }
+})
+router.get('/user/getSubscribeMessage', (req, res) => {
+  let user
+  let result = []
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  User.findOne({username: user})
+    .populate('subscribe.root')
+    .populate('subscribe.new.id')
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+      } else {
+        for (let i = 0; i < doc.subscribe.length; i++) {
+          let count = 0
+          let temp = []
+          for (let j = 0; j < doc.subscribe[i].new.length; j++) {
+            if (!doc.subscribe[i].new[j].readed) {
+              count++
+              temp.push(doc.subscribe[i].new[j])
+            }
+          }
+          temp.reverse()    // 倒序
+          result.push({
+            id: doc.subscribe[i].root.id,
+            name: doc.subscribe[i].root.name,
+            words: temp.length ? temp[0].id.content : doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.content,
+            notReaded: count,
+            date: temp.length ? moment(temp[0].id.date).fromNow() : moment(doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.date).fromNow()
+          })
+        }
+        res.send({error: false, result: result})
+      }
+    })
+})
+router.get('/user/getRs', (req, res) => {
+  let id = req.query.id
+  let user
+  let temp = []
+  let result = []
+  let notReaded = []
+  let readed = []
+  function bubbleSort (arr) {   // 排序算法，从大到小
+    for (let i = 0; i < arr.length - 1; i++) {
+      for (let j = 0; j < arr.length - 1 - i; j++) {
+        if (arr[j]['timeStamp'] < arr[j + 1]['timeStamp']) {
+          let tmp = arr[j]
+          arr[j] = arr[j + 1]
+          arr[j + 1] = tmp
+        }
+      }
+    }
+    return arr
+  }
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  User.findOne({username: user})
+    .populate('subscribe.root')
+    .populate('subscribe.new.id')
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+      } else {
+        for (let i = 0; i < doc.subscribe.length; i++) {
+          if (doc.subscribe[i].root.id === id) {
+            for (let j = 0; j < doc.subscribe[i].new.length; j++) {
+              temp.push({
+                title: doc.subscribe[i].root.name,
+                storyId: doc.subscribe[i].new[j].id._id,
+                rootId: doc.subscribe[i].root._id,
+                id: doc.subscribe[i].new[j].id.id,
+                content: doc.subscribe[i].new[j].id.content,
+                zan: doc.subscribe[i].new[j].id.zan ? doc.subscribe[i].new[j].id.zan.length : 0,
+                date: moment(doc.subscribe[i].new[j].id.date).format('lll'),
+                readed: doc.subscribe[i].new[j].readed,
+                timeStamp: doc.subscribe[i].new[j].id.date.getTime()
+              })
+            }
+          }
+        }
+        temp.forEach(item => {
+          if (item.readed) {
+            readed.push(item)
+          } else {
+            notReaded.push(item)
+          }
+        })
+        bubbleSort(notReaded)
+        bubbleSort(readed)
+        result = notReaded.concat(readed)
+        res.send({error: false, result: result})
+      }
+    })
+})
+router.post('/user/changeReadState', (req, res) => {
+  let user
+  const storyId = req.body.id
+  const rootId = req.body.rootId
+  let temp
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  User.findOne({username: user})
+    .populate('subscribe.root')
+    .populate('subscribe.new.id')
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+      } else {
+        if (doc) {
+          temp = doc.subscribe
+          for (let i = 0; i < temp.length; i++) {
+            if (temp[i].root._id.toString() === rootId.toString()) {
+              for (let j = 0; j < temp[i].new.length; j++) {
+                if (temp[i].new[j].id._id.toString() === storyId.toString()) {
+                  temp[i].new[j].readed = true
+                }
+              }
+            }
+          }
+          console.log(JSON.stringify(temp))
+          User.updateOne({username: user}, {$set: {'subscribe': temp}})
+            .exec(err2 => {
+              if (err2) {
+                res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+              } else {
+                res.send({error: false})
+              }
+            })
+        }
+      }
+    })
+})
+router.get('/user/getPromoteState', (req, res) => {
+  let user
+  let flag = false
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  let result = {
+    comment: false,
+    subscribe: false,
+    friend: false
+  }
+  User.findOne({username: user})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: false, message: '发生错误，请稍后再试'})
+      } else {
+        result.comment = doc.commentFrom.some(function (item) {    // 评论消息
+          return !item.readed
+        })
+        for (let i = 0; i < doc.subscribe.length; i++) {
+          if (!flag) {
+            for (let j = 0; j < doc.subscribe[i].new.length; j++) {   // 订阅消息
+              if (!doc.subscribe[i].new[j].readed) {
+                result.subscribe = true
+                flag = true
+                break
+              }
+            }
+          } else {
+            break
+          }
+        }
+        result.friend = doc.promote.some(function (item) {  // 好友消息
+          return !item.readed
+        })
+        res.send({error: false, result: result})
+      }
+    })
+})
+router.get('/user/getAnnouncement', (req, res) => {
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  let temp
+  let result = []
+  User.findOne({username: user})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+      } else {
+        if (doc.announcement.length) {
+          temp = doc.announcement
+          for (let i = 0; i < doc.announcement.length; i++) {
+            result.push({
+              title: doc.announcement[i].title,
+              content: doc.announcement[i].content,
+              date: moment(doc.announcement[i].date).format('lll'),
+              img: tool.formImg(doc.announcement[i].img)
+            })
+          }
+          temp.forEach(item => {
+            item.readed = true
+          })
+          result.reverse()
+          User.updateOne({username: user}, {$set: {'announcement': temp}})
+            .exec(err2 => {
+              if (err2) {
+                res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+              } else {
+                res.send({error: false, result: result})
+              }
+            })
+        } else {
+          res.send({error: false, result: []})
+        }
+      }
+    })
 })
 module.exports = router

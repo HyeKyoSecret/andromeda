@@ -378,12 +378,12 @@
             name: '的关注',
             icon: require('../../img/icon/my_focus.png'),
             path: '/people/focusList'
-          },
-          {
-            name: '共同好友',
-            icon: require('../../img/icon/my_friend.png'),
-            path: '/people/message/words'
           }
+          // {
+          //   name: '共同好友',
+          //   icon: require('../../img/icon/my_friend.png'),
+          //   path: '/people/message/words'
+          // }
         ],
         sex: '',
         tempOperation: [],

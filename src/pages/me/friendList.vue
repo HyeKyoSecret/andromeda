@@ -46,7 +46,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    min-height: calc(100vh - 90px);
+    min-height: 100%;
     width: 100%;
     background: $bg-gray;
     margin-top: 42px;

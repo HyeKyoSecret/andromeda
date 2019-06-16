@@ -62,7 +62,10 @@ const UserSchema = new Schema({
       },
       new: [
         {
-          id: String,
+          id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Story'
+          },
           readed: {type: Boolean, default: false}
         }
       ]
@@ -182,7 +185,16 @@ const UserSchema = new Schema({
   fontSize: {
     type: String,
     default: '正常'
-  }
+  },
+  announcement: [{
+    title: String,
+    img: String,
+    content: String,
+    date: {
+      type: Date,
+      default: Date.now()
+    }
+  }]
 }, {timestamps: {createdAt: 'created', updatedAt: 'updated'}})
 UserSchema.pre('save', function (next) {
   'use strict'

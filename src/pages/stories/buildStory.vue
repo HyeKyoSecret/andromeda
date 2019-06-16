@@ -90,8 +90,6 @@
         </mt-progress>
       </story-recommend>
     </div>
-    <div class="lalala">
-    </div>
   </div>
 </template>
 <style lang="scss" scoped>
@@ -391,7 +389,8 @@
         fileExt: '',      // 封面图片后缀名
         coverErrorMessage: '',
         buildPermit: true,
-        percent: 0
+        percent: 0,
+        recommend: []   //  推荐列表
       }
     },
     computed: {
@@ -588,13 +587,15 @@
             this.rootNameCheck = true
           }
         }).catch((err) => {
-          console.log(err)
-          this.rootNameError = '发生错误，请稍后再试'
-          this.rootNameCheck = false
+          if (err) {
+            this.rootNameError = '发生错误，请稍后再试'
+            this.rootNameCheck = false
+          }
         })
       }, 500),
       buildRoot (recommend) {
         Indicator.open('上传故事中…')
+        this.recommend = recommend
         this.buildPermit = false
         this.buildCheck = false
         let self = this
@@ -602,7 +603,7 @@
           headers: {
             'Content-Type': 'multipart/form-data'
           },
-          timeout: 20000,
+          timeout: 25000,
           onUploadProgress: function (progressEvent) {
             self.$nextTick(() => {
               self.percent = (progressEvent.loaded / progressEvent.total) * 100
@@ -613,7 +614,10 @@
         formData.append('file', this.file, this.fileName)
         formData.append('name', this.rootName)
         formData.append('content', this.rootContent)
-        formData.append('recommend', recommend)
+        formData.append('recommendLength', this.recommend.length)
+        for (let i = 0; i < this.recommend.length; i++) {
+          formData.append(`recommend[${i}]`, this.recommend[i].id)
+        }
         formData.append('writePermit', this.writePermit)
         Axios.post('/story/buildRoot', formData, config).then((response) => {
           Indicator.close()
@@ -623,7 +627,7 @@
               position: 'middle',
               duration: 1000
             })
-            this.$router.go(-2)
+            this.$router.push('/story/' + response.data.id)
             // 发布成功的处理
           } else {
             this.buildCheck = true
@@ -639,10 +643,11 @@
           this.buildPermit = true
           if (error) {
             Toast({
-              message: '上传超时，请稍后再试',
+              message: '封面上传超时，请在"我的创作"中重新上传',
               position: 'middle',
-              duration: 1000
+              duration: 2500
             })
+            this.$router.go(-2)
           }
         })
         setTimeout(function () {      // 超时处理

@@ -24,7 +24,10 @@ const StoryRootSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User'
   },
-  writePermit: Boolean,
+  writePermit: {
+    type: Boolean,
+    default: true
+  },
   lc: {
     type: Schema.Types.ObjectId,
     default: null,

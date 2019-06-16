@@ -1,15 +1,16 @@
 <template>
   <div class="announcement-template">
-    <div class="content" v-for="n in 20">
+    <div class="content" v-if="acList.length" v-for="item in acList">
       <div class="right">
-        <div class="name">HyeKyo</div>
+        <div class="name">{{item.title}}</div>
         <div class="words">
-          有时候恍惚觉得你还是那个二十四五岁的少年唱着咬字不清的歌曲 话少羞涩才气四溢 对着演唱会台下的无数歌迷朋友想了又想只能说出“其实不知道该说些什么...我会尽力的表演谢谢你们”背带裤只系一
+          {{item.content}}
         </div>
-        <div class="time">2017-11-5</div>
+        <div class="time">{{item.date}}</div>
       </div>
     </div>
-    <div class="blank" v-if="acList.length < 1"></div>
+    <div class="blank" v-if="acList.length"></div>
+    <blank v-if="!acList.length"></blank>
   </div>
 </template>
 <style lang='scss' scoped>
@@ -61,6 +62,8 @@
 </style>
 <script>
   import blank from '../../blank/blank.vue'
+  import Axios from 'axios'
+  import { Toast } from 'mint-ui'
   export default {
     name: 'announcement',
     data () {
@@ -71,11 +74,29 @@
     components: {
       blank
     },
+    created: function () {
+      this.getData()
+    },
     methods: {
       swipe (e) {
         if (e.direction === 'Right') {
           this.$router.push({name: 'message_promote', params: { user: this.$route.params.user }})
         }
+      },
+      getData () {
+        Axios.get('/user/getAnnouncement')
+          .then(response => {
+            if (response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 800
+              })
+            } else {
+              this.acList = response.data.result
+              console.log(this.acList)
+            }
+          })
       }
     }
   }

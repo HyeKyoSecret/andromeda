@@ -1,8 +1,8 @@
 <template>
     <div class="fc">
-      <notice title="好友验证"></notice>
-      <div v-for='(item, index) in promoteList' class="promoteList">
-        <div class="pr-content" v-if="item.vis">
+      <notice title="好友消息"></notice>
+      <div class="promoteList" v-if="promoteList.length">
+        <div class="pr-content" v-if="item.vis" v-for='(item, index) in promoteList'>
           <mt-cell-swipe class='pr'
                          :right="[
           {
@@ -21,6 +21,7 @@
           </mt-cell-swipe>
         </div>
       </div>
+      <blank v-if="!promoteList.length"></blank>
     </div>
 </template>
 
@@ -38,6 +39,11 @@
     data () {
       return {
         promoteList: []
+      }
+    },
+    watch: {
+      '$route' (to, from) {
+        this.getData()
       }
     },
     created: function () {
@@ -104,7 +110,6 @@
     }
   }
 </script>
-
 <style lang="scss">
   @import "../../../scss/config";
   .mint-cell-wrapper {
@@ -129,6 +134,7 @@
     display: flex;
     align-items: center;
     border-bottom: 1px solid $border-gray;
+    margin-top: 10px;
   &:last-child {
      border: none;
    }

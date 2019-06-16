@@ -68,6 +68,7 @@
   import lrz from 'lrz'
   import { Toast, Indicator, MessageBox } from 'mint-ui'
   export default {
+    name: 'creationNode',
     components: {
       notice,
       FootMenu
@@ -298,10 +299,10 @@
     position: absolute;
     top: 0;
     left: 0;
-    min-height: calc(100vh - 42px);
-    margin-top: 42px;
+    height: 100%;
     width: 100%;
     background: $bg-gray;
+    z-index: 998;
     .image-item {
       max-width: 100%;
     }
@@ -330,7 +331,7 @@
       height: 145px;
       width: 100%;
       background-color: white;
-      margin-top: 15px;
+      margin-top: 57px;
       .story-information {
         margin-left: 10px;
         margin-right: 10px;

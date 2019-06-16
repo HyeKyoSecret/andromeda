@@ -733,7 +733,20 @@
         this.$router.go(-1)
       },
       writeStory () {
-        this.writeWindow = true
+        Axios.post('/story/checkWritePermit', {
+          id: this.$route.params.id
+        })
+          .then(response => {
+            if (response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            } else {
+              this.writeWindow = true
+            }
+          })
       },
       closeWrite () {
         this.writeWindow = false

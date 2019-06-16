@@ -3,7 +3,8 @@
       <notice title="评论消息"></notice>
       <mt-loadmore :top-method="loadTop" class="my-creation-content" ref="loadmore"
                    infinite-scroll-disabled = true
-                   infinite-scroll-distance = "10">
+                   infinite-scroll-distance = "10"
+                   v-if="commentList.length">
         <div class="cm-content" v-for="(item, index) in commentList">
           <div class="user">
             <div class="head">
@@ -42,16 +43,19 @@
         </div>
         <div class="blank"></div>
       </mt-loadmore>
+      <blank v-if="!commentList.length"></blank>
     </div>
 </template>
 <script>
   import notice from '../../notice/notice'
+  import blank from '../../blank/blank'
   import Axios from 'axios'
   import { Toast } from 'mint-ui'
   export default {
     name: 'cm',
     components: {
-      notice
+      notice,
+      blank
     },
     data () {
       return {

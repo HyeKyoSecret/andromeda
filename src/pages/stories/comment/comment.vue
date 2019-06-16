@@ -11,7 +11,7 @@
         </div>
         <div class="comment-content">
           <div class="critic-name">
-            <span class="critic">{{item.people}} {{item.id}}</span>
+            <span class="critic">{{item.people}}</span>
             <span class="to" v-if="item.commentTo">
               <img src="../../../img/icon/gray_triangle.png">
             </span>

@@ -1,26 +1,58 @@
 <template>
   <div class="subscribe">
     <notice title="订阅消息"></notice>
-    <div class="subscribe-new">
+    <div class="subscribe-new" v-for="item in result" @click="goStory(item.id)" v-if="result.length">
       <div class="left">
         <img src="../../../img/images/yuner.jpg" alt="">
       </div>
       <div class="middle">
-        <div class="name">千里不留行</div>
-        <div class="content">窗前明月光，疑似地上霜，举头望明月，低头思故乡窗前明月光，疑似地上霜，举头望明月，低头思故乡窗前明月光，疑似地上霜，举头望明月，低头思故乡窗前明月光，疑似地上霜，举头望明月，低头思故乡</div>
+        <div class="name">{{item.name}}</div>
+        <div class="content">{{item.words}}</div>
       </div>
       <div class="right">
-        <div class="date">几天前</div>
-        <div class="new-number"><span>3</span></div>
+        <div class="date">{{item.date}}</div>
+        <div class="new-number"><span v-if="item.notReaded > 0">{{item.notReaded}}</span></div>
       </div>
     </div>
+    <blank v-if="!result.length"></blank>
   </div>
 </template>
 <script>
   import notice from '../../notice/notice'
+  import blank from '../../blank/blank'
+  import Axios from 'axios'
+  import { Toast } from 'mint-ui'
   export default {
+    data () {
+      return {
+        result: []
+      }
+    },
+    created: function () {
+      this.getData()
+    },
     components: {
-      notice
+      notice,
+      blank
+    },
+    methods: {
+      getData () {
+        Axios.get('/user/getSubscribeMessage')
+          .then(response => {
+            if (response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            } else {
+              this.result = response.data.result
+            }
+          })
+      },
+      goStory (id) {
+        this.$router.push(`subMessage/${id}`)
+      }
     }
   }
 </script>
@@ -53,7 +85,7 @@
       .middle {
         height: 70px;
         margin-left: 10px;
-        flex: 5;
+        flex: 6;
         .name {
           color: $font-dark;
         }
@@ -71,12 +103,14 @@
       }
       .right {
         height: 70px;
-        flex: 1px;
+        flex: 1.8;
         margin-left: 5px;
         .date {
           height: 25px;
           color: $font-gray;
-          font-size: 13px;
+          text-align: right;
+          margin-right: 15px;
+          font-size: 12px;
         }
         .new-number {
           height: 45px;

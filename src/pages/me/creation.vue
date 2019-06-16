@@ -153,7 +153,6 @@
     top: 0;
     left: 0;
     width: 100%;
-    /*height: 100%;*/
     min-height: 100%;
     background: $bg-gray;
     .notice-bar {
@@ -184,9 +183,9 @@
           span {
             display: inline-block;
             width: 80px;
-            height: 37px;
+            height: 40px;
             color: $font-gray;
-            line-height: 38px;
+            line-height: 40px;
             box-sizing: border-box;
           }
           .root.active {

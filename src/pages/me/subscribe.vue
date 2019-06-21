@@ -2,37 +2,41 @@
   <div class="subscribe">
     <notice :title="title"></notice>
     <div class="show-story" v-if="subList.length">
-      <div class="background">
-        <div class="left-part"><img :src="cover.coverImg" @click="goStory(cover.latest)" @error="setCoverErrorImg"/></div>
-        <div class="right-part">
-          <div class="already-read">
+      <div class="book" id="book" :style="{'width': baseWidth * 0.9 + 'px'}">
+        <div class="background">
+          <div class="left-part"><img :src="cover.coverImg" @click="goStory(cover.latest)" @error="setCoverErrorImg"/></div>
+          <div class="right-part">
+            <div class="already-read">
               <img src="../../img/icon/already_read.png" />
               <div class="read-amount">{{cover.readPercent}}</div>
-          </div>
-          <div class="story-name">{{cover.name}}</div>
-          <div class="quantity">
-            <img src="../../img/icon/gray_flag.png" />
-            <div class="amount">{{cover.nodeNum}} 篇</div>
-          </div>
-          <div class="quantity">
-           <img src="../../img/icon/gray_book.png"/>
-            <div class="amount">{{cover.follower}} 人</div>
-          </div>
-          <div class="quantity">
-            <img src="../../img/icon/gray_pen.png" />
-            <div class="amount">{{cover.myCreation}} 篇</div>
-          </div>
-          <div class="continue-read" @click="goStory(cover.latest)">
-            继续阅读
+            </div>
+            <div class="story-name">{{cover.name}}</div>
+            <div class="quantity">
+              <img src="../../img/icon/gray_flag.png" />
+              <div class="amount">{{cover.nodeNum}} 篇</div>
+            </div>
+            <div class="quantity">
+              <img src="../../img/icon/gray_book.png"/>
+              <div class="amount">{{cover.follower}} 人</div>
+            </div>
+            <div class="quantity">
+              <img src="../../img/icon/gray_pen.png" />
+              <div class="amount">{{cover.myCreation}} 篇</div>
+            </div>
+            <div class="continue-read" @click="goStory(cover.latest)">
+              继续阅读
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="shelf" v-for="(item, index) in contentList" v-if="subList.length">
-      <div class="book" v-for="(q, index2) in item" @click="changeCover(q)">
-        <div class="cover"><img :src="q.coverImg" @error="setErrorImg(index, index2)"/></div>
-        <div class="progress-bar" v-bind:style="{ width: q.readPercent * 3 / 5 + '%'}"></div>
-        <div class="name">{{q.name}}</div>
+    <div :style="bookStyle">
+      <div class="shelf" v-for="(item, index) in contentList" v-if="subList.length" >
+        <div class="book" v-for="(q, index2) in item" @click="changeCover(q)">
+          <div class="cover"><img :src="q.coverImg" @error="setErrorImg(index, index2)"/></div>
+          <div class="progress-bar" v-bind:style="{ width: q.readPercent * 3 / 5 + '%'}"></div>
+          <div class="name">{{q.name}}</div>
+        </div>
       </div>
     </div>
     <blank v-if="!subList.length"></blank>
@@ -49,10 +53,19 @@
     margin-top: 40px;
     background: $bg-gray;
     .show-story {
-      margin: 20px auto 0 auto;
-      width: 90%;
-      /*      height: 240px;*/
+      margin-top: 54px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      /*      height: 240px;      */
       font-size: 0;
+      .book {
+        max-width: 700px;
+      }
       .background {
         width: 100%;
         height: 100%;
@@ -103,12 +116,12 @@
             }
           }
           .continue-read {
-            margin-top:12px;
-            margin-left: 25%;
-            margin-right: 25%;
-            height :20px;
-            line-height: 20px;
-            background-color: #00db75 ;
+            margin-top: 10%;
+            margin-left: 17%;
+            margin-right: 17%;
+            height :25px;
+            line-height: 25px;
+            background-color: $main-color ;
             font-size: 12px;
             border-radius: 5px;
             color: white;
@@ -185,13 +198,29 @@
           readCounts: '', // 已读节点
           readPercent: '',
           latest: ''
+        },
+        baseWidth: 0
+      }
+    },
+    computed: {
+      bookStyle: function () {
+        return {
+          'margin-top': this.subList.length > 0 ? (this.baseWidth * 0.9 * 0.666 + 32) + 'px' : 0
         }
       }
+    },
+    mounted: function () {
+      this.getBookHeight()
     },
     created: function () {
       this.getData()
     },
     methods: {
+      getBookHeight () {
+        this.$nextTick(function () {
+          this.baseWidth = document.body.clientWidth
+        })
+      },
       changeCover (obj) {
         this.cover.id = obj.id
         this.cover.name = obj.name

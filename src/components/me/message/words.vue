@@ -1,53 +1,64 @@
 <template>
-  <div class="word-template">
-    <div class="content">
-      <div class="left">
-        <img src='../../../img/photo/head.jpg'>
-      </div>
-      <div class="right">
-        <div class="name">HyeKyo</div>
-        <div class="words">
-          有时候恍惚觉得你还是那个二十四五岁的少年唱着咬字不清的歌曲 话少羞涩才气四溢 对着演唱会台下的无数歌迷朋友想了又想只能说出“其实不知道该说些什么...我会尽力的表演谢谢你们”背带裤只系一
+  <div class="subscribe">
+    <notice title="留言"></notice>
+    <div class="sub-content">
+      <div class="subscribe-new" v-for="item in result" @click="go(item.peopleId)" v-if="result.length">
+        <div class="left">
+          <img :src="item.headImg" alt="">
         </div>
-        <div class="time">2017-11-5</div>
+        <div class="middle">
+          <div class="name">{{item.name}}</div>
+          <div class="content">{{item.words}}</div>
+        </div>
+        <div class="right">
+          <div class="date">{{item.date}}</div>
+          <div class="new-number"><span v-if="item.notReaded > 0">{{item.notReaded}}</span></div>
+        </div>
       </div>
     </div>
-    <div class="blank" v-if="wordList.length < 1"></div>
+    <blank v-if="!result.length"></blank>
   </div>
 </template>
 <style lang='scss' scoped>
   @import "../../../scss/config";
-  .word-template {
+  .subscribe {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    min-height: calc(100vh - 140px);
-    margin-top: 50px;
-    .content {
-      min-height: 100px;
+    background: $bg-gray;
+    min-height: calc(100vh - 58px);
+    /*z-index: 997;*/
+    .sub-content {
+      margin-top: 92px;
+    }
+    .subscribe-new {
+      margin-top: 10px;
       width: 100%;
-      margin-bottom: 10px;
-      background: white;
+      height: 90px;
       display: flex;
+      background: white;
       align-items: center;
       .left {
         flex: 1;
-        height: 100%;
+        margin-left: 8px;
         img {
-          width: 70px;
-          height: 70px;
-          border-radius: 5px;
-          margin-left: 12px;
+          border-radius: 2px;
+          width: 60px;
+          height: 60px;
+          border-radius: 2px;
         }
       }
-      .right {
-        margin-left: 20px;
+      .middle {
+        height: 70px;
+        margin-left: 10px;
+        flex: 6;
         .name {
-          color: $icon-blue;
-          font-size: 14px;
-          font-weight: 600;
+          color: $font-dark;
         }
-        .words {
-          margin-right: 12px;
+        .content {
           margin-top: 5px;
+          color: $font-color;
           display: -webkit-box;
           display: -moz-box;
           -webkit-box-orient: vertical;
@@ -55,37 +66,81 @@
           -moz-box-orient: vertical;
           -moz-line-clamp: 2;
           overflow: hidden;
-          font-size: 13px;
-        }
-        .time {
-          text-align: right;
-          color: $font-color;
-          font-size: 14px;
-          margin-right: 12px;
-          margin-top: 7px;
         }
       }
-    }
-    .blank {
-      width: 100%;
-      height: 100px;
-      background: $bg-gray;
+      .right {
+        height: 70px;
+        flex: 1.8;
+        margin-left: 5px;
+        .date {
+          height: 25px;
+          color: $font-gray;
+          text-align: right;
+          margin-right: 15px;
+          font-size: 12px;
+        }
+        .new-number {
+          height: 45px;
+          text-align: right;
+          margin-top: 15px;
+          margin-right: 15px;
+          span {
+            color: white;
+            display: inline-block;
+            background: $main-red;
+            width: 16px;
+            height: 16px;
+            border-radius: 2000px;
+            text-align: center;
+            line-height: 16px;
+          }
+        }
+      }
     }
   }
 </style>
 <script>
+  import notice from '../../notice/notice'
+  import blank from '../../blank/blank'
+  import Axios from 'axios'
+  import { Toast } from 'mint-ui'
   export default {
-    name: 'words',
     data () {
       return {
-        wordList: []
+        result: []
       }
+    },
+    name: 'words',
+    created: function () {
+      this.getData()
+    },
+    components: {
+      notice,
+      blank
     },
     methods: {
       swipe (e) {
         if (e.direction === 'Left') {
-          this.$router.push({name: 'message_request', params: { user: this.$route.params.user }})
+          this.$router.push({name: 'message_request', params: {user: this.$route.params.user}})
         }
+      },
+      getData () {
+        Axios.get('/user/getMessageWords')
+          .then(response => {
+            if (response.data.error) {
+              Toast({
+                message: response.data.message,
+                position: 'middle',
+                duration: 1000
+              })
+            } else {
+              this.result = response.data.result
+              console.log(this.result)
+            }
+          })
+      },
+      go (id) {
+        this.$router.push(`/dialogue/${id}`)
       }
     }
   }

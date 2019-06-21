@@ -5,7 +5,7 @@
          <img src="../../../img/icon/my_friend.png" alt="">
        </div>
        <div class="right-part">
-         <div class="words">好友验证</div>
+         <div class="words">好友消息</div>
          <div class="new" v-if="state.friend">
            <div class="point"></div>
          </div>

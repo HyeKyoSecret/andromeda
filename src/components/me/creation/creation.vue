@@ -41,6 +41,12 @@
   export default {
     name: 'creation',
     props: ['story', 'type'],
+    beforeRouteLeave (to, from, next) {
+      console.log(from.meta.savedPosition)
+      console.log(document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop)
+      from.meta.savedPosition = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
+      next()
+    },
     methods: {
       loadMore () {
         if (this.story.length > 0) {

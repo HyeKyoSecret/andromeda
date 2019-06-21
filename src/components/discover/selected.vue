@@ -43,6 +43,10 @@
           storyList: []
         }
       },
+      beforeRouteLeave (to, from, next) {
+        from.meta.savedPosition = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
+        next()
+      },
       methods: {
         loadTop () {
           this.storyList = []

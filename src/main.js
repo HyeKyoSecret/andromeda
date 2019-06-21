@@ -15,18 +15,21 @@ if (process.env.NODE_ENV !== 'production') {
   Axios.defaults.baseURL = 'http://localhost:8080/api'
 }
 Axios.defaults.withCredentials = true
-Vue.use(MintUI)
-Vue.use(VueRouter)
-Vue.use(VueFinger)
-Vue.use(VueScrollLock)
 const router = new VueRouter({
   mode: 'history',
-  routes
+  routes,
+  scrollBehavior (to, from, savedPosition) {
+    if (to.meta.savedPosition && to.meta.keepAlive) {
+      setTimeout(() => {
+        window.scrollTo(0, to.meta.savedPosition)
+      }, 100)
+    } else {
+      return { x: 0, y: 0 }
+    }
+  }
 })
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    // this route requires auth, check if logged in
-    // if not, redirect to login page.
     Axios.get('/register/checkLogin')    // 构建登录拦截
       .then((response) => {
         if (!response.data.login) {
@@ -52,6 +55,10 @@ router.beforeEach((to, from, next) => {
     next() // 确保一定要调用 next()
   }
 })
+Vue.use(MintUI)
+Vue.use(VueRouter)
+Vue.use(VueFinger)
+Vue.use(VueScrollLock)
 /* eslint-disable */
 new Vue({
   router,

@@ -2057,4 +2057,95 @@ router.get('/user/getAnnouncement', (req, res) => {
       }
     })
 })
+router.get('/user/getMessageWords', (req, res) => {
+  console.log('进入')
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  let result = []
+  User.findOne({username: user})
+    .populate({
+      path: 'dialogue',
+      populate: {
+        path: 'people1'
+      }
+    })
+    .populate({
+      path: 'dialogue',
+      populate: {
+        path: 'people2'
+      }
+    })
+    .populate({
+      path: 'dialogue',
+      populate: {
+        path: 'message'
+      }
+    })
+    .populate({
+      path: 'dialogue',
+      populate: {
+        path: 'message',
+        populate: {
+          path: 'to'
+        }
+      }
+    })
+    .populate({
+      path: 'dialogue',
+      populate: {
+        path: 'message',
+        populate: {
+          path: 'from'
+        }
+      }
+    })
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'db', message: '发生错误, 请稍后再试'})
+      } else {
+        if (doc) {
+          for (let i = 0; i < doc.dialogue.length; i++) {
+            console.log('喜欢' + doc.dialogue)
+            let count = 0
+            let temp = []
+            for (let j = 0; j < doc.dialogue[i].message.length; j++) {
+              if (doc.dialogue[i].message[j].to.username === user && !doc.dialogue[i].message[j].readed) {
+                count++
+                temp.push({
+                  to: doc.dialogue[i].message[j].to.nickname,
+                  from: doc.dialogue[i].message[j].from.nickname,
+                  content: doc.dialogue[i].message[j].content
+                })
+                temp.reverse()
+              }
+            }
+            if (doc.dialogue[i].people1.username === user) {
+              result.push({
+                peopleId: doc.dialogue[i].people2.id,
+                headImg: tool.formImg(doc.dialogue[i].people2.headImg),
+                words: temp[0].content,
+                notReaded: count,
+                date: moment(temp[0].date).fromNow()
+              })
+            } else {
+              result.push({
+                peopleId: doc.dialogue[i].people1.id,
+                headImg: tool.formImg(doc.dialogue[i].people1.headImg),
+                words: temp[0].content,
+                notReaded: count,
+                date: moment(temp[0].date).fromNow()
+              })
+            }
+            res.send({error: false, result: result})
+          }
+        } else {
+          res.send({error: true, type: 'db', message: '发生错误, 请重新登录'})
+        }
+      }
+    })
+})
 module.exports = router

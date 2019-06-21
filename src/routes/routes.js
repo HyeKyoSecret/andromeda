@@ -71,7 +71,7 @@ export default [
         path: 'creation',
         name: 'creation',
         component: resolve => require(['../pages/me/creation.vue'], resolve),
-        meta: { requiresAuth: true, keepAlive: true },
+        meta: { requiresAuth: true, keepAlive: true, savedPosition: 0 },
         beforeEnter: (to, from, next) => {
           if (from.name !== 'myCreation') {
             to.meta.keepAlive = false
@@ -82,21 +82,30 @@ export default [
             }
             next()
           }
-        },
-        children: [
-          {
-            path: 'myCreation/:rootName',
-            name: 'myCreation',
-            alias: 'creationNode',
-            component: resolve => require(['../pages/me/myCreationNode.vue'], resolve),
-            meta: { requiresAuth: true }
-          }
-        ]
+        }
+      },
+      {
+        path: 'myCreation/:rootName',
+        name: 'myCreation',
+        alias: 'creationNode',
+        component: resolve => require(['../pages/me/myCreationNode.vue'], resolve),
+        meta: { requiresAuth: true, keepAlive: true, savedPosition: 0 }
       },
       {
         path: 'history',
         component: resolve => require(['../pages/me/history.vue'], resolve),
-        meta: { requiresAuth: true, keepAlive: true }
+        meta: { requiresAuth: true, keepAlive: true, savedPosition: 0 },
+        beforeEnter: (to, from, next) => {
+          if (from.name !== 'story') {
+            to.meta.keepAlive = false
+            next()
+          } else {
+            if (!to.meta.keepAlive) {
+              to.meta.keepAlive = true
+            }
+            next()
+          }
+        }
       },
       {
         path: 'subscribe',
@@ -198,22 +207,22 @@ export default [
       {
         path: 'selected/',
         component: resolve => require(['../components/discover/selected.vue'], resolve),
-        meta: { requiresAuth: true, keepAlive: true }
+        meta: { requiresAuth: true, savedPosition: 0 }
       },
       {
         path: 'focus/',
         component: resolve => require(['../components/discover/focus.vue'], resolve),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, savedPosition: 0 }
       },
       {
         path: 'friend/',
         component: resolve => require(['../components/discover/friend.vue'], resolve),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, savedPosition: 0 }
       },
       {
         path: 'fresh/',
         component: resolve => require(['../components/discover/fresh.vue'], resolve),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, savedPosition: 0 }
       }
     ]
   },
@@ -238,6 +247,10 @@ export default [
   {
     path: '/marker',
     component: resolve => require(['../pages/stories/marker.vue'], resolve)
+  },
+  {
+    path: '/dialogue/:id',
+    component: resolve => require(['../pages/dialogue/dialogue.vue'], resolve)
   },
   {
     path: '/error',

@@ -1,6 +1,7 @@
 <template>
   <div class="me">
-    <notice v-bind:title="title" class="notice"></notice>
+    <notice v-bind:title="title" class="notice" v-if="operation.length > 6"></notice>
+    <notice v-bind:title="title" class="notice" v-else :message="userId"></notice>
     <!--进度条-->
     <mt-progress :value="percent" :bar-height="6" v-if="percentShow">
       <!--<div slot="end">{{Math.ceil(percent)}}%</div>-->

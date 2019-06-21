@@ -1,9 +1,11 @@
 <template>
   <div class="history">
     <notice :title="title" class="notice notice-bar"></notice>
-    <div v-infinite-scroll="getData"
+    <mt-loadmore v-infinite-scroll="getData"
          infinite-scroll-disabled="loading"
          infinite-scroll-distance="10"
+         ref="loadmore"
+         :top-method="loadTop"
          class="history-content">
       <div class="one-day" v-for="(day, index) in history">
         <div class="title">{{day.date}}</div>
@@ -35,7 +37,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </mt-loadmore>
     <blank v-if="history.length < 1"></blank>
     <foot-menu></foot-menu>
   </div>
@@ -58,10 +60,18 @@
         history: []
       }
     },
+    beforeRouteLeave (to, from, next) {
+      from.meta.savedPosition = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
+      next()
+    },
     created: function () {
       this.getData()
     },
     methods: {
+      loadTop () {
+        this.getData()
+        this.$refs.loadmore.onTopLoaded()
+      },
       getData () {
         Axios.get('/history/getHistory', {
           params: {

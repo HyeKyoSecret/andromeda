@@ -38,6 +38,10 @@
         storyList: []
       }
     },
+    beforeRouteLeave (to, from, next) {
+      from.meta.savedPosition = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
+      next()
+    },
     methods: {
       getData () {
         Axios.get('/story/getFocusDiscovery', {

@@ -15,7 +15,7 @@
     <label id="input">
       <input type="file" ref="input" accept="image" @change="change">
     </label>
-    <div v-if="result">
+    <mt-loadmore :top-method="loadTop" ref="loadmore" v-if="result" >
       <transition
         name="custom-classes-transition"
         leave-active-class="animated bounceOutUp">
@@ -46,17 +46,17 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class='preview-content' v-if="result.story">
-      <div class="story-preview"  v-for="(item, index) in result.story" :key="item.id" @click="goStory(item.id)">
-        <div class="content">{{item.content}}</div>
-        <div class="info">
-          <span><img src="../../img/icon/gray_thumb.png" /></span>
-          <span>{{item.zan}}</span>
-          <span class="date">{{item.date}}</span>
+      <div class='preview-content' v-if="result.story">
+        <div class="story-preview"  v-for="(item, index) in result.story" :key="item.id" @click="goStory(item.id)">
+          <div class="content">{{item.content}}</div>
+          <div class="info">
+            <span><img src="../../img/icon/gray_thumb.png" /></span>
+            <span>{{item.zan}}</span>
+            <span class="date">{{item.date}}</span>
+          </div>
         </div>
       </div>
-    </div>
+    </mt-loadmore>
     <foot-menu></foot-menu>
   </div>
 </template>
@@ -72,6 +72,10 @@
     components: {
       notice,
       FootMenu
+    },
+    beforeRouteLeave (to, from, next) {
+      from.meta.savedPosition = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
+      next()
     },
     data () {
       return {
@@ -115,6 +119,9 @@
             this.writePermit = false
           })
         }
+      },
+      '$route': function () {
+        this.getMyCreationNode()
       }
     },
     created: function () {
@@ -143,6 +150,10 @@
         if (this.result.user) {
           this.$refs.input.click()
         }
+      },
+      loadTop () {
+        this.getMyCreationNode()
+        this.$refs.loadmore.onTopLoaded()
       },
       getObjectURL (file) {
         let url = null
@@ -299,10 +310,9 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
+    height: calc(100vh - 42px);
     width: 100%;
     background: $bg-gray;
-    z-index: 998;
     .image-item {
       max-width: 100%;
     }
@@ -337,7 +347,7 @@
         margin-right: 10px;
         height: 100px;
         display: flex;
-        align-items:flex-start;
+        align-items: flex-start;
         .cover {
           margin-top: 10px;
           flex: 1;

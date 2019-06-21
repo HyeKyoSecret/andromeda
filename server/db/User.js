@@ -194,6 +194,10 @@ const UserSchema = new Schema({
       type: Date,
       default: Date.now()
     }
+  }],
+  dialogue: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Dialogue'
   }]
 }, {timestamps: {createdAt: 'created', updatedAt: 'updated'}})
 UserSchema.pre('save', function (next) {

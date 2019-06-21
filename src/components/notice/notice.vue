@@ -18,6 +18,9 @@
         <span class="font" v-if="more" @click="openFontSettings">
         <img src="../../img/icon/font.png" alt="">
      </span>
+    <span class="message" v-if="message" @click="sendMessage(message)">
+        <img src="../../img/icon/message.png" alt="">
+     </span>
     <div v-if="more && menuActive" class="menu">
       <router-link :to="item.path" tag="div" class="content" v-for="item in menuList" :key="item.name">
         <span class="menu-icon"><img :src="item.icon" alt="">
@@ -31,7 +34,7 @@
   import Axios from 'axios'
   import { Toast } from 'mint-ui'
   export default {
-    props: ['title', 'more', 'id', 'mark'],
+    props: ['title', 'more', 'id', 'mark', 'message'],
     data () {
       return {
         menu: [
@@ -68,6 +71,9 @@
       },
       showMenu () {
         this.menuActive = !this.menuActive
+      },
+      sendMessage (id) {
+        this.$router.push('/dialogue/' + id)
       },
       buildMenuList () {
         if (this.more) {
@@ -146,6 +152,18 @@
       img {
         width: 12px;
         height: 20px;
+      }
+    }
+    .message {
+      position: absolute;
+      right: 6px;
+      display: inline-block;
+      height: 42px;
+      width: 30px;
+      line-height: 50px;
+      img {
+        width: 22px;
+        height: 21px;
       }
     }
     .mark {

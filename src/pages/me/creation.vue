@@ -7,8 +7,12 @@
         <div ><span class="story" :class="{active: myStoryActive}" @click="myStory">{{stitle}}</span></div>
       </div>
     </div>
-    <creation :story="myRootActive ? root : story" :type='myRootActive' v-on:loadMore="fetchData" v-on:refresh="refresh" class="creation"></creation>
-    <router-view v-on:refreshImg="refreshImage"></router-view>
+    <keep-alive>
+      <creation :story="myRootActive ? root : story" :type='myRootActive' v-on:loadMore="fetchData" v-on:refresh="refresh" class="creation"></creation>
+    </keep-alive>
+    <keep-alive>
+      <router-view v-on:refreshImg="refreshImage"></router-view>
+    </keep-alive>
     <foot-menu></foot-menu>
   </div>
 </template>
@@ -40,6 +44,12 @@
     created: function () {
       this.fetchData('root')
       this.fetchData('story')
+    },
+    beforeRouteLeave (to, from, next) {
+      console.log(from.meta.savedPosition)
+      console.log(document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop)
+      from.meta.savedPosition = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
+      next()
     },
     methods: {
       refresh (type) {
@@ -120,7 +130,7 @@
         }
       },
       getPath (val) {
-        return `creation/myCreation/${val.root}`
+        return `myCreation/${val.root}`
       },
       setErrorImg (x) {
         this.story[x].cover = require('../../img/photo/default2.png')

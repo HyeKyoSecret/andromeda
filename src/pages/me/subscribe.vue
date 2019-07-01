@@ -69,10 +69,13 @@
       .background {
         width: 100%;
         height: 100%;
+        border-radius: 2px;
         background-color: white;
         .left-part {
           width: 50%;
           display: inline-block;
+          border-top-left-radius: 2px;
+          border-bottom-left-radius: 2px;
           img {
             width: 100%;
           }
@@ -81,11 +84,14 @@
           width: 50%;
           display: inline-block;
           vertical-align: top;
+          border-top-right-radius: 3px;
+          border-bottom-right-radius: 2px;
           .already-read {
             text-align: right;
             position: relative;
             img {
               width: 25%;
+              border-top-right-radius: 3px;
             }
             .read-amount {
               position: absolute;

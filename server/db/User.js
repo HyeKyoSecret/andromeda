@@ -186,15 +186,6 @@ const UserSchema = new Schema({
     type: String,
     default: '正常'
   },
-  announcement: [{
-    title: String,
-    img: String,
-    content: String,
-    date: {
-      type: Date,
-      default: Date.now()
-    }
-  }],
   dialogue: [{
     type: Schema.Types.ObjectId,
     ref: 'Dialogue'

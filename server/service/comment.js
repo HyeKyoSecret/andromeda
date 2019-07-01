@@ -417,7 +417,6 @@ router.post('/comment/deleteComment', (req, res) => {
         })
     } catch (err) {
       if (err) {
-        console.log(err)
         res.send({error: true, type: 'DB', message: '发生错误'})
       }
     }
@@ -550,7 +549,7 @@ router.get('/comment/getMessageComment', (req, res) => {
                   subContent: doc.commentFrom[i].comment.commentTo.content,
                   subId: doc.commentFrom[i].comment.about
                 })
-              } else {
+              } else if (doc.commentFrom[i].comment) {     // 对于已经删除或者丢失丢评论不再记录
                 let obj = await getRootObj(doc.commentFrom[i].comment.about)
                 let sub = await getStoryObj(doc.commentFrom[i].comment.about)
                 result.push({
@@ -571,7 +570,11 @@ router.get('/comment/getMessageComment', (req, res) => {
             result.reverse()
             res.send({error: false, result: result})
           }
-          exe()
+          exe().catch(err => {
+            if (err) {
+              console.log(err)
+            }
+          })
         } else {
           res.send({error: true, type: 'DB', message: '发生错误, 请重新登录'})
         }
@@ -815,7 +818,7 @@ router.post('/comment/replyComment', (req, res) => {
                       }
                     })
                 } else {
-                  res.send({error: true, type: 'value', message: '发生错误'})
+                  res.send({error: true, type: 'value', message: '该评论已被删除'})
                 }
               }
             })

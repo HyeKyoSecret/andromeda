@@ -52,10 +52,23 @@ router.get('/dialogue/getDialogue', (req, res) => {
                       date: moment(dialogue.message[i].date).format('lll'),
                       content: dialogue.message[i].content,
                       headImg: tool.formImg(dialogue.message[i].from.headImg),
+                      id: dialogue.message[i].from.id,
                       timestamp: dialogue.message[i].date.getTime()
                     })
                   }
-                  res.send({error: false, result: result.reverse()})
+                  Message.update({
+                    $and: [
+                      { _id: { $in: dialogue.message } },
+                      { to: doc._id }
+                    ]
+                  }, {$set: {'readed': true}}, {multi: true})
+                    .exec(err4 => {
+                      if (err4) {
+                        res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+                      } else {
+                        res.send({error: false, result: result.reverse(), title: doc2.nickname})
+                      }
+                    })
                 } else {
                   res.send({error: false, result: []})
                 }

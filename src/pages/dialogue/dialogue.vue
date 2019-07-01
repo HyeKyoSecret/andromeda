@@ -3,17 +3,17 @@
        infinite-scroll-disabled=false
        infinite-scroll-distance="10"
        infinite-scroll-immediate-check=true>
-    <notice title="留言"></notice>
+    <notice :title="title"></notice>
     <div class="content">
       <div v-for="(item, index) in result">
         <div class="time-line" v-if="index === 0 || (result[index]['timestamp'] - result[index - 1]['timestamp']) > 180000">{{item.date}}</div>
         <div class="message from" v-if="!item.me">
-          <span class="headImg"><img :src="item.headImg" alt=""></span>
+          <span class="headImg"><img :src="item.headImg" alt="" @error="setDefaultImg(index)" @click="goPeople(item.id)"></span>
           <span class="message-content">{{item.content}}</span>
         </div>
         <div class="message to" v-else>
           <span class="message-content">{{item.content}}</span>
-          <span class="headImg"><img :src="item.headImg" alt=""></span>
+          <span class="headImg"><img :src="item.headImg" alt="" @error="setDefaultImg(index)" @click="goPeople(item.id)"></span>
         </div>
       </div>
     </div>
@@ -34,6 +34,7 @@
     name: 'dialogue',
     data () {
       return {
+        title: '留言',
         result: [],
         message: '',
         fakeSubmit: false,
@@ -45,6 +46,9 @@
     },
     created: function () {
       this.getData()
+      setTimeout(() => {
+        window.scrollTo(0, document.documentElement.scrollHeight || document.body.scrollHeight)
+      }, 100)
     },
     computed: {
       messageCheck: function () {
@@ -66,6 +70,7 @@
           .then(response => {
             if (!response.data.error) {
               this.result = response.data.result
+              this.title = response.data.title
             } else {
               Toast({
                 position: 'middle',
@@ -92,8 +97,14 @@
           }
         })
       },
+      setDefaultImg (index) {
+        this.result[index].headImg = require('../../img/images/defaultHeadImg.png')
+      },
       showButton () {
         this.fakeSubmit = true
+      },
+      goPeople (id) {
+        this.$router.push('/people/' + id)
       }
     },
     components: {

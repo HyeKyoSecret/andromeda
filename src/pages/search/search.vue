@@ -181,7 +181,6 @@
         })
       },
       setSearch (content, active) {
-        console.log(content, active)
         this.searchContent = content
         this.changeActive(active)
       },
@@ -501,9 +500,12 @@
         font-size: 14px;
         overflow: hidden;
         width: 100%;
+        -webkit-appearance:none;
       }
       input[type=search]::-webkit-search-cancel-button{
         -webkit-appearance: none;  //此处只是去掉默认的小×
+        border: none;
+        outline: 0;
       }
     }
     .search-history {

@@ -1,19 +1,22 @@
 <template>
   <div class="subscribe">
     <notice title="订阅消息"></notice>
-    <div class="subscribe-new" v-for="item in result" @click="goStory(item.id)" v-if="result.length">
-      <div class="left">
-        <img src="../../../img/images/yuner.jpg" alt="">
+    <mt-loadmore :top-method="loadTop" ref="loadmore" class="load-content">
+      <div class="subscribe-new" v-for="item in result" @click="goStory(item.id)" v-if="result.length">
+        <div class="left">
+          <img :src="item.coverImg" alt="">
+        </div>
+        <div class="middle">
+          <div class="name">{{item.name}}</div>
+          <div class="content">{{item.words}}</div>
+        </div>
+        <div class="right">
+          <div class="date">{{item.date}}</div>
+          <div class="new-number"><span v-if="item.notReaded > 0">{{item.notReaded}}</span></div>
+        </div>
       </div>
-      <div class="middle">
-        <div class="name">{{item.name}}</div>
-        <div class="content">{{item.words}}</div>
-      </div>
-      <div class="right">
-        <div class="date">{{item.date}}</div>
-        <div class="new-number"><span v-if="item.notReaded > 0">{{item.notReaded}}</span></div>
-      </div>
-    </div>
+      <div class="blank"></div>
+    </mt-loadmore>
     <blank v-if="!result.length"></blank>
   </div>
 </template>
@@ -35,7 +38,15 @@
       notice,
       blank
     },
+    beforeRouteLeave (to, from, next) {
+      from.meta.savedPosition = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
+      next()
+    },
     methods: {
+      loadTop () {
+        this.getData()
+        this.$refs.loadmore.onTopLoaded()
+      },
       getData () {
         Axios.get('/user/getSubscribeMessage')
           .then(response => {
@@ -60,14 +71,21 @@
   @import "../../../scss/config";
   .subscribe {
     position: absolute;
-    top: 0;
+    top: 42px;
     left: 0;
     width: 100%;
     background: $bg-gray;
     min-height: calc(100vh - 58px);
     z-index: 997;
+    .load-content {
+      min-height: calc(100vh - 58px);
+      .blank {
+        width: 100%;
+        height: 80px;
+      }
+    }
     .subscribe-new {
-      margin-top: 50px;
+      margin-top: 10px;
       width: 100%;
       height: 90px;
       display: flex;

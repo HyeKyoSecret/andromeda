@@ -180,7 +180,6 @@
     margin-right: 8px;
   }
   span {
-    margin-left: 5px;
     font-size: 12px;
     display: inline-block;
     height: 16px;
@@ -192,7 +191,7 @@
     font-size: 12px;
     flex: 1;
     line-height: 50px;
-    margin-right: 8px;
+    margin-right: 3px;
   }
   .title {
     color: $icon-blue;
@@ -200,10 +199,9 @@
     font-size: 12px;
     flex: 2;
     text-align: center;
-    overflow: hidden;
   }
   .info {
-    flex: 4;
+    flex: 5;
     text-align: center;
   .novel-name {
     color: $icon-blue;

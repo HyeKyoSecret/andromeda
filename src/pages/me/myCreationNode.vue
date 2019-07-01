@@ -15,7 +15,7 @@
     <label id="input">
       <input type="file" ref="input" accept="image" @change="change">
     </label>
-    <mt-loadmore :top-method="loadTop" ref="loadmore" v-if="result" >
+    <mt-loadmore :top-method="loadTop" ref="loadmore" v-if="result" class="main-content">
       <transition
         name="custom-classes-transition"
         leave-active-class="animated bounceOutUp">
@@ -80,7 +80,7 @@
     data () {
       return {
         result: {},
-        writePermit: true,
+        writePermit: null,
         writeAuthorized: true,
         coverImage: '',      // 以下直到url为上传图片所需数据
         picValue: '',
@@ -98,12 +98,12 @@
       }
     },
     watch: {
-      writePermit: function (curVal) {
-        if (curVal) {
+      writePermit: function () {
+        if (!this.dbWritePermit && this.dbWritePermit !== undefined && this.writePermit) {
           MessageBox.confirm('开放自由续写后将无法再关闭，确认开放吗?').then(action => {
             Axios.post('/story/changeWritePermit', {
               rootName: this.$route.params.rootName,
-              writePermit: curVal
+              writePermit: true
             }).then((response) => {
               if (response.data === 'error') {
                 Toast({
@@ -140,6 +140,7 @@
         toggleDragModeOnDblclick: false,
         background: false,
         zoomable: false,
+        dbWritePermit: '',
         ready: function () {
           self.croppable = true
         }
@@ -282,6 +283,7 @@
           if (!response.data.error) {
             this.result = response.data.result
             this.writeAuthorized = response.data.result.writePermit
+            this.dbWritePermit = response.data.result.writePermit
             this.writePermit = response.data.result.writePermit
             if (this.writeAuthorized === undefined) {
               this.writeAuthorized = true     // 防止非自己创作的故事返回undefined时被认为是false
@@ -310,13 +312,17 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: calc(100vh - 42px);
+    min-height: 100%;
     width: 100%;
     background: $bg-gray;
     .image-item {
       max-width: 100%;
     }
+    .main-content {
+      margin-top: 42px;
+    }
     .open-authorized {
+      margin-top: 10px;
       width: 100%;
       border-top: 1px solid $border-gray;
       height: 70px;
@@ -341,7 +347,7 @@
       height: 145px;
       width: 100%;
       background-color: white;
-      margin-top: 57px;
+      margin-top: 10px;
       .story-information {
         margin-left: 10px;
         margin-right: 10px;

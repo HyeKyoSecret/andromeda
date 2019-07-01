@@ -48,10 +48,10 @@
       </div>
       <div class="arrow">
         <div class="left-arrow">
-          <img src="../../img/icon/left_arrow.png" alt="" v-if="leftNode">
+          <img src="../../img/icon/left_arrow.png" alt="" v-if="leftNode" @click="swipeRight">
         </div>
         <div class="right-arrow">
-          <img src="../../img/icon/right_arrow.png" alt="" v-if="rightNode">
+          <img src="../../img/icon/right_arrow.png" alt="" v-if="rightNode" @click="swipeLeft">
         </div>
       </div>
       <div class="read-search" v-if="searchBoard">
@@ -344,9 +344,9 @@
     }
     .context {
       margin: 30px 10px 0 11px;
-      padding: 25px 0 0 5px;
+      padding: 15px 0 0 5px;
       font-size: 16px;
-      height: calc(100vh - 220px);
+      height: calc(100vh - 190px);
       color: $font-dark;
       white-space: pre-wrap;
       p {
@@ -459,6 +459,7 @@
     .arrow {
       position: absolute;
       bottom: 60px;
+      left: 0;
       margin: 0 10px 0 10px;
       display: flex;
       width: calc(100vw - 20px);
@@ -473,6 +474,11 @@
       }
       .right-arrow {
         text-align: right;
+      }
+    }
+    @media (min-width: 768px) {
+      .arrow {
+        max-width: 680px;
       }
     }
   }
@@ -491,14 +497,14 @@
   }
   .read-story.superFont {
     .context {
-      font-size: $s-font-9;
+      font-size: $s-font-8;
     }
     .author-info {
       .like span{
-        font-size: $s-font-9;
+        font-size: $s-font-8;
       }
       .time {
-        font-size: $b-font-5;
+        font-size: $b-font-4;
       }
     }
   }
@@ -548,6 +554,13 @@
         contentActive: true,    // 文本搜索激活
         authorActive: false,
         active: 'content'
+      }
+    },
+    beforeRouteLeave (to, from, next) {
+      if (to.name === 'build') {
+        this.$router.go(-2)
+      } else {
+        next()
       }
     },
     created: function () {

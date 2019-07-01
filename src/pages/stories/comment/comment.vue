@@ -33,7 +33,7 @@
           </div>
       </div>
     </article>
-      <div class="blank" id="2223333"></div>
+      <div class="blank"></div>
     </div>
     <div class="comment-input">
       <textarea id="textArea" v-model="comment" rows="1" :placeholder="tempPlaceHolder" @focus="showButton"></textarea>

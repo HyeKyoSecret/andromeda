@@ -9,11 +9,11 @@
           <div><img :src="item.cover" @error="setErrorImg(index)"/></div>
           <div class="story-quantity">
             <span><img src="../../../img/icon/graybook.png" /></span>
-            <span class="number">{{item.readCounts}}人</span>
+            <span class="number">{{item.readCounts > 999 ? '999+' : item.readCounts}}人读过</span>
           </div>
           <div class="story-quantity">
             <span><img src="../../../img/icon/gray_flag.png" /></span>
-            <span class="number">{{item.nodeCounts}}篇</span>
+            <span class="number">{{item.nodeCounts > 999 ? '999+' : item.readCounts}}篇后续</span>
           </div>
         </div>
         <div class="right-part">
@@ -30,7 +30,7 @@
             <span>{{item.zanCounts}}次</span>
           </div>
           <div class="last-write-time">
-            最后创作时间：{{item.latestDate}}
+            更新时间：{{item.latestDate}}
           </div>
         </div>
       </div>
@@ -104,7 +104,6 @@
           img{
             height: 15px;
             width: 15px;
-            margin-left: 5px;
             vertical-align: text-bottom;
           }
           .number {
@@ -116,18 +115,17 @@
       }
       .right-part {
         margin-top: 8px;
-        flex: 3;
+        flex: 3.5;
         .story-name {
           color: $font-dark;
           font-size: 15px;
           font-weight: 600;
           display: flex;
           .name {
-            flex:3;
+            flex:4;
             text-align: left;
           }
           .owner {
-            margin-left: 50px;
             flex: 1;
             text-align: center;
             height: 20px;

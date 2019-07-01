@@ -359,52 +359,6 @@ router.post('/story/saveRootDraft', (req, res) => {
     res.send({permit: false, message: '没有权限操作'})
   }
 })
-router.post('/story/saveStoryDraft', (req, res) => {
-  'use strict'
-  let author
-  if (req.session.user) {
-    author = req.session.user
-  } else if (req.cookies.And) {
-    author = req.cookies.And.user
-  }
-  if (author) {
-    User.findOne({username: author}, (err, user) => {
-      if (err) {
-        console.log(err)
-      }
-      if (user) {
-        if (user.myCreationDraft.story.length === 0) {
-          user.myCreationDraft.story.push({
-            id: req.body.id,
-            content: req.body.storyContent
-          })
-        } else {
-          for (let i = 0; i < user.myCreationDraft.story.length; i++) {
-            if (user.myCreationDraft.story[i].id === req.body.id) {
-              user.myCreationDraft.story[i].content = req.body.storyContent
-            } else {
-              if (i === user.myCreationDraft.story.length - 1) {
-                user.update({$push: {'myCreationDraft.story': {'id': req.body.id, 'content': req.body.storyContent}}})
-                  .exec(error => {
-                    if (error) {
-                      // 拒绝
-                      res.send({permit: false, message: '发生错误请稍后再试'})
-                    }
-                    res.send({permit: true})
-                  })
-              }
-            }
-          }
-        }
-      } else {
-        // 拒绝
-        res.send({permit: false, message: '发生错误，请稍后再试'})
-      }
-    })
-  } else {
-    res.send({permit: false, message: '没有权限操作'})
-  }
-})
 router.get('/story/getRootDraft', (req, res) => {
   'use strict'
   let author
@@ -432,36 +386,36 @@ router.get('/story/getRootDraft', (req, res) => {
     }
   })
 })
-router.get('/story/getStoryDraft', (req, res) => {
-  'use strict'
-  let author
-  let result = ''
-  if (req.session.user) {
-    author = req.session.user
-  } else if (req.cookies.And) {
-    author = req.cookies.And.user
-  }
-  let id = req.query.id
-  if (storyReg.test(id) && author) {
-    User.findOne({username: author}, (err, user) => {
-      if (err) {
-        res.send(null)
-      }
-      if (user.myCreationDraft.story.length) {
-        for (let i = 0; i < user.myCreationDraft.story.length; i++) {
-          if (user.myCreationDraft.story[i].id === id) {
-            result = user.myCreationDraft.story[i].content
-          }
-        }
-        res.send(result)
-      } else {
-        res.send(result)
-      }
-    })
-  } else {
-    res.send(result)
-  }
-})
+// router.get('/story/getStoryDraft', (req, res) => {
+//   'use strict'
+//   let author
+//   let result = ''
+//   if (req.session.user) {
+//     author = req.session.user
+//   } else if (req.cookies.And) {
+//     author = req.cookies.And.user
+//   }
+//   let id = req.query.id
+//   if (storyReg.test(id) && author) {
+//     User.findOne({username: author}, (err, user) => {
+//       if (err) {
+//         res.send(null)
+//       }
+//       if (user.myCreationDraft.story.length) {
+//         for (let i = 0; i < user.myCreationDraft.story.length; i++) {
+//           if (user.myCreationDraft.story[i].id === id) {
+//             result = user.myCreationDraft.story[i].content
+//           }
+//         }
+//         res.send(result)
+//       } else {
+//         res.send(result)
+//       }
+//     })
+//   } else {
+//     res.send(result)
+//   }
+// })
 router.get('/story/getRootStory', (req, res) => {
   Root.find({}, (err, doc) => {
     if (err) {
@@ -712,7 +666,8 @@ router.post('/story/buildStory', (req, res) => {
                               // 不向自己推送
                               let mySubscribe = user.subscribe
                               mySubscribe.forEach(item => {
-                                if (item.root.toString === rootId.toString) {
+
+                                if (item.root.toString() === rootId.toString()) {
                                   item.new.push({
                                     id: storyId
                                   })

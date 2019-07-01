@@ -415,6 +415,9 @@
     },
     watch: {
       rootContent: function () {
+        var tmp = document.querySelector('#context').value
+        var lines = tmp.split(/\r*\n/)
+        var linesCount = lines.length - (navigator.userAgent.indexOf('MSIE') !== -1)
         if (!this.rootContent) {
           this.buildCheck = false
           Toast({
@@ -423,10 +426,16 @@
             duration: 1000
           })
         } else {
-          if (this.rootContent.length > 250) {
+          if (this.rootContent.length > 220) {
             this.buildCheck = false
             Toast({
-              message: `您已超过最大字数${this.rootContent.length - 250}字`,
+              message: `您已超过最大字数${this.rootContent.length - 220}字`,
+              position: 'middle',
+              duration: 1000
+            })
+          } else if (linesCount > 13) {
+            Toast({
+              message: `行数超过限制`,
               position: 'middle',
               duration: 1000
             })
@@ -470,7 +479,7 @@
       })
     },
     created: function () {
-      // this.loadDraft()
+      this.loadDraft()
     },
     methods: {
       choosePic () {
@@ -643,7 +652,7 @@
           this.buildPermit = true
           if (error) {
             Toast({
-              message: '封面上传超时，请在"我的创作"中重新上传',
+              message: '封面上传失败，请在"我的创作"中重新上传',
               position: 'middle',
               duration: 2500
             })
@@ -680,6 +689,7 @@
                   duration: 1000
                 })
               }
+              this.$router.go(-1)
             })
           }).catch(error => {
             if (error) {

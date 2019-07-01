@@ -11,12 +11,12 @@
       <span class="commit" @click="buildStory" v-else="">发布</span>
     </div>
     <div class="story-content">
-      <textarea  name="context" placeholder="在这里书写您的故事" v-model="storyContent"></textarea>
+      <textarea  id="context" name="context" placeholder="在这里书写您的故事" v-model="storyContent"></textarea>
     </div>
   </div>
 </template>
 <script>
-  import { MessageBox, Toast } from 'mint-ui'
+  import { Toast } from 'mint-ui'
   import Axios from 'axios'
   export default {
     data () {
@@ -27,10 +27,13 @@
     },
     props: ['ftNode', 'title'],
     created: function () {
-      this.loadDraft()
+      // this.loadDraft()
     },
     watch: {
       storyContent: function () {
+        var tmp = document.querySelector('#context').value
+        var lines = tmp.split(/\r*\n/)
+        var linesCount = lines.length - (navigator.userAgent.indexOf('MSIE') !== -1)
         if (!this.storyContent) {
           this.writeCheck = false
           Toast({
@@ -39,10 +42,16 @@
             duration: 1000
           })
         } else {
-          if (this.storyContent.length > 180) {
+          if (this.storyContent.length > 220) {
             this.writeCheck = false
             Toast({
-              message: `您已超过最大字数${this.storyContent.length - 180}字`,
+              message: `您已超过最大字数${this.storyContent.length - 220}字`,
+              position: 'middle',
+              duration: 1000
+            })
+          } else if (linesCount > 13) {
+            Toast({
+              message: `行数超过限制`,
               position: 'middle',
               duration: 1000
             })
@@ -67,58 +76,7 @@
         })
       },
       closeWindow () {
-        if (this.storyContent) {
-          MessageBox.confirm('是否保存草稿?').then(action => {
-            Axios.post('/story/saveStoryDraft', {
-              id: this.ftNode,
-              storyContent: this.storyContent
-            }).then(response => {
-              if (response.data.permit) {
-                this.$emit('close')
-              } else {
-                Toast({
-                  message: response.data.message,
-                  position: 'middle',
-                  duration: 1000
-                })
-              }
-            }).catch(error => {
-              if (error) {
-                Toast({
-                  message: '草稿保存失败',
-                  position: 'middle',
-                  duration: 1000
-                })
-                this.$emit('close')
-              }
-            })
-          }).catch(error => {
-            if (error) {
-              this.$router.go(-1) // 离开的路由跳转
-            }
-          })
-        } else {
-          this.$emit('close')
-        }
-      },
-      loadDraft () {
-        Axios.get('/story/getStoryDraft', {
-          params: {
-            id: this.ftNode
-          }
-        }).then(response => {
-          if (response.data) {
-            this.storyContent = response.data
-          }
-        }).catch(err => {
-          if (err) {
-            Toast({
-              message: '草稿载入失败',
-              position: 'middle',
-              duration: 1000
-            })
-          }
-        })
+        this.$emit('close')
       }
     }
   }

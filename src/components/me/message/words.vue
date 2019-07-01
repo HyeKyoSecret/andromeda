@@ -2,9 +2,9 @@
   <div class="subscribe">
     <notice title="留言"></notice>
     <div class="sub-content">
-      <div class="subscribe-new" v-for="item in result" @click="go(item.peopleId)" v-if="result.length">
+      <div class="subscribe-new" v-for="(item, index) in result" @click="go(item.peopleId)" v-if="result.length">
         <div class="left">
-          <img :src="item.headImg" alt="">
+          <img :src="item.headImg" alt="" @error="setDefaultImg(index)">
         </div>
         <div class="middle">
           <div class="name">{{item.name}}</div>
@@ -124,6 +124,9 @@
           this.$router.push({name: 'message_request', params: {user: this.$route.params.user}})
         }
       },
+      setDefaultImg (index) {
+        this.result[index].headImg = require('../../../img/images/defaultHeadImg.png')
+      },
       getData () {
         Axios.get('/user/getMessageWords')
           .then(response => {
@@ -135,7 +138,6 @@
               })
             } else {
               this.result = response.data.result
-              console.log(this.result)
             }
           })
       },

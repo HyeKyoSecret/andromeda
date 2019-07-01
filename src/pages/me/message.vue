@@ -5,7 +5,7 @@
       <div class="button">
         <div v-for="(item,index) in btn">
           <router-link tag='span' :to='item.path' :class="item.className" replace>{{item.name}}</router-link>
-          <span class="newNum" :style="{left: 12.5 * (2*index + 1) + '%'}" :class="{two: item.newNum > 9 && item.newNum < 100, three: item.newNum > 99}" v-if="item.newNum > 0">{{item.newNum < 99 ? item.newNum : '99+' }}</span>
+          <span class="newNum" :style="{left: 12.5 * (2*index + 1) + '%'}" :class="{two: item.newNum.toString().length === 2 < 100, three: item.newNum.toString().length === 3}" v-if="item.newNum > 0">{{item.newNum < 99 ? item.newNum : '99+' }}</span>
         </div>
       </div>
     </div>
@@ -74,6 +74,7 @@
           }
         }
         this.transitionName = toPageIndex > fromPageIndex ? 'slide-left' : 'slide-right'
+        this.getUserData()
       }
     },
     methods: {
@@ -89,10 +90,17 @@
             } else {
               for (let i = 0; i < this.btn.length; i++) { // 修改path
                 let pathArray = this.btn[i].path.split('/people')
-                this.btn[i].path = `/people/${response.data.user}${pathArray[1]}`
+                let pathSplit = this.btn[i].path.split('/')
+                if (pathSplit.length === 5) {
+                  break
+                } else {
+                  this.btn[i].path = `/people/${response.data.user}${pathArray[1]}`
+                }
               }
-              this.btn[1].newNum = response.data.result.request       // 设置未读消息数量
-              this.btn[2].newNum = response.data.result.promote       // 设置未读消息数量
+              this.btn[0].newNum = response.data.result.words // 设置未读留言数量
+              this.btn[1].newNum = response.data.result.request // 设置未读消息数量
+              this.btn[2].newNum = response.data.result.promote // 设置未读消息数量
+              this.btn[3].newNum = response.data.result.announcement // 设置未读消息数量
             }
           })
       }
@@ -130,7 +138,7 @@
           width: 20px;
         }
         .newNum.three {
-          width: 26px;
+          width: 28px;
         }
         .newNum {
           display: inline-block;

@@ -6,7 +6,7 @@
         <div><router-link tag="span" class="default" to="/discover/selected" replace>精选</router-link></div>
         <div><router-link tag="span" class="default" to="/discover/friend" replace>好友</router-link></div>
         <div><router-link tag="span" class="default" to="/discover/focus" replace>关注</router-link></div>
-        <div><router-link tag="span" class="default" to="/discover/fresh" replace>新星</router-link></div>
+        <!--<div><router-link tag="span" class="default" to="/discover/fresh" replace>新星</router-link></div>-->
       </div>
     </div>
     <keep-alive>

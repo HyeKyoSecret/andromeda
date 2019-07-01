@@ -6,6 +6,7 @@
         <div class="words">
           {{item.content}}
         </div>
+        <div class="author">{{item.author}}</div>
         <div class="time">{{item.date}}</div>
       </div>
     </div>
@@ -27,29 +28,32 @@
       align-items: center;
       .right {
         margin-left: 20px;
+        margin-right: 10px;
+        width: 100%;
         .name {
           color: $icon-blue;
           font-size: 14px;
           font-weight: 600;
+          margin-top: 10px;
         }
         .words {
           margin-right: 12px;
           margin-top: 5px;
-          display: -webkit-box;
-          display: -moz-box;
-          -webkit-box-orient: vertical;
-          -webkit-line-clamp: 2;
-          -moz-box-orient: vertical;
-          -moz-line-clamp: 2;
-          overflow: hidden;
           font-size: 13px;
         }
-        .time {
+        .author {
+          width: 100%;
           text-align: right;
           color: $font-color;
           font-size: 14px;
-          margin-right: 12px;
           margin-top: 7px;
+        }
+        .time {
+          width: 100%;
+          text-align: right;
+          color: $font-color;
+          font-size: 14px;
+          margin-bottom: 3px;
         }
       }
     }
@@ -94,7 +98,6 @@
               })
             } else {
               this.acList = response.data.result
-              console.log(this.acList)
             }
           })
       }

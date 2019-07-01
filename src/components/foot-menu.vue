@@ -118,7 +118,7 @@
     name: 'foot-menu',
     data () {
       return {
-        existNewMessage: true
+        existNewMessage: false
       }
     },
     created: function () {
@@ -126,11 +126,11 @@
     },
     methods: {
       getData () {
-        Axios.get('/user/getMessageData')
+        Axios.get('/user/getNewState')
           .then(response => {
             if (!response.data.error) {
               let doc = response.data.result
-              this.existNewMessage = (doc.words + doc.request + doc.promote + doc.announcement === 0)
+              this.existNewMessage = (doc.words || doc.promote || doc.announcement || doc.request)
             }
           })
       }

@@ -115,12 +115,15 @@
     height: 100%;
     background: $bg-gray;
     .notice {
+      position: absolute;
+      width: 100%;
       background: $main-color;
       height: 42px;
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 999;
       span {
         text-align: center;
         font-size: 16px;
@@ -142,7 +145,7 @@
     }
     .input {
       width: 100%;
-      margin-top: 20px;
+      margin-top: 62px;
       textarea {
         font-size: 14px;
         box-sizing: border-box;

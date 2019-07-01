@@ -46,7 +46,7 @@ export default [
               {
                 path: 'sub',
                 component: resolve => require(['../components/me/message/sub.vue'], resolve),
-                meta: { requiresAuth: true }
+                meta: { requiresAuth: true, keepAlive: true, savedPosition: 0 }
               },
               {
                 path: 'subMessage/:id',
@@ -165,7 +165,8 @@ export default [
     meta: { keepAlive: true }
   },
   {
-    path: '/buildStory',         // 创建新故事
+    path: '/buildStory', // 创建新故事
+    name: 'build',
     component: resolve => require(['../pages/stories/buildStory.vue'], resolve),
     meta: { requiresAuth: true }
   },
@@ -207,22 +208,22 @@ export default [
       {
         path: 'selected/',
         component: resolve => require(['../components/discover/selected.vue'], resolve),
-        meta: { requiresAuth: true, savedPosition: 0 }
+        meta: { savedPosition: 0, keepAlive: true }
       },
       {
         path: 'focus/',
         component: resolve => require(['../components/discover/focus.vue'], resolve),
-        meta: { requiresAuth: true, savedPosition: 0 }
+        meta: { requiresAuth: true, savedPosition: 0, keepAlive: true }
       },
       {
         path: 'friend/',
         component: resolve => require(['../components/discover/friend.vue'], resolve),
-        meta: { requiresAuth: true, savedPosition: 0 }
+        meta: { requiresAuth: true, savedPosition: 0, keepAlive: true }
       },
       {
         path: 'fresh/',
         component: resolve => require(['../components/discover/fresh.vue'], resolve),
-        meta: { requiresAuth: true, savedPosition: 0 }
+        meta: { requiresAuth: true, savedPosition: 0, keepAlive: true }
       }
     ]
   },
@@ -250,7 +251,8 @@ export default [
   },
   {
     path: '/dialogue/:id',
-    component: resolve => require(['../pages/dialogue/dialogue.vue'], resolve)
+    component: resolve => require(['../pages/dialogue/dialogue.vue'], resolve),
+    meta: { requiresAuth: true }
   },
   {
     path: '/error',

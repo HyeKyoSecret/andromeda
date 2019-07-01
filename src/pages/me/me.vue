@@ -61,9 +61,9 @@
             </div>
             <div class="right">
               <div class="words">
-                <span class="sex" v-if="operation.length === 5 && item.name !== '共同好友'">{{sex}}</span>
-                <span class="name">{{item.name}}</span>
-                <span class="note"></span>
+                <div class="sex" v-if="operation.length === 5 && item.name !== '共同好友'">{{sex}}</div>
+                <div class="name">{{item.name}}</div>
+                <div class="note" v-if="item.name === '我的消息' && existNewMessage">new</div>
               </div>
               <div class="icon">
                 <img src="../../img/icon/right.png">
@@ -231,7 +231,7 @@
             flex: 4;
             display: flex;
             height: 100%;
-            align-items: center;
+            /*align-items: center;*/
             font-size: 15px;
             border-bottom: 1px solid $border-gray;
             .words {
@@ -240,8 +240,16 @@
               margin-left: 15px;
               line-height: 50px;
               font-size: 0;
-              span {
+              display: flex;
+              div {
                 font-size: 14px;
+              }
+              .note {
+                padding-left: 4px;
+                color: $main-red;
+                font-size: 13px;
+                height: 50px;
+                margin-top: -10px;
               }
             }
             .icon {
@@ -399,12 +407,14 @@
         fileExt: '',  // 文件后缀名
         percentShow: false,
         percent: 0,
-        follower: null
+        follower: null,
+        existNewMessage: false // new标签
       }
     },
     watch: {
       $route: function () {
         this.checkUser()  // 重新获取信息，防止组件复用造成的数据不刷新
+        this.getNewState()
       }
     },
     computed: {
@@ -440,8 +450,18 @@
     },
     created: function () {
       this.checkUser()
+      this.getNewState()
     },
     methods: {
+      getNewState () {
+        Axios.get('/user/getNewState')
+          .then(response => {
+            if (!response.data.error) {
+              let doc = response.data.result
+              this.existNewMessage = (doc.words || doc.promote || doc.announcement || doc.request)
+            }
+          })
+      },
       simulateClick () {
         if (this.userStatus === 'isUser') {
           this.$refs.input.click()

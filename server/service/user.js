@@ -5,6 +5,7 @@ const express = require('express')
 const User = require('../db/User')
 const Root = require('../db/StoryRoot')
 const Story = require('../db/Story')
+const Announcement = require('../db/Announcement')
 const moment = require('moment')
 const router = express.Router()
 const formidable = require('formidable')
@@ -379,50 +380,191 @@ router.get('/user/getMessageData', (req, res) => {
     user = req.cookies.And.user
   }
   User.findOne({username: user})
+    .populate({
+      path: 'dialogue',
+      populate: {
+        path: 'message',
+        populate: {
+          path: 'to'
+        }
+      }
+    })
     .exec((err, duser) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
-      }
-      if (duser) {
-        for (let i = 0; i < duser.commentFrom.length; i++) {
-          if (!duser.commentFrom[i].readed) {
-            result.promote ++        // 通知数量 评论
-          }
-        }
-        for (let i = 0; i < duser.subscribe.length; i++) {
-          for (let j = 0; j < duser.subscribe[i].new.length; j++) {
-            if (!duser.subscribe[i].new[j].readed) {
-              result.promote ++     // 通知数量 订阅
-            }
-          }
-        }
-        for (let i = 0; i < duser.promote.length; i++) {
-          if (!duser.promote[i].readed) {
-            result.promote ++       // 通知数量 好友验证
-          }
-        }
-        if (duser.pending && duser.pending.request) {
-          for (let i = 0; i < duser.pending.request.length; i++) {
-            if (!duser.pending.request[i].readed) {
-              result.request ++
-            }
-          }
-        }
-        if (duser.pending && duser.pending.addFriend) {
-          for (let i = 0; i < duser.pending.addFriend.length; i++) {
-            if (!duser.pending.addFriend[i].readed) {
-              result.request ++
-            }
-          }
-        }
-        for (let i = 0; i < duser.announcement.length; i++) {
-          if (!duser.announcement.readed) {
-            result.announcement ++
-          }
-        }
-        res.send({error: false, user: duser.id, result: result})
       } else {
-        res.send({error: true, type: 'user', message: '发生错误，请检查url'})
+        Announcement.find({})
+          .populate('readed', 'username')
+          .exec((err2, anc) => {
+            if (err2) {
+              res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+            } else {
+              let count = 0
+              anc.forEach(item => {
+                if (item.readed.some(x => {
+                  return x.username === user
+                })) {
+                  count++
+                }
+              })
+              result.announcement = anc.length - count
+              if (duser) {
+                for (let i = 0; i < duser.commentFrom.length; i++) {
+                  if (!duser.commentFrom[i].readed) {
+                    result.promote ++        // 通知数量 评论
+                  }
+                }
+                for (let i = 0; i < duser.subscribe.length; i++) {
+                  for (let j = 0; j < duser.subscribe[i].new.length; j++) {
+                    if (!duser.subscribe[i].new[j].readed) {
+                      result.promote ++     // 通知数量 订阅
+                    }
+                  }
+                }
+                for (let i = 0; i < duser.promote.length; i++) {
+                  if (!duser.promote[i].readed) {
+                    result.promote ++       // 通知数量 好友验证
+                  }
+                }
+                if (duser.pending && duser.pending.request) {
+                  for (let i = 0; i < duser.pending.request.length; i++) {
+                    if (!duser.pending.request[i].readed) {
+                      result.request ++
+                    }
+                  }
+                }
+                if (duser.pending && duser.pending.addFriend) {
+                  for (let i = 0; i < duser.pending.addFriend.length; i++) {
+                    if (!duser.pending.addFriend[i].readed) {
+                      result.request ++
+                    }
+                  }
+                }
+                for (let i = 0; i < duser.dialogue.length; i++) {
+                  for (let j = duser.dialogue[i].message.length - 1; j >= 0; j--) {
+                    if (duser.dialogue[i].message[j].readed) {
+                      break
+                    } else {
+                      if (duser.dialogue[i].message[j].to._id.toString() === duser._id.toString()) {
+                        result.words ++
+                      }
+                    }
+                  }
+                }
+                Object.keys(result).forEach((key) => {
+                  if (result[key] > 99) {
+                    result.key = '99+'
+                  }
+                })
+                res.send({error: false, user: duser.id, result: result})
+              } else {
+                res.send({error: true, type: 'user', message: '发生错误，请检查url'})
+              }
+            }
+          })
+      }
+    })
+})
+router.get('/user/getNewState', (req, res) => {
+  'use strict'
+  let user
+  let result = {
+    words: false,
+    request: false,
+    promote: false,
+    announcement: false
+  }
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And && req.cookies.And.user) {
+    user = req.cookies.And.user
+  }
+  User.findOne({username: user})
+    .populate({
+      path: 'dialogue',
+      populate: {
+        path: 'message',
+        populate: {
+          path: 'to'
+        }
+      }
+    })
+    .exec((err, duser) => {
+      if (err) {
+        res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+      } else {
+        if (duser) {
+          Announcement.find({})
+            .populate('readed', 'username')
+            .exec((err2, anc) => {
+              if (err2) {
+                res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
+              } else {
+                anc.forEach(item => {
+                  if (!item.readed.some(x => {
+                    return x.username === user
+                  })) {
+                    result.announcement = true
+                  }
+                })
+                for (let i = 0; i < duser.commentFrom.length; i++) {
+                  if (!duser.commentFrom[i].readed) {
+                    result.promote = true        // 通知数量 评论
+                    break
+                  }
+                }
+                for (let i = 0; i < duser.subscribe.length; i++) {
+                  for (let j = 0; j < duser.subscribe[i].new.length; j++) {
+                    if (!duser.subscribe[i].new[j].readed) {
+                      result.promote = true     // 通知数量 订阅
+                      break
+                    }
+                  }
+                }
+                for (let i = 0; i < duser.promote.length; i++) {
+                  if (!duser.promote[i].readed) {
+                    result.promote = true       // 通知数量 好友验证
+                    break
+                  }
+                }
+                if (duser.pending && duser.pending.request) {
+                  for (let i = 0; i < duser.pending.request.length; i++) {
+                    if (!duser.pending.request[i].readed) {
+                      result.request = true
+                      break
+                    }
+                  }
+                }
+                if (duser.pending && duser.pending.addFriend) {
+                  for (let i = 0; i < duser.pending.addFriend.length; i++) {
+                    if (!duser.pending.addFriend[i].readed) {
+                      result.request = true
+                      break
+                    }
+                  }
+                }
+                for (let i = 0; i < duser.dialogue.length; i++) {
+                  for (let j = duser.dialogue[i].message.length - 1; j >= 0; j--) {
+                    if (!result.words) {
+                      if (duser.dialogue[i].message[j].readed) {
+                        break
+                      } else {
+                        if (duser.dialogue[i].message[j].to._id.toString() === duser._id.toString()) {
+                          result.words = true
+                          break
+                        }
+                      }
+                    } else {
+                      break
+                    }
+                  }
+                }
+                res.send({error: false, user: duser.id, result: result})
+              }
+            })
+        } else {
+          res.send({error: true, type: 'user', message: '发生错误，请检查url'})
+        }
       }
     })
 })
@@ -611,7 +753,9 @@ router.get('/user/getFriendList', (req, res) => {
     loginUser = req.cookies.And.user
   }
   User.findOne({username: loginUser})
-    .populate('friendList.friend')
+    .populate({
+      path: 'friendList.friend'
+    })
     .exec((err, doc) => {
       if (err) {
         res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
@@ -1617,7 +1761,7 @@ router.post('/user/addSearchHistory', (req, res) => {
                 doc.searchHistory.splice(index, 1)
               }
             })
-            if (doc.searchHistory.length <= 10) {
+            if (doc.searchHistory.length <= 8) {
               doc.searchHistory.push({
                 content: content,
                 style: active
@@ -1842,6 +1986,18 @@ router.get('/user/getSubscribeMessage', (req, res) => {
   } else if (req.cookies.And) {
     user = req.cookies.And.user
   }
+  function bubbleSort (arr) {   // 排序算法，从大到小
+    for (let i = 0; i < arr.length - 1; i++) {
+      for (let j = 0; j < arr.length - 1 - i; j++) {
+        if (arr[j]['timeStamp'] < arr[j + 1]['timeStamp']) {
+          let tmp = arr[j]
+          arr[j] = arr[j + 1]
+          arr[j + 1] = tmp
+        }
+      }
+    }
+    return arr
+  }
   User.findOne({username: user})
     .populate('subscribe.root')
     .populate('subscribe.new.id')
@@ -1855,18 +2011,27 @@ router.get('/user/getSubscribeMessage', (req, res) => {
           for (let j = 0; j < doc.subscribe[i].new.length; j++) {
             if (!doc.subscribe[i].new[j].readed) {
               count++
-              temp.push(doc.subscribe[i].new[j])
             }
+            temp.push(doc.subscribe[i].new[j])
           }
           temp.reverse()    // 倒序
-          result.push({
-            id: doc.subscribe[i].root.id,
-            name: doc.subscribe[i].root.name,
-            words: temp.length ? temp[0].id.content : doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.content,
-            notReaded: count,
-            date: temp.length ? moment(temp[0].id.date).fromNow() : moment(doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.date).fromNow()
-          })
+          if (doc.subscribe[i].new.length > 0) {
+            result.push({
+              coverImg: tool.formImg(doc.subscribe[i].root.coverImg),
+              id: doc.subscribe[i].root.id,
+              name: doc.subscribe[i].root.name,
+              words: temp.length > 0 ? temp[0].id.content : doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.content,
+              notReaded: count,
+              date: temp.length ? moment(temp[0].id.date).fromNow() : moment(doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.date).fromNow(),
+            })
+            if (temp.length) {
+              result[result.length - 1].timeStamp = temp[0].id.date.getTime()
+            } else {
+              result[result.length - 1].timeStamp = doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.date.getTime()
+            }
+          }
         }
+        bubbleSort(result)
         res.send({error: false, result: result})
       }
     })
@@ -1961,7 +2126,6 @@ router.post('/user/changeReadState', (req, res) => {
               }
             }
           }
-          console.log(JSON.stringify(temp))
           User.updateOne({username: user}, {$set: {'subscribe': temp}})
             .exec(err2 => {
               if (err2) {
@@ -2022,43 +2186,46 @@ router.get('/user/getAnnouncement', (req, res) => {
   } else if (req.cookies.And) {
     user = req.cookies.And.user
   }
-  let temp
   let result = []
   User.findOne({username: user})
-    .exec((err, doc) => {
-      if (err) {
+    .exec((err2, usr) => {
+      if (err2) {
         res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
       } else {
-        if (doc.announcement.length) {
-          temp = doc.announcement
-          for (let i = 0; i < doc.announcement.length; i++) {
-            result.push({
-              title: doc.announcement[i].title,
-              content: doc.announcement[i].content,
-              date: moment(doc.announcement[i].date).format('lll'),
-              img: tool.formImg(doc.announcement[i].img)
-            })
-          }
-          temp.forEach(item => {
-            item.readed = true
-          })
-          result.reverse()
-          User.updateOne({username: user}, {$set: {'announcement': temp}})
-            .exec(err2 => {
-              if (err2) {
+        if (usr) {
+          Announcement.find({})
+            .populate('readed', 'username')
+            .exec((err, doc) => {
+              if (err) {
                 res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
               } else {
-                res.send({error: false, result: result})
+                doc.forEach(item => {
+                  result.push({
+                    title: item.title,
+                    content: item.content,
+                    author: item.author,
+                    date: moment(item.date).format('lll')
+                  })
+                  item.readed.push(user._id)
+                })
+                result.reverse()
+                Announcement.update({}, {$addToSet: {'readed': usr._id}}, {multi: true})
+                  .exec(err3 => {
+                    if (err3) {
+                      res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+                    } else {
+                      res.send({error: false, result: result})
+                    }
+                  })
               }
             })
         } else {
-          res.send({error: false, result: []})
+          res.send({error: true, type: 'login', message: '发生错误，请尝试重新登录'})
         }
       }
     })
 })
 router.get('/user/getMessageWords', (req, res) => {
-  console.log('进入')
   let user
   if (req.session.user) {
     user = req.session.user
@@ -2066,6 +2233,18 @@ router.get('/user/getMessageWords', (req, res) => {
     user = req.cookies.And.user
   }
   let result = []
+  function bubbleSort (arr) {   // 排序算法，从大到小
+    for (let i = 0; i < arr.length - 1; i++) {
+      for (let j = 0; j < arr.length - 1 - i; j++) {
+        if (arr[j]['updatedAt'].getTime() < arr[j + 1]['updatedAt'].getTime()) {
+          let tmp = arr[j]
+          arr[j] = arr[j + 1]
+          arr[j + 1] = tmp
+        }
+      }
+    }
+    return arr
+  }
   User.findOne({username: user})
     .populate({
       path: 'dialogue',
@@ -2109,19 +2288,18 @@ router.get('/user/getMessageWords', (req, res) => {
       } else {
         if (doc) {
           for (let i = 0; i < doc.dialogue.length; i++) {
-            console.log('喜欢' + doc.dialogue)
             let count = 0
             let temp = []
             for (let j = 0; j < doc.dialogue[i].message.length; j++) {
               if (doc.dialogue[i].message[j].to.username === user && !doc.dialogue[i].message[j].readed) {
                 count++
-                temp.push({
-                  to: doc.dialogue[i].message[j].to.nickname,
-                  from: doc.dialogue[i].message[j].from.nickname,
-                  content: doc.dialogue[i].message[j].content
-                })
-                temp.reverse()
               }
+              temp.push({
+                to: doc.dialogue[i].message[doc.dialogue[i].message.length - 1].to.nickname,
+                from: doc.dialogue[i].message[doc.dialogue[i].message.length - 1].from.nickname,
+                content: doc.dialogue[i].message[doc.dialogue[i].message.length - 1].content
+              })
+              temp.reverse()
             }
             if (doc.dialogue[i].people1.username === user) {
               result.push({
@@ -2140,6 +2318,7 @@ router.get('/user/getMessageWords', (req, res) => {
                 date: moment(temp[0].date).fromNow()
               })
             }
+            bubbleSort(result)
             res.send({error: false, result: result})
           }
         } else {

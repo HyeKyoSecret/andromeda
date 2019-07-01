@@ -344,55 +344,59 @@
           {
             name: '我的消息',
             icon: require('../../img/icon/my_message.png'),
-            path: '/people/message/words'
+            router: '/message/words',
+            path: ''
           },
           {
             name: '我的创作',
             icon: require('../../img/icon/my_creation.png'),
-            path: `/people/creation`
+            router: `/creation`,
+            path: ''
           },
           {
             name: '我的订阅',
             icon: require('../../img/icon/my_subscription.png'),
-            path: '/people/subscribe'
+            router: '/subscribe',
+            path: ''
           },
           {
             name: '我的关注',
             icon: require('../../img/icon/my_focus.png'),
-            path: '/people/focusList'
+            router: '/focusList',
+            path: ''
           },
           {
             name: '我的好友',
             icon: require('../../img/icon/my_friend.png'),
-            path: '/people/friendList'
+            router: '/friendList',
+            path: ''
           },
           {
             name: '我的轨迹',
             icon: require('../../img/icon/my_trail.png'),
-            path: '/people/history'
+            router: '/history',
+            path: ''
           },
           {
             name: '我的设置',
             icon: require('../../img/icon/settings.png'),
-            path: '/people/settings'
+            router: '/settings',
+            path: ''
           }
         ],
         cOperation: [
           {
             name: '的创作',
             icon: require('../../img/icon/my_creation.png'),
-            path: `/people/creation`
+            router: `/creation`,
+            path: ''
           },
           {
             name: '的关注',
             icon: require('../../img/icon/my_focus.png'),
-            path: '/people/focusList'
+            router: '/focusList',
+            path: ''
           }
-          // {
-          //   name: '共同好友',
-          //   icon: require('../../img/icon/my_friend.png'),
-          //   path: '/people/message/words'
-          // }
         ],
         sex: '',
         tempOperation: [],
@@ -585,15 +589,13 @@
                 this.userId = response.data.user
                 this.follower = response.data.follower
                 this.userStatus = 'isUser'
-                let reg = /^([0-9]){7}$/
                 for (let i = 0; i < this.operation.length; i++) { // 修改path
-                  let splitPath = this.operation[i].path.split('/')
-                  if (!reg.test(splitPath[2])) {
-                    let pathArray = this.operation[i].path.split('/people')
-                    this.operation[i].path = `/people/${response.data.user}${pathArray[1]}`
-                  }
+                  this.operation[i].path = `/people/${response.data.user}${this.operation[i].router}`
                 }
               } else {
+                for (let i = 0; i < this.operation.length; i++) { // 修改path
+                  this.operation[i].path = `/login`
+                }
                 this.userStatus = 'askLogin'
               }
             }).catch(error => {
@@ -623,13 +625,8 @@
               this.userId = res.data.user.userId
               this.imgSrc = res.data.user.headImg
               this.follower = res.data.user.follower
-              let reg = /^([0-9]){7}$/
               for (let i = 0; i < this.operation.length; i++) { // 修改path
-                let splitPath = this.operation[i].path.split('/')
-                if (!reg.test(splitPath[2])) {
-                  let pathArray = this.operation[i].path.split('/people')
-                  this.operation[i].path = `/people/${res.data.user.user}${pathArray[1]}`
-                }
+                this.operation[i].path = `/people/${this.$route.params.user}${this.operation[i].router}`
               }
               if (res.data.customer) {
                 if (this.operation.length > 5) {
@@ -639,16 +636,11 @@
                 }
                 this.sex = res.data.sex   // 设置性别
                 this.userStatus = 'isCustomer'
-                for (let i = 0; i < this.operation.length; i++) { // 修改path
-                  let splitPath = this.operation[i].path.split('/')
-                  if (!reg.test(splitPath[2])) {
-                    let pathArray = this.operation[i].path.split('/people')
-                    this.operation[i].path = `/people/${this.$route.params.user}${pathArray[1]}`
-                    if (i !== 2) { // 共同好友是第三个
-                      this.operation[i].name = `${this.sex}${this.operation[i].name}`
-                    }
-                  }
-                }
+                // 以下手动修改路径和name标示
+                this.operation[0].path = `/people/${this.$route.params.user}/creation`
+                this.operation[1].path = `/people/${this.$route.params.user}/focusList`
+                this.operation[0].name = `${this.sex}的创作`
+                this.operation[1].name = `${this.sex}的关注`
                 this.getFriendshipAndFocus()
               } else {
                 this.userStatus = 'isUser'

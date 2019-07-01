@@ -542,6 +542,7 @@ router.get('/comment/getMessageComment', (req, res) => {
                   peopleHead: tool.formImg(doc.commentFrom[i].comment.people.headImg),
                   date: moment(doc.commentFrom[i].comment.date).format('YYYY.MM.DD HH:mm'),
                   commentTo: doc.commentFrom[i].comment.commentTo.people.nickname,
+                  commentToId: doc.commentFrom[i].comment.commentTo.people.id,
                   commentContent: doc.commentFrom[i].comment.content,
                   commentId: doc.commentFrom[i].comment._id,
                   coverImg: tool.formImg(obj.coverImg),

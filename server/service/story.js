@@ -1544,33 +1544,37 @@ router.get('/story/getFriendDiscovery', (req, res) => {
       if (err) {
         res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
       } else {
-        for (let i = 0; i < doc.friendList.length; i++) {
-          for (let j = 0; j < doc.friendList[i].friend.myCreation.root.length; j++) {
-            temp.push({
-              storyName: doc.friendList[i].friend.myCreation.root[j].name,
-              content: doc.friendList[i].friend.myCreation.root[j].content,
-              author: doc.friendList[i].friend.myCreation.root[j].author.nickname,
-              date: moment(doc.friendList[i].friend.myCreation.root[j].date).format('YYYY.MM.DD HH:mm'),
-              path: doc.friendList[i].friend.myCreation.root[j].id,
-              cover: tool.formImg(doc.friendList[i].friend.myCreation.root[j].coverImg),
-              timeStamp: doc.friendList[i].friend.myCreation.root[j].date.getTime()
-            })
+        if (doc) {
+          for (let i = 0; i < doc.friendList.length; i++) {
+            for (let j = 0; j < doc.friendList[i].friend.myCreation.root.length; j++) {
+              temp.push({
+                storyName: doc.friendList[i].friend.myCreation.root[j].name,
+                content: doc.friendList[i].friend.myCreation.root[j].content,
+                author: doc.friendList[i].friend.myCreation.root[j].author.nickname,
+                date: moment(doc.friendList[i].friend.myCreation.root[j].date).format('YYYY.MM.DD HH:mm'),
+                path: doc.friendList[i].friend.myCreation.root[j].id,
+                cover: tool.formImg(doc.friendList[i].friend.myCreation.root[j].coverImg),
+                timeStamp: doc.friendList[i].friend.myCreation.root[j].date.getTime()
+              })
+            }
+            for (let j = 0; j < doc.friendList[i].friend.myCreation.story.length; j++) {
+              temp.push({
+                storyName: doc.friendList[i].friend.myCreation.story[j].root.name,
+                content: doc.friendList[i].friend.myCreation.story[j].content,
+                author: doc.friendList[i].friend.myCreation.story[j].author.nickname,
+                date: moment(doc.friendList[i].friend.myCreation.story[j].date).format('YYYY.MM.DD HH:mm'),
+                path: doc.friendList[i].friend.myCreation.story[j].id,
+                cover: tool.formImg(doc.friendList[i].friend.myCreation.story[j].root.coverImg),
+                timeStamp: doc.friendList[i].friend.myCreation.story[j].date.getTime()
+              })
+            }
           }
-          for (let j = 0; j < doc.friendList[i].friend.myCreation.story.length; j++) {
-            temp.push({
-              storyName: doc.friendList[i].friend.myCreation.story[j].root.name,
-              content: doc.friendList[i].friend.myCreation.story[j].content,
-              author: doc.friendList[i].friend.myCreation.story[j].author.nickname,
-              date: moment(doc.friendList[i].friend.myCreation.story[j].date).format('YYYY.MM.DD HH:mm'),
-              path: doc.friendList[i].friend.myCreation.story[j].id,
-              cover: tool.formImg(doc.friendList[i].friend.myCreation.story[j].root.coverImg),
-              timeStamp: doc.friendList[i].friend.myCreation.story[j].date.getTime()
-            })
-          }
+          bubbleSort(temp)
+          result = temp.slice(existLength, existLength + 8)
+          res.send({result: result})
+        } else {
+          res.send({result: []})
         }
-        bubbleSort(temp)
-        result = temp.slice(existLength, existLength + 8)
-        res.send({result: result})
       }
     })
 })

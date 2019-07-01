@@ -42,8 +42,6 @@
     name: 'creation',
     props: ['story', 'type'],
     beforeRouteLeave (to, from, next) {
-      console.log(from.meta.savedPosition)
-      console.log(document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop)
       from.meta.savedPosition = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
       next()
     },
@@ -115,7 +113,7 @@
       }
       .right-part {
         margin-top: 8px;
-        flex: 3.5;
+        flex: 3;
         .story-name {
           color: $font-dark;
           font-size: 15px;

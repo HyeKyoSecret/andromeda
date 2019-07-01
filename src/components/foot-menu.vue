@@ -1,15 +1,15 @@
 <template>
   <div class="foot-menu">
-    <router-link tag='div' to= '/start' class="button">
+    <router-link tag='div' to= '/start' class="button" @click="closeError">
       <div class="f-begin pic"></div>
       <div class="words">开始</div>
     </router-link>
     <div class="discovery">
-      <router-link tag='div' class="circle" to='/discover/selected'>
+      <router-link tag='div' class="circle" to='/discover/selected' @click="closeError">
         <div class="f-discover"></div>
       </router-link>
     </div>
-    <router-link tag ='div' class="button" to='/people'>
+    <router-link tag ='div' class="button" to='/people' @click="closeError">
       <div class="n-me" v-if="existNewMessage"></div>
       <div class="f-me pic" v-else></div>
       <div class="words">我</div>
@@ -133,6 +133,9 @@
               this.existNewMessage = (doc.words || doc.promote || doc.announcement || doc.request)
             }
           })
+      },
+      closeError () {
+        this.$emit('close')
       }
     }
   }

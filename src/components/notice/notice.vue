@@ -67,6 +67,7 @@
     },
     methods: {
       goBack () {
+        this.$emit('close')
         this.$router.go(-1)
       },
       showMenu () {

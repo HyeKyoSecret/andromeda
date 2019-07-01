@@ -4,17 +4,14 @@
     <div class="content">
       <img src="../../img/images/404.png" alt="">
     </div>
-    <foot-menu></foot-menu>
   </div>
 </template>
 <script>
   import notice from '../notice/notice.vue'
-  import FootMenu from '../foot-menu.vue'
   export default {
     name: 'errorPage',
     components: {
-      notice,
-      FootMenu
+      notice
     }
   }
 </script>

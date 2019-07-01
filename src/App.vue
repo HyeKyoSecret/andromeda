@@ -8,7 +8,7 @@
     <transition>
       <router-view v-on:error="closeSelf" v-if="!errorPage && !$route.meta.keepAlive"></router-view>
     </transition>
-    <ErrorPage v-if="errorPage"></ErrorPage>
+    <ErrorPage v-if="errorPage" v-on:close="closeSelf"></ErrorPage>
   </div>
 </template>
 <script>

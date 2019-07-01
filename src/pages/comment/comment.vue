@@ -31,7 +31,7 @@
     <div class="sub-comment" id='subContent' v-if="commentList.subComment" :style="{ 'marginTop': mainHeight + 35 +'px'}" >
       <div class="one-sub-comment" v-for="(item, index) in commentList.subComment" :id="item.id">
         <div class="sub-comment-content">
-          <div class="sub-critic-name">
+          <div class="sub-critic-name" @click="goPeople(item.peopleId)">
             <div class="left"><img :src="item.headImg" alt="" @error="setErrorImg(index)"></div>
             <div class="right"><span class="sub-critic">{{item.people}}</span></div>
           </div>
@@ -122,6 +122,9 @@
         this.mainId = main
         document.getElementById('textArea').focus()
         this.tempPlaceHolder = `回复${people} : `
+      },
+      goPeople (id) {
+        this.$router.push(`/people/${id}`)
       },
       submitComment (to, mainId) {
         if (!mainId) {

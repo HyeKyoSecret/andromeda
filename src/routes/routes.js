@@ -17,6 +17,7 @@ export default [
     path: '/people/:user?/',
     name: 'people',
     component: resolve => require(['../pages/me/me.vue'], resolve),
+    meta: {keepAlive: false},
     children: [
       {
         path: 'message',

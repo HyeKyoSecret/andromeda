@@ -122,6 +122,9 @@
               this.userId = response.data.user
               this.menu[1].path = `/people/${this.userId}/subscribe`
               this.menu[2].path = `/people/${this.userId}/history`
+            } else {
+              this.menu[1].path = `/login`
+              this.menu[2].path = `/login`
             }
           })
       }

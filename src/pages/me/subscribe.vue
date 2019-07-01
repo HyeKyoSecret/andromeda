@@ -2,7 +2,7 @@
   <div class="subscribe">
     <notice :title="title"></notice>
     <div class="show-story" v-if="subList.length">
-      <div class="book" id="book" :style="{'width': baseWidth * 0.9 + 'px'}">
+      <div class="book" id="book" :style="{'width': baseWidth * 0.9 + 'px', maxWidth: 630 + 'px'}">
         <div class="background">
           <div class="left-part"><img :src="cover.coverImg" @click="goStory(cover.latest)" @error="setCoverErrorImg"/></div>
           <div class="right-part">
@@ -31,7 +31,7 @@
       </div>
     </div>
     <div :style="bookStyle">
-      <div class="shelf" v-for="(item, index) in contentList" v-if="subList.length" >
+      <div class="shelf" v-for="(item, index) in contentList" v-if="subList.length" :style="shelfStyle">
         <div class="book" v-for="(q, index2) in item" @click="changeCover(q)">
           <div class="cover"><img :src="q.coverImg" @error="setErrorImg(index, index2)"/></div>
           <div class="progress-bar" v-bind:style="{ width: q.readPercent * 3 / 5 + '%'}"></div>
@@ -61,7 +61,6 @@
       justify-content: center;
       align-items: center;
       width: 100%;
-      /*      height: 240px;      */
       font-size: 0;
       .book {
         max-width: 700px;
@@ -69,23 +68,25 @@
       .background {
         width: 100%;
         height: 100%;
-        border-radius: 2px;
+        border-radius: 4px;
         background-color: white;
         .left-part {
           width: 50%;
           display: inline-block;
-          border-top-left-radius: 2px;
-          border-bottom-left-radius: 2px;
+          border-top-left-radius: 4px;
+          border-bottom-left-radius: 4px;
           img {
             width: 100%;
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
           }
         }
         .right-part {
           width: 50%;
           display: inline-block;
           vertical-align: top;
-          border-top-right-radius: 3px;
-          border-bottom-right-radius: 2px;
+          border-top-right-radius: 4px;
+          border-bottom-right-radius: 4px;
           .already-read {
             text-align: right;
             position: relative;
@@ -143,7 +144,6 @@
     .shelf {
       margin-top: 20px;
       border-bottom: 1px solid $line-gray;
-      min-height: 140px;
       &:last-child{
         margin-bottom: 85px;
         border: none;
@@ -166,7 +166,7 @@
         .progress-bar {
           margin-left: 20%;
           margin-right: 20%;
-          height: 2px;
+          height: 3px;
           background-color: #00db75;
         }
         .name {
@@ -210,8 +210,21 @@
     },
     computed: {
       bookStyle: function () {
-        return {
-          'margin-top': this.subList.length > 0 ? (this.baseWidth * 0.9 * 0.666 + 32) + 'px' : 0
+        if (this.baseWidth >= 700) {
+          return {'margin-top': this.subList.length > 0 ? (630 * 0.666) + 32 + 'px' : 0}
+        } else {
+          return {
+            'margin-top': this.subList.length > 0 ? (this.baseWidth * 0.9 * 0.666 + 32) + 'px' : 0
+          }
+        }
+      },
+      shelfStyle: function () {
+        if (this.baseWidth >= 700) {
+          return {'height': this.subList.length > 0 ? (700 * 0.333 * 0.6 * 4 / 3) + 28 + 'px' : 0}
+        } else {
+          return {
+            'height': this.subList.length > 0 ? (this.baseWidth * 0.333 * 0.6 * 4 / 3) + 28 + 'px' : 0
+          }
         }
       }
     },

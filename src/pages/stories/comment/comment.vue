@@ -36,7 +36,7 @@
       <div class="blank"></div>
     </div>
     <div class="comment-input">
-      <textarea id="textArea" v-model="comment" rows="1" :placeholder="tempPlaceHolder" @focus="showButton"></textarea>
+      <textarea id="textArea" v-model="comment" rows="1" :placeholder="tempPlaceHolder" @focus="showButton" @blur="scrollBottom"></textarea>
       <span class="fake submit" v-if="fakeSubmit && !commentCheck">发送</span>
       <span class="submit" v-if="commentCheck" @click="submitComment(toId, mainId)">发送</span>
     </div>
@@ -253,12 +253,15 @@
     created: function () {
       this.getData()
     },
-    beforeRouteEnter (to, from, next) {
-      next(vm => {
-        vm.position = to.hash.split('#')[1]
-      })
-    },
+    // beforeRouteEnter (to, from, next) {
+    //   next(vm => {
+    //     vm.position = to.hash.split('#')[1]
+    //   })
+    // },
     methods: {
+      scrollBottom () {
+        window.scrollTo(0, document.documentElement.clientHeight)
+      },
       goComment (id) {
         this.$router.push(`/comment/${id}`)
       },
@@ -414,6 +417,7 @@
           this.mainId = ''
           this.tempPlaceHolder = '写下你的评论。。。'
           this.getData()
+          window.scrollTo(0, document.documentElement.clientHeight)
         })
       },
       countLines (ele) {

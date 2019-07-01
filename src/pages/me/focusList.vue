@@ -177,10 +177,14 @@
     watch: {
       search: function (val) {
         val.length > 0 ? this.deleteBtn = true : this.deleteBtn = false
+      },
+      $route: function () {
+        this.getData()
       }
     },
     methods: {
       getData () {
+        this.focusList = []
         Axios.get('/user/getFocusList', {
           params: {
             user: this.$route.params.user

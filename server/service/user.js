@@ -563,7 +563,7 @@ router.get('/user/getNewState', (req, res) => {
               }
             })
         } else {
-          res.send({error: true, type: 'user', message: '发生错误，请检查url'})
+          res.send({error: false, result: []})
         }
       }
     })
@@ -778,13 +778,7 @@ router.get('/user/getFriendList', (req, res) => {
 })
 router.get('/user/getFocusList', (req, res) => {
   let result = []
-  let loginUser
-  if (req.session.user) {
-    loginUser = req.session.user
-  } else if (req.cookies.And && req.cookies.And.user) {
-    loginUser = req.cookies.And.user
-  }
-  User.findOne({username: loginUser})
+  User.findOne({id: req.query.user})
     .populate('focus')
     .exec((err, doc) => {
       if (err) {

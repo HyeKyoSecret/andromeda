@@ -19,7 +19,7 @@
     </div>
     <div class="blank">向上滑动刷新数据</div>
     <div class="message-input">
-      <textarea id="textArea" v-model.trim="message" rows="1"  @focus="showButton"></textarea>
+      <textarea id="textArea" v-model.trim="message" rows="1"  @focus="showButton" @blur="scrollBottom"></textarea>
       <span class="fake submit" v-if="fakeSubmit && !messageCheck">发送</span>
       <span class="submit" v-if="messageCheck" @click="sendMessage(id)">发送</span>
     </div>
@@ -94,6 +94,7 @@
           } else {
             this.getData()
             this.message = ''
+            window.scrollTo(0, document.documentElement.clientHeight)
           }
         })
       },
@@ -105,6 +106,9 @@
       },
       goPeople (id) {
         this.$router.push('/people/' + id)
+      },
+      scrollBottom () {
+        window.scrollTo(0, document.documentElement.clientHeight)
       }
     },
     components: {

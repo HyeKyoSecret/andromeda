@@ -20,13 +20,13 @@
           </div>
           <div class="comment-content" @click="goComment(item.type, item.subId, item.commentId)">
             <span class="word" v-if="item.type === 'comment'">回复</span>
-            <span class="at" v-if="item.type === 'comment'">@{{item.commentTo}}</span>
+            <span class="at" v-if="item.type === 'comment'" @click.stop="goPeople(item.commentToId)">@{{item.commentTo}}</span>
             <span class="content">{{item.commentContent}}</span>
           </div>
           <div class="former-comment" v-if="item.type === 'comment'">
-            <span class="at">{{item.people}}</span>
+            <span class="at" @click.stop="goPeople(item.peopleId)">{{item.people}}</span>
             <span class="word">回复</span>
-            <span class="at">{{item.commentTo}}</span>
+            <span class="at" @click.stop="goPeople(item.commentToId)">{{item.commentTo}}</span>
             <span class="content">{{item.commentContent}}</span>
           </div>
           <div class="comment-theme" @click="goStory(item.subId)">

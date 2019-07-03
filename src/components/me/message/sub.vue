@@ -42,6 +42,11 @@
       from.meta.savedPosition = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
       next()
     },
+    watch: {
+      $route: function () {
+        this.getData()
+      }
+    },
     methods: {
       loadTop () {
         this.getData()

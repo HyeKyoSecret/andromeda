@@ -2,6 +2,8 @@
 const path = require('path')
 const bodyParser = require('body-parser')
 const api = require('./server/api.js')
+const easyMonitor = require('easy-monitor')
+easyMonitor('andromeda')
 // const fs = require('fs')
 // 引入处理post数据的模块
 // 引入Express

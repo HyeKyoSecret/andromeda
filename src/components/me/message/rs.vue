@@ -100,12 +100,12 @@
           height: 20px;
           .new {
             position: absolute;
-            right: 0;
-            width: 0;
-            height: 0;
-            border-color: transparent $main-red;
-            border-width: 0 18px 18px 0;
-            border-style: solid;
+            margin-top: 10px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 1000px;
+            background: $main-red;
           }
         }
         .info {

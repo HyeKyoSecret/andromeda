@@ -385,7 +385,8 @@ router.get('/user/getMessageData', (req, res) => {
       populate: {
         path: 'message',
         populate: {
-          path: 'to'
+          path: 'to',
+          select: '_id'
         }
       }
     })
@@ -2150,26 +2151,30 @@ router.get('/user/getPromoteState', (req, res) => {
       if (err) {
         res.send({error: false, message: '发生错误，请稍后再试'})
       } else {
-        result.comment = doc.commentFrom.some(function (item) {    // 评论消息
-          return !item.readed
-        })
-        for (let i = 0; i < doc.subscribe.length; i++) {
-          if (!flag) {
-            for (let j = 0; j < doc.subscribe[i].new.length; j++) {   // 订阅消息
-              if (!doc.subscribe[i].new[j].readed) {
-                result.subscribe = true
-                flag = true
-                break
+        if (doc) {
+          result.comment = doc.commentFrom.some(function (item) {    // 评论消息
+            return !item.readed
+          })
+          for (let i = 0; i < doc.subscribe.length; i++) {
+            if (!flag) {
+              for (let j = 0; j < doc.subscribe[i].new.length; j++) {   // 订阅消息
+                if (!doc.subscribe[i].new[j].readed) {
+                  result.subscribe = true
+                  flag = true
+                  break
+                }
               }
+            } else {
+              break
             }
-          } else {
-            break
           }
+          result.friend = doc.promote.some(function (item) {  // 好友消息
+            return !item.readed
+          })
+          res.send({error: false, result: result})
+        } else {
+          res.send({error: false, result: result})
         }
-        result.friend = doc.promote.some(function (item) {  // 好友消息
-          return !item.readed
-        })
-        res.send({error: false, result: result})
       }
     })
 })
@@ -2243,13 +2248,15 @@ router.get('/user/getMessageWords', (req, res) => {
     .populate({
       path: 'dialogue',
       populate: {
-        path: 'people1'
+        path: 'people1',
+        select: 'id headImg'
       }
     })
     .populate({
       path: 'dialogue',
       populate: {
-        path: 'people2'
+        path: 'people2',
+        select: 'id headImg'
       }
     })
     .populate({
@@ -2263,7 +2270,8 @@ router.get('/user/getMessageWords', (req, res) => {
       populate: {
         path: 'message',
         populate: {
-          path: 'to'
+          path: 'to',
+          select: 'username nickname'
         }
       }
     })
@@ -2272,7 +2280,8 @@ router.get('/user/getMessageWords', (req, res) => {
       populate: {
         path: 'message',
         populate: {
-          path: 'from'
+          path: 'from',
+          select: 'nickname'
         }
       }
     })
@@ -2312,9 +2321,9 @@ router.get('/user/getMessageWords', (req, res) => {
                 date: moment(temp[0].date).fromNow()
               })
             }
-            bubbleSort(result)
-            res.send({error: false, result: result})
           }
+          bubbleSort(result)
+          res.send({error: false, result: result})
         } else {
           res.send({error: true, type: 'db', message: '发生错误, 请重新登录'})
         }

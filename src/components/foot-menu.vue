@@ -5,7 +5,7 @@
       <div class="words">开始</div>
     </router-link>
     <div class="discovery">
-      <router-link tag='div' class="circle" to='/discover/selected' @click="closeError">
+      <router-link tag='div' class="circle" to='/discover/selected' @click="closeError" :class="{'router-link-active': discoverPath, 'router-link-exact-active': discoverPath}">
         <div class="f-discover"></div>
       </router-link>
     </div>
@@ -119,6 +119,12 @@
     data () {
       return {
         existNewMessage: false
+      }
+    },
+    computed: {
+      discoverPath: function () {
+        let sp = this.$route.path.split('/')
+        return sp[sp.length - 1] === 'focus' || sp[sp.length - 1] === 'friend'
       }
     },
     created: function () {

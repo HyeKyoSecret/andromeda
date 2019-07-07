@@ -12,21 +12,25 @@
         <span class="mark" v-if="more && !mark" @click="changeMark">
         <img src="../../img/icon/mark.png" alt="">
       </span>
-        <span class="search" v-if="more" @click="openSearch">
-        <img src="../../img/icon/search.png" alt="">
+      <span class="more" v-if="more" @click="showMenu">
+        <img src="../../img/icon/more.png" alt="">
       </span>
-        <span class="font" v-if="more" @click="openFontSettings">
-        <img src="../../img/icon/font.png" alt="">
-     </span>
+        <!--<span class="search" v-if="more" @click="openSearch">-->
+        <!--<img src="../../img/icon/search.png" alt="">-->
+      <!--</span>-->
+        <!--<span class="font" v-if="more" @click="openFontSettings">-->
+        <!--<img src="../../img/icon/font.png" alt="">-->
+     <!--</span>-->
     <span class="message" v-if="message" @click="sendMessage(message)">
         <img src="../../img/icon/message.png" alt="">
      </span>
     <div v-if="more && menuActive" class="menu">
-      <router-link :to="item.path" tag="div" class="content" v-for="item in menuList" :key="item.name">
+      <div class="content" v-for="item in menuList" :key="item.name" @click="listenAll(item.methods)">
         <span class="menu-icon"><img :src="item.icon" alt="">
-        </span><span class="menu-word">{{item.label}}</span>
-      </router-link>
+        </span><span class="menu-word" :class="item.name">{{item.label}}</span>
+      </div>
     </div>
+    <div class="triangle" @click="showMenu" v-if="menuActive"></div>
   </div>
 </template>
 <script>
@@ -34,27 +38,26 @@
   import Axios from 'axios'
   import { Toast } from 'mint-ui'
   export default {
-    props: ['title', 'more', 'id', 'mark', 'message'],
+    props: ['title', 'more', 'id', 'mark', 'message', 'search'],
     data () {
       return {
         menu: [
           {
-            name: 'report',
-            label: '举报',
-            icon: require('../../img/icon/report.png'),
-            path: '/report'
+            name: 'search',
+            label: '搜索',
+            icon: require('../../img/icon/graysearch.png'),
+            methods: 'openSearch'
           },
           {
             name: 'font',
             label: '字体',
             icon: require('../../img/icon/font.png'),
-            path: '/setFont'
+            methods: 'openFontSettings'
           },
           {
-            name: 'font',
-            label: '加入书签',
-            icon: require('../../img/icon/mark.png'),
-            path: '/addFriend'
+            name: 'report',
+            label: '举报',
+            icon: require('../../img/icon/report.png')
           }
         ],
         menuList: [],
@@ -66,6 +69,9 @@
       this.buildMenuList()
     },
     methods: {
+      listenAll (methods) {
+        this[methods]()
+      },
       goBack () {
         this.$emit('close')
         this.$router.go(-1)
@@ -76,6 +82,9 @@
       sendMessage (id) {
         this.$router.push('/dialogue/' + id)
       },
+      openMore () {
+        this.moreList = true
+      },
       buildMenuList () {
         if (this.more) {
           for (let i = 0; i < this.menu.length; i++) {
@@ -84,7 +93,8 @@
                 this.menuList.push({
                   label: this.menu[i].label,
                   icon: this.menu[i].icon,
-                  path: this.menu[i].path
+                  name: this.menu[i].name,
+                  methods: this.menu[i].methods
                 })
                 break
               }
@@ -108,9 +118,11 @@
         })
       },
       openFontSettings () {
+        this.menuActive = false
         this.$emit('openFontSettings')
       },
       openSearch () {
+        this.menuActive = false
         this.$emit('openSearch')
       }
     }
@@ -130,6 +142,17 @@
     position: fixed;
     top: 0;
     width: 100%;
+    .triangle {
+      position: absolute;
+      top: 12px;
+      right: 10px;
+      width:0px;
+      height:0px;
+      border-top: 15px solid rgba(0,0,0,0);
+      border-right: 15px solid  rgba(0,0,0,0);
+      border-bottom: 15px solid rgba(255, 255, 255, 0.95);
+      border-left: 15px solid  rgba(0,0,0,0);
+    }
     .range {
       position: absolute;
       top: 42px;
@@ -169,7 +192,7 @@
     }
     .mark {
       position: absolute;
-      right: 6px;
+      right: 40px;
       display: inline-block;
       height: 42px;
       width: 30px;
@@ -179,28 +202,16 @@
         height: 21px;
       }
     }
-    .search {
+    .more {
       position: absolute;
-      right: 37px;
+      right: 3px;
       display: inline-block;
       height: 42px;
-      width: 30px;
-      line-height: 50px;
+      width: 42px;
+      line-height: 39px;
       img {
         width: 22px;
-        height: 22px;
-      }
-    }
-    .font {
-      position: absolute;
-      right: 67px;
-      display: inline-block;
-      height: 42px;
-      width: 30px;
-      line-height: 50px;
-      img {
-        width: 25px;
-        height: 25px;
+        height: 7px;
       }
     }
     .menu {
@@ -208,21 +219,24 @@
       right: 0;
       top: 42px;
       background: rgba(255, 255, 255, 0.95);
-      width: 100%;
+      width: 110px;
       z-index: 999;
-      display: flex;
+      border-radius: 6px;
       .content {
-        flex: 1;
-        height: 70px;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        display: flex;
-        flex-wrap: wrap;
+        height: 38px;
+        vertical-align: middle;
+        border-bottom: 1px solid $border-gray;
+        &:last-child {
+          border: none;
+        }
         .menu-icon {
           width: 100%;
           img {
-            height: 28px;
+            height: 18px;
+            vertical-align: middle;
+            margin-right: 8px;
+            text-align: left;
+            margin-left: 10px;
           }
         }
         .menu-word {
@@ -230,6 +244,11 @@
           margin-top: -20px;
           color: $w-gray;
           font-size: 14px;
+          line-height: 40px;
+          margin-left: 10px;
+        }
+        .menu-word.search {
+          margin-left: 13px;
         }
       }
 

@@ -2782,7 +2782,7 @@ router.post('/story/readSearch', (req, res) => {
           result.push({
             id: response.hits.hits[i]._source.id,
             content: response.hits.hits[i]._source.content,
-            highlight: response.hits.hits[i].highlight ? response.hits.hits[i].highlight['content.IKS'][0] : ''
+            highlight: response.hits.hits[i].highlight && response.hits.hits[i].highlight['content.IKS'] ? response.hits.hits[i].highlight['content.IKS'][0] : response.hits.hits[i].highlight && response.hits.hits[i].highlight['content.NG'] ?  response.hits.hits[i].highlight['content.NG'][0] : ''
           })
           break
         }
@@ -2831,6 +2831,7 @@ router.post('/story/readSearch', (req, res) => {
   if (style === 'content') {
     contentSearch().catch(err => {
       if (err) {
+        console.log(err)
         res.send({error: true, type: 'es', message: '发生错误，请稍后再试'})
       }
     })

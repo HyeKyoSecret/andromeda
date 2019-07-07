@@ -1,6 +1,6 @@
 <template>
   <div class="test">
-    <div class="abc">
+    <div class="abc" @click="cutWords">
       <div>1</div>
       <div>2</div>
       <div>3</div>
@@ -52,5 +52,16 @@
 </style>
 <script>
 export default {
+  data () {
+    return {
+      words: 'hello.pick.andromeda.txt'
+    }
+  },
+  methods: {
+    cutWords: function () {
+      let temp = this.words.split('.')
+      console.log(temp[temp.length - 1])
+    }
+  }
 }
 </script>

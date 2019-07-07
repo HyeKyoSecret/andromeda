@@ -14,7 +14,7 @@ router.post('/register', (req, res) => {
   let password = req.body.password
   let captcha = req.body.captcha
   let userReg = /^[0-9a-zA-Z_]{6,16}$/   // 字母数字下划线
-  let nickReg = /^[\u4E00-\u9FA5A-Za-z0-9]{2,7}$/  // 中文数字字母
+  let nickReg = /^[\u4E00-\u9FA5A-Za-z0-9]{2,12}$/  // 中文数字字母
   let psReg = /^[A-Za-z0-9]{6,16}$/
   // console.log('收到的验证码' + captcha)
   // ('session验证码' + req.session.captchaText)
@@ -113,54 +113,59 @@ router.post('/register/login', (req, res) => {
   'use strict'
   let username = req.body.username
   let password = req.body.password
-  User.findOne({username: username}, (err, user) => {
-    if (err) {
-      res.send({permit: false, message: '服务器忙，请稍后再试'})
-    } else {
-      if (user) {
-        if (user.password === md5(password)) {
-          req.session.user = user.username
-          req.session.userId = user.id
-          res.cookie('And', {user: user.username, userId: user.id}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
-          res.send({permit: true, id: user.id, message: '登录成功'})
-        } else {
-          res.send({permit: false, message: '用户名密码不正确'})
-        }
-      } else {
-        res.send({permit: false, message: '用户名不存在'})
-      }
-    }
-  })
-  // if (req.body.captcha.toLowerCase() === req.session.loginCaptchaText) {
-  //   let username = req.body.username
-  //   let password = req.body.password
-  //   User.findOne({username: username}, (err, user) => {
-  //     if (err) {
-  //       res.send({permit: false, message: '服务器忙，请稍后再试'})
-  //     } else {
-  //       if (user) {
-  //         if (user.password === md5(password)) {
-  //           req.session.user = user.username
-  //           res.cookie('And', {user: user.username}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 14), httpOnly: true })
-  //           res.send({permit: true, id: user.id, message: '登录成功'})
-  //         } else {
-  //           res.send({permit: false, message: '用户名密码不正确'})
-  //         }
+  // User.findOne({username: username}, (err, user) => {
+  //   if (err) {
+  //     res.send({permit: false, message: '服务器忙，请稍后再试'})
+  //   } else {
+  //     if (user) {
+  //       if (user.password === md5(password)) {
+  //         req.session.user = user.username
+  //         req.session.userId = user.id
+  //         res.cookie('And', {user: user.username, userId: user.id}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
+  //         res.send({permit: true, id: user.id, message: '登录成功'})
   //       } else {
-  //         res.send({permit: false, message: '用户名不存在'})
+  //         res.send({permit: false, message: '用户名密码不正确'})
   //       }
+  //     } else {
+  //       res.send({permit: false, message: '用户名不存在'})
   //     }
-  //   })
-  // } else {
-  //   // 验证码错误
-  //   res.send({permit: false, message: '验证码错误'})
-  // }
+  //   }
+  // })
+  if (req.body.captcha.toLowerCase() === req.session.loginCaptchaText) {
+    // let username = req.body.username
+    // let password = req.body.password
+    User.findOne({username: username}, (err, user) => {
+      if (err) {
+        res.send({permit: false, message: '服务器忙，请稍后再试'})
+      } else {
+        if (user) {
+          if (user.password === md5(password)) {
+            req.session.user = user.username
+            res.cookie('And', {user: user.username}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 14), httpOnly: true })
+            res.send({permit: true, id: user.id, message: '登录成功'})
+          } else {
+            res.send({permit: false, message: '用户名密码不正确'})
+          }
+        } else {
+          res.send({permit: false, message: '用户名不存在'})
+        }
+      }
+    })
+  } else {
+    // 验证码错误
+    res.send({permit: false, message: '验证码错误'})
+  }
 })
 router.get('/register/checkLogin', (req, res) => {
-  'use strict'
+  let user
   if (req.session.user) {
-    User.findOne({username: req.session.user})
-      .exec((err, user) => {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    User.findOne({username: user})
+      .exec((err, doc) => {
         if (err) {
           res.send({
             login: false,
@@ -168,14 +173,14 @@ router.get('/register/checkLogin', (req, res) => {
             message: '系统忙，请稍后再试'
           })
         } else {
-          if (user) {
+          if (doc) {
             res.send({
               login: true,
-              user: user.id,
-              nickName: user.nickname,
-              sign: user.sign,
-              headImg: tool.formImg(user.headImg),
-              follower: user.follower.length
+              user: doc.id,
+              nickName: doc.nickname,
+              sign: doc.sign,
+              headImg: tool.formImg(doc.headImg),
+              follower: doc.follower.length
             })
           } else {
             res.send({
@@ -185,34 +190,6 @@ router.get('/register/checkLogin', (req, res) => {
           }
         }
       })
-  } else if (req.cookies.And) {
-    console.log('cookies中获取的账户名' + req.cookies.And.user)
-    User.findOne({username: req.cookies.And.user}, (err, result) => {
-      if (err) {
-        res.send({
-          login: false,
-          type: 'dbError',
-          message: '系统忙，请稍后再试'
-        })
-      } else {
-        if (result) {
-          req.session.user = req.cookies.And.user
-          res.send({
-            login: true,
-            user: result.id,
-            nickName: result.nickname,
-            sign: result.sign,
-            headImg: tool.formImg(result.headImg),
-            follower: result.follower.length
-          })
-        } else {
-          res.send({
-            login: false,
-            type: 'cookiesError'
-          })
-        }
-      }
-    })
   } else {
     res.send({
       login: false,

@@ -11,7 +11,7 @@
       <span class="commit" @click="buildStory" v-else="">发布</span>
     </div>
     <div class="story-content">
-      <textarea  id="context" name="context" placeholder="在这里书写您的故事" v-model="storyContent"></textarea>
+      <textarea  id="context" name="context" placeholder="在这里续写故事" v-model="storyContent"></textarea>
     </div>
   </div>
 </template>

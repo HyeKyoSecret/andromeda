@@ -12,7 +12,7 @@
         </div>
         <div class="right">
           <div class="date">{{item.date}}</div>
-          <div class="new-number"><span v-if="item.notReaded > 0">{{item.notReaded}}</span></div>
+          <div class="new-number"><span v-if="item.notReaded > 0" :class="{'two': item.notReaded > 9 && item.notReaded < 99, 'three': item.notReaded > 99}">{{item.notReaded > 99 ? '99+' : item.notReaded}}</span></div>
         </div>
       </div>
       <div class="blank"></div>
@@ -149,6 +149,12 @@
             border-radius: 2000px;
             text-align: center;
             line-height: 16px;
+          }
+          span.two {
+            width: 22px;
+          }
+          span.three {
+            width: 28px;
           }
         }
       }

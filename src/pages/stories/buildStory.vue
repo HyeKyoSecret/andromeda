@@ -73,7 +73,7 @@
       <span class="commit" @click="openRecommend" v-else>下一步</span>
       </div>
       <div class="context">
-        <textarea id="context" name="context" placeholder="在这里书写您的故事" v-model="rootContent" rows="16"></textarea>
+        <textarea id="context" name="context" placeholder="在这里书写故事的开头" v-model="rootContent" rows="16"></textarea>
       </div>
       <div class="permission">
         <div class="line">
@@ -469,7 +469,7 @@
         viewMode: 1,
         highlight: false,
         cropBoxMovable: false,
-        cropBoxResizable: false,
+        cropBoxResizable: true,
         toggleDragModeOnDblclick: false,
         background: false,
         zoomable: false,
@@ -499,7 +499,8 @@
       change (e) {
         let files = e.target.files || e.dataTransfer.files
         this.fileName = files[0].name
-        this.fileExt = files[0].name.split('.')[1]
+        let temp = files[0].name.split('.')
+        this.fileExt = temp[temp.length - 1]
         if (!files.length) return
         this.panel = true
         this.picValue = files[0]

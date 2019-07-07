@@ -30,6 +30,10 @@
         </div>
         <div class="words" @click="goChangeInfo(userId)">
           <div class="name">{{nickName}}</div>
+          <div class="info">
+            <img src="../../img/icon/zan.png">
+            <div>{{follower}}</div>
+          </div>
           <div v-if="isLoginCustomer" class="f-btn">
             <div class="focus-btn" @click.stop="addFocus" v-if="!focusCond">
               + 关注
@@ -40,10 +44,6 @@
           </div>
           <div class="sign">
             {{sign}}
-          </div>
-          <div class="info">
-            <img src="../../img/icon/zan.png">
-            <div>{{follower}}</div>
           </div>
         </div>
         <div class="icon" @click="goChangeInfo(userId)">
@@ -131,7 +131,6 @@
           font-weight: 500;
           padding: 0 12px 0 12px;
           .name {
-            display: inline-block;
             margin-top: 8px;
             font-size: 15px;
           }
@@ -160,6 +159,7 @@
             overflow: hidden;
           }
           .info {
+            display: inline-block;
             margin-top: 7px;
             font-size: 13px;
             color: $w-gray;
@@ -488,7 +488,8 @@
       change (e) {
         let files = e.target.files || e.dataTransfer.files
         this.fileName = files[0].name
-        this.fileExt = files[0].name.split('.')[1]
+        let temp = files[0].name.split('.')
+        this.fileExt = temp[temp.length - 1]
         if (!files.length) return
         this.panel = true
         this.picValue = files[0]

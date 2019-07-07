@@ -22,12 +22,9 @@
 <style lang='scss' scoped>
   @import "../../../scss/config";
   .subscribe {
-    position: absolute;
-    top: 0;
-    left: 0;
+    margin-top: 48px;
     width: 100%;
-    background: $bg-gray;
-    min-height: calc(100vh - 58px);
+    height: calc(100vh - 140px);
     /*z-index: 997;*/
     .sub-content {
       margin-top: 92px;
@@ -139,6 +136,8 @@
             } else {
               this.result = response.data.result
             }
+          }).catch(error => {
+            alert(error)
           })
       },
       go (id) {

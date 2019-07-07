@@ -127,7 +127,7 @@
       },
       nickNameValidator () {
         let nickReg = /^[\u4E00-\u9FA5A-Za-z0-9]+$/
-        if (this.nickName.length >= 2 && this.nickName.length <= 7) {     // 位数检查
+        if (this.nickName.length >= 2 && this.nickName.length <= 12) {     // 位数检查
           if (this.nickName && nickReg.test(this.nickName)) {     // 正则检查
             this.nickNameError = ''
             this.nickCheck = true
@@ -144,7 +144,7 @@
           }
         } else {
           this.nickCheck = false
-          this.nickNameError = '昵称长度必须在2-7位之间'
+          this.nickNameError = '昵称长度必须在2-12位之间'
         }
       },
       passwordValidator () {

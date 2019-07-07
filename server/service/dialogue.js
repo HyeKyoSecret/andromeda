@@ -70,7 +70,7 @@ router.get('/dialogue/getDialogue', (req, res) => {
                       }
                     })
                 } else {
-                  res.send({error: false, result: []})
+                  res.send({error: false, result: [], title: doc2.nickname})
                 }
               }
             })

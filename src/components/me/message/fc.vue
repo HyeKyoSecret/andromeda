@@ -134,7 +134,7 @@
     display: flex;
     align-items: center;
     border-bottom: 1px solid $border-gray;
-    margin-top: 10px;
+    margin-top: 8px;
   &:last-child {
      border: none;
    }

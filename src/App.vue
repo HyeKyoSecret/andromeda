@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" :style="{'min-height': scroll + 'px'}">
     <transition>
       <keep-alive>
         <router-view v-on:error="closeSelf" v-if="!errorPage && $route.meta.keepAlive"></router-view>
@@ -18,7 +18,8 @@
     name: 'app',
     data () {
       return {
-        errorPage: false
+        errorPage: false,
+        scroll: window.innerHeight
       }
     },
     components: {
@@ -27,16 +28,22 @@
     methods: {
       closeSelf () {
         this.errorPage = true
+      },
+      getHeight () {
+        this.scroll = window.innerHeight
       }
+    },
+    // created: function () {
+    //   document.addEventListener('DOMContentLoaded', function () {
+    //     FastClick.attach(document.body)
+    //   }, false)
+    // },
+    mounted () {
+      window.addEventListener('resize', this.getHeight)
+    },
+    destroyed () {
+      window.removeEventListener('resize', this.getHeight)
     }
-    /*
-    ,
-     created: function () {
-      document.addEventListener('DOMContentLoaded', function () {
-        FastClick.attach(document.body)
-      }, false)
-    }
-    */
   }
 </script>
 <style lang="scss">

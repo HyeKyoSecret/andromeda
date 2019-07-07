@@ -393,7 +393,8 @@
     .order {
       position: fixed;
       width: 100%;
-      background: $content-gray;
+      background: white;
+      border-top: 1px solid $border-gray;
       height: 35px;
       line-height: 35px;
       display: flex;
@@ -417,7 +418,7 @@
       }
     }
     .sub-comment {
-      width: 92%;
+      width: 100%;
       margin-left: auto;
       margin-right: auto;
       background: $content-gray;

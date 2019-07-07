@@ -1,7 +1,7 @@
 <template>
   <div class="read-story" :class="{bigFont: (settings.fontSize === '大'), superFont: (settings.fontSize === '特大')}">
       <notice v-bind:title="storyInfo.title" v-bind:more="moreList" v-bind:id="id" v-on:getMark="getMark" :mark="markActive" v-on:openFontSettings="openFont" v-on:openSearch="openSearch"></notice>
-      <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight">
+      <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight" class="read-story-content">
         <div class="context"><p v-for="item in storyInfo.content">{{item}}</p></div>
         <div class="related-info">
           <div class="author-info">
@@ -106,7 +106,7 @@
       position:absolute;
       z-index: 999;
       top: 42px;
-      right:37px;
+      right:10px;
       width:0;
       height:0;
       border-width: 0 15px 15px;
@@ -342,6 +342,10 @@
         width: 25px;
       }
     }
+    .read-story-content {
+      width: 100%;
+      height: calc(100vh - 42px);
+    }
     .context {
       margin: 30px 10px 0 11px;
       padding: 15px 0 0 5px;
@@ -546,7 +550,7 @@
           subscribe: false
         },
         writeWindow: false,
-        moreList: ['report', 'font', 'mark'],
+        moreList: ['report', 'font', 'mark', 'search'],
         downList: [],  // 下层候选节点
         frontNode: null,
         leftNode: null,

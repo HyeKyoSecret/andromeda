@@ -170,7 +170,8 @@
       change (e) {
         let files = e.target.files || e.dataTransfer.files
         this.fileName = files[0].name
-        this.fileExt = files[0].name.split('.')[1]
+        let temp = files[0].name.split('.')
+        this.fileExt = temp[temp.length - 1]
         if (!files.length) return
         this.panel = true
         this.picValue = files[0]

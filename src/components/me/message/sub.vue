@@ -108,7 +108,7 @@
       .middle {
         height: 70px;
         margin-left: 10px;
-        flex: 6;
+        flex: 8;
         .name {
           color: $font-dark;
         }
@@ -122,6 +122,14 @@
           -moz-box-orient: vertical;
           -moz-line-clamp: 2;
           overflow: hidden;
+        }
+        @-moz-document url-prefix(){
+          .content{
+            position: relative;
+            line-height: 20px;
+            max-height: 40px;
+            overflow: hidden;
+          }
         }
       }
       .right {

@@ -128,9 +128,11 @@
     position: absolute;
     top: 0;
     left: 0;
-    min-height: calc(100vh - 42px);
+    height: calc(100vh - 42px);
     width: 100%;
     background: $bg-gray;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     @media (min-width: 768px) {
       .notice-bar{
         z-index: 999;
@@ -271,6 +273,14 @@
                   -moz-box-orient: vertical;
                   -moz-line-clamp: 1;
                   overflow: hidden;
+                }
+                @-moz-document url-prefix(){
+                  .brief {
+                    position: relative;
+                    line-height: 20px;
+                    max-height: 20px;
+                    overflow: hidden;
+                  }
                 }
                 .date {
                   display: inline-block;

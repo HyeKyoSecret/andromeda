@@ -69,7 +69,7 @@
       <span class="title">
         {{rootName}}
       </span>
-      <span class="fake-commit" v-if='!buildCheck'>下一步</span>
+      <span class="fake-commit" v-if='!buildCheck' @click="showFailReason">下一步</span>
       <span class="commit" @click="openRecommend" v-else>下一步</span>
       </div>
       <div class="context">
@@ -426,14 +426,15 @@
             duration: 1000
           })
         } else {
-          if (this.rootContent.length > 220) {
+          if (this.rootContent.length > 240) {
             this.buildCheck = false
             Toast({
-              message: `您已超过最大字数${this.rootContent.length - 220}字`,
+              message: `您已超过最大字数${this.rootContent.length - 240}字`,
               position: 'middle',
               duration: 1000
             })
-          } else if (linesCount > 13) {
+          } else if (linesCount > 14) {
+            this.buildCheck = false
             Toast({
               message: `行数超过限制`,
               position: 'middle',
@@ -449,8 +450,8 @@
           this.rootNameError = '故事名不能为空'
           this.rootNameCheck = false
         } else {
-          if (this.rootName.length > 15) {
-            this.rootNameError = '故事名最多为15个字符'
+          if (this.rootName.length > 14) {
+            this.rootNameError = '故事名最多为14个字符'
             this.rootNameCheck = false
           } else {
             this.rootNameError = ''
@@ -482,6 +483,32 @@
       this.loadDraft()
     },
     methods: {
+      showFailReason () {
+        if (!this.rootContent) {
+          Toast({
+            message: `内容不能为空`,
+            position: 'middle',
+            duration: 1000
+          })
+        } else {
+          var tmp = document.querySelector('#context').value
+          var lines = tmp.split(/\r*\n/)
+          var linesCount = lines.length - (navigator.userAgent.indexOf('MSIE') !== -1)
+          if (this.rootContent.length > 240) {
+            Toast({
+              message: `您已超过最大字数${this.rootContent.length - 240}字`,
+              position: 'middle',
+              duration: 1000
+            })
+          } else if (linesCount > 14) {
+            Toast({
+              message: `行数超过限制`,
+              position: 'middle',
+              duration: 1000
+            })
+          }
+        }
+      },
       choosePic () {
         this.$refs.input.click()
       },
@@ -596,6 +623,10 @@
             this.rootNameError = ''
             this.rootNameCheck = true
           }
+          if (!this.rootName) {
+            this.rootNameError = '故事名不能为空'
+            this.rootNameCheck = false
+          }
         }).catch((err) => {
           if (err) {
             this.rootNameError = '发生错误，请稍后再试'
@@ -692,13 +723,25 @@
               }
               this.$router.go(-1)
             })
-          }).catch(error => {
-            if (error) {
-              this.$router.go(-1) // 离开的路由跳转
+          }).catch(cancel => {
+            if (cancel) {
+              Axios.post('/user/clearDraft')
+                .then(res => {
+                  if (!res.data.error) {
+                    this.$router.go(-1) // 离开的路由跳转
+                  } else {
+                    Toast({
+                      message: res.data.message,
+                      position: 'middle',
+                      duration: 1000
+                    })
+                    this.$router.go(-1) // 离开的路由跳转
+                  }
+                })
             }
           })
         } else {
-          this.$router.push('/discover')
+          this.$router.push('/discover/selected')
         }
       }
     }

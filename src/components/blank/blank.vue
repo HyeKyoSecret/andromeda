@@ -9,7 +9,8 @@
 <style lang='scss' scoped>
   .blank{
     width: 100%;
-    margin-top: 40%;
+    box-sizing: border-box;
+    padding-top: 27%;
     text-align: center;
     img {
       height: 220px;

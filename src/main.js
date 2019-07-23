@@ -9,12 +9,20 @@ import MintUI from 'mint-ui'
 import Axios from 'axios'
 import VueScrollLock from 'vue-scroll-lock'
 import VueFinger from './js/vueFinger'
+import Vuex from 'vuex'
 const VueTouch = require('vue-touch')
+import store from './store'
 Vue.use(VueTouch, {name: 'v-touch'})
 if (process.env.NODE_ENV !== 'production') {
   Axios.defaults.baseURL = 'http://localhost:8080/api'
 }
+Vue.use(VueScrollLock)
+Vue.use(Vuex)
 Axios.defaults.withCredentials = true
+// const allRoute = ['home', 'people', 'message', 'message_words', 'message_promote', 'fc', 'cm', 'sub', 'rs', 'message_request', 'message_announcement',
+//   'creation', 'myCreation', 'history', 'subscribe', 'friendList', 'focusList', 'changeInfo', 'settings', 'register', 'addFriend', 'login',
+//   'test', 'build', 'story', 'storyComment', 'mark', 'comment', 'reply', 'buildStoryRecommend', 'discover', 'selected', 'focus', 'friend',
+//   'start', 'myCreationNode', 'search', 'writeStory', 'marker', 'dialogue', 'sError', 'error']
 const router = new VueRouter({
   mode: 'history',
   routes,
@@ -30,20 +38,39 @@ const router = new VueRouter({
 })
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    Axios.get('/register/checkLogin')    // 构建登录拦截
-      .then((response) => {
-        if (!response.data.login) {
-          next({
-            path: '/login',
-            query: { redirect: to.fullPath }
-          })
-        } else {
-          next()
-        }
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+    if (from.name === 'login') {
+      window.location.reload()
+      Axios.get('/register/checkLogin')    // 构建登录拦截
+        .then((response) => {
+          if (!response.data.login) {
+            next({
+              path: '/login',
+              query: { redirect: to.fullPath }
+            })
+          } else {
+            next()
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    } else {
+      Axios.get('/register/checkLogin')    // 构建登录拦截
+        .then((response) => {
+          if (!response.data.login) {
+            next({
+              path: '/login',
+              query: { redirect: to.fullPath }
+            })
+          } else {
+            next()
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+      next()
+    }
   } else {       // 为不需要登录Auth的页面写入session
     // Axios.get('/checkLogin')
     //   .then((response) => {
@@ -64,5 +91,6 @@ new Vue({
   router,
   el: '#app',
   template: '<App/>',
+  store,
   components: { App }
 }).$mount('#app')

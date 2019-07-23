@@ -209,6 +209,14 @@
         color: $icon-blue
       }
     }
+    @-moz-document url-prefix(){
+      .comment-content{
+        position: relative;
+        line-height: 20px;
+        max-height: 40px;
+        overflow: hidden;
+      }
+    }
     .former-comment {
       background: $content-gray;
       box-sizing: border-box;

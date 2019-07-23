@@ -16,18 +16,18 @@
         </div>
       </div>
     </div>
-    <blank v-if="!result.length"></blank>
+      <blank v-if="!result.length"></blank>
   </div>
 </template>
 <style lang='scss' scoped>
   @import "../../../scss/config";
   .subscribe {
-    margin-top: 48px;
+    margin-top: 8px;
     width: 100%;
     height: calc(100vh - 140px);
     /*z-index: 997;*/
     .sub-content {
-      margin-top: 92px;
+      margin-top: 50px;
     }
     .subscribe-new {
       margin-top: 10px;
@@ -63,6 +63,14 @@
           -moz-box-orient: vertical;
           -moz-line-clamp: 2;
           overflow: hidden;
+        }
+        @-moz-document url-prefix(){
+          .content{
+            position: relative;
+            line-height: 20px;
+            max-height: 40px;
+            overflow: hidden;
+          }
         }
       }
       .right {
@@ -137,7 +145,13 @@
               this.result = response.data.result
             }
           }).catch(error => {
-            alert(error)
+            if (error) {
+              Toast({
+                message: '发生错误,请稍后再试',
+                position: 'middle',
+                duration: 1000
+              })
+            }
           })
       },
       go (id) {

@@ -5,6 +5,7 @@ const express = require('express')
 const Root = require('../db/StoryRoot')
 const Story = require('../db/Story')
 const User = require('../db/User')
+const Report = require('../db/Report')
 const router = express.Router()
 const moment = require('moment')
 const rootReg = /^R([0-9]){7}$/
@@ -158,13 +159,13 @@ router.post('/story/buildRoot', (req, res) => {
 router.get('/story/getStory', (req, res) => {
   'use strict'
   let id = req.query.id
-  let result = {
-    title: '',
-    content: '',
-    author: '',
-    date: ''
+  let result = {}
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
   }
-  let user = req.session.userId ? req.session.userId : req.cookies.And ? req.cookies.And.userId : null
   if (rootReg.test(id)) {
     Root.findOne({id: id})
       .populate('author')
@@ -173,24 +174,27 @@ router.get('/story/getStory', (req, res) => {
           res.send({permit: false})
         } else {
           if (root) {
+            console.log(user)
             result.title = root.name
             result.content = root.content
             result.author = root.author.nickname
             result.authorId = root.author.id
             result.date = moment(root.date).format('YYYY年M月D日 HH:mm')
-            User.findOne({id: user})
+            User.findOne({username: user})
               .exec((err, doc) => {
                 if (err) {
                   res.send({permit: false, type: 'DB', message: '发生错误，请稍后再试'})
                 } else {
                   if (doc) {
                     Root.updateOne({id: id}, {$addToSet: {'readCounts': doc._id}})
-                      .exec(err => {
-                        if (!err) {
+                      .exec(err2 => {
+                        if (!err2) {
                           result.hasFocus = doc.focus.some(function (item) {
                             return item.toString() === root.author._id.toString()
                           })
-                          result.showFocus = root.author.id !== user
+                          result.showFocus = root.author.username !== user
+                          res.send({permit: true, result: result})
+                        } else {
                           res.send({permit: true, result: result})
                         }
                       })
@@ -224,9 +228,9 @@ router.get('/story/getStory', (req, res) => {
             result.author = story.author.nickname
             result.authorId = story.author.id
             result.date = moment(story.date).format('YYYY年M月D日 HH:mm')
-            User.findOne({id: user})
-              .exec((err, doc) => {
-                if (err) {
+            User.findOne({username: user})
+              .exec((err3, doc) => {
+                if (err3) {
                   res.send({permit: false, type: 'DB', message: '发生错误，请稍后再试'})
                 } else {
                   if (doc) {
@@ -234,9 +238,11 @@ router.get('/story/getStory', (req, res) => {
                       .exec(err => {
                         if (!err) {
                           result.hasFocus = doc.focus.some(function (item) {
-                            return item.toString() === story.root.author._id.toString()
+                            return item.toString() === story.author._id.toString()
                           })
-                          result.showFocus = story.author.id !== user
+                          result.showFocus = story.author.username !== user
+                          res.send({permit: true, result: result})
+                        } else {
                           res.send({permit: true, result: result})
                         }
                       })
@@ -639,7 +645,7 @@ router.post('/story/buildStory', (req, res) => {
   let story = {
     content: content
   }
-  let sendSuccess = function (rootId, storyId) {    // 向故事的订阅人推送消息
+  let sendSuccess = function (rootId, storyId, sId) {    // 向故事的订阅人推送消息
     Root.findOne({_id: rootId})
       .populate('subscribe')
       .exec((err, root) => {
@@ -647,7 +653,7 @@ router.post('/story/buildStory', (req, res) => {
           res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
         } else {
           if (root.subscribe.length === 0) {
-            res.send({error: false, success: true, message: '发布成功'})
+            res.send({error: false, success: true, message: '发布成功', storyId: sId})
           } else {
             try {
               for (let i = 0; i < root.subscribe.length; i++) {
@@ -666,7 +672,6 @@ router.post('/story/buildStory', (req, res) => {
                               // 不向自己推送
                               let mySubscribe = user.subscribe
                               mySubscribe.forEach(item => {
-
                                 if (item.root.toString() === rootId.toString()) {
                                   item.new.push({
                                     id: storyId
@@ -679,13 +684,13 @@ router.post('/story/buildStory', (req, res) => {
                                     res.send({error: true, type: 'DB', message: '发生错误，请稍后再试'})
                                   } else {
                                     if (i === root.subscribe.length - 1) {
-                                      res.send({error: false, success: true, message: '发布成功'})
+                                      res.send({error: false, success: true, message: '发布成功', storyId: sId})
                                     }
                                   }
                                 })
                             } else {
                               if (i === root.subscribe.length - 1) {
-                                res.send({error: false, success: true, message: '发布成功'})
+                                res.send({error: false, success: true, message: '发布成功', storyId: sId})
                               }
                             }
                           }
@@ -751,7 +756,7 @@ router.post('/story/buildStory', (req, res) => {
                                                 if (err7) {
                                                   res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                                 } else {
-                                                  sendSuccess(nStory.root, doc._id)
+                                                  sendSuccess(nStory.root, doc._id, doc.id)
                                                 }
                                               })
                                           })
@@ -779,7 +784,7 @@ router.post('/story/buildStory', (req, res) => {
                                           if (err7) {
                                             res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                           }
-                                          sendSuccess(root._id, story._id)
+                                          sendSuccess(root._id, story._id, doc.id)
                                         })
                                     })
                                   })
@@ -814,7 +819,7 @@ router.post('/story/buildStory', (req, res) => {
                               if (err7) {
                                 res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                               }
-                              sendSuccess(root._id, doc._id)
+                              sendSuccess(root._id, doc._id, doc.id)
                             })
                         })
                       })
@@ -860,7 +865,7 @@ router.post('/story/buildStory', (req, res) => {
                                                   if (err7) {
                                                     res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                                   }
-                                                  sendSuccess(nStory.root, doc._id)
+                                                  sendSuccess(nStory.root, doc._id, doc.id)
                                                 })
                                             })
                                           })
@@ -887,7 +892,7 @@ router.post('/story/buildStory', (req, res) => {
                                             if (err7) {
                                               res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                             }
-                                            sendSuccess(story.root, doc._id)
+                                            sendSuccess(story.root, doc._id, doc.id)
                                           })
                                       })
                                     })
@@ -922,7 +927,7 @@ router.post('/story/buildStory', (req, res) => {
                                 if (err7) {
                                   res.send({error: true, type: 'database', message: '服务器忙，请稍后再试'})
                                 }
-                                sendSuccess(odstory.root, doc._id)
+                                sendSuccess(odstory.root, doc._id, doc.id)
                               })
                           })
                         })
@@ -1702,6 +1707,15 @@ router.get('/story/prepareTraversal', (req, res) => {
       }
     }
   }
+  function focusCreateRankWeight (weight = 0.4, candidate) {
+    for (let i = 0; i < candidate.length; i++) {
+      if (candidate[0].focusCreate === 0) {
+        candidate[i].focusWeight = 0
+      } else {
+        candidate[i].focusWeight = weight * expFun(i + 1)
+      }
+    }
+  }
   const getObj = function (id) {
     return new Promise((resolve, reject) => {
       Story.findOne({_id: id})
@@ -1760,6 +1774,22 @@ router.get('/story/prepareTraversal', (req, res) => {
           } else {
             if (doc) {
               resolve(doc.friendList)
+            } else {
+              resolve(new Array(0))
+            }
+          }
+        })
+    })
+  }
+  const getFocusList = function (user) {
+    return new Promise((resolve, reject) => {
+      User.findOne({username: user})
+        .exec((err, doc) => {
+          if (err) {
+            reject('error')
+          } else {
+            if (doc) {
+              resolve(doc.focus)
             } else {
               resolve(new Array(0))
             }
@@ -1864,6 +1894,12 @@ router.get('/story/prepareTraversal', (req, res) => {
                       arr[i].friendCreate ++
                     }
                   }
+                  let yourFocusList = await getFocusList(user)
+                  for (let k = 0; k < yourFocusList.length; k++) {
+                    if (yourFocusList[k].toString() === q.author._id.toString()) {
+                      arr[i].focusCreate ++
+                    }
+                  }
                 }
               } else {
                 for (let j = arr[i - 1].index - 1; (arr[i - 1].index > arr[i].index) && (j > arr[i].index); j--) {
@@ -1875,6 +1911,12 @@ router.get('/story/prepareTraversal', (req, res) => {
                   for (let k = 0; k < yourFriendList.length; k++) {
                     if (yourFriendList[k].friend.toString() === q.author._id.toString()) {
                       arr[i].friendCreate ++
+                    }
+                  }
+                  let yourFocusList = await getFocusList(user)
+                  for (let k = 0; k < yourFocusList.length; k++) {
+                    if (yourFocusList[k].toString() === q.author._id.toString()) {
+                      arr[i].focusCreate ++
                     }
                   }
                 }
@@ -1903,7 +1945,8 @@ router.get('/story/prepareTraversal', (req, res) => {
                   index: 0,
                   nodeNum: 0,
                   selfCreate: 0,
-                  friendCreate: 0
+                  friendCreate: 0,
+                  focusCreate: 0
                 }
               )
               p = _temp.rb
@@ -1933,8 +1976,10 @@ router.get('/story/prepareTraversal', (req, res) => {
             nodeRankWeight(0.1, candidate)    // 节点权重函数
             rank(candidate, 'zan')
             zanRankWeight(0.2, candidate)
+            focusCreateRankWeight(0.4, candidate)
+            rank(candidate, 'focusCreate')
             for (let i = 0; i < candidate.length; i++) {
-              candidate[i].sumWeight = candidate[i].timeWeight + candidate[i].zanWeight + candidate[i].selfWeight + candidate[i].friendWeight + candidate[i].nodeWeight
+              candidate[i].sumWeight = candidate[i].timeWeight + candidate[i].zanWeight + candidate[i].selfWeight + candidate[i].friendWeight + candidate[i].focusWeight + candidate[i].nodeWeight
             }
             rank(candidate, 'sumWeight')
             let result = []
@@ -3054,6 +3099,49 @@ router.post('/story/checkWritePermit', (req, res) => {
           }
         }
       })
+  }
+})
+router.post('/story/reportStory', (req, res) => {
+  let user
+  let id = req.body.id
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    User.findOne({username: user})
+      .exec((err, doc) => {
+        if (err) {
+          res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+        } else {
+          Report.findOne({$and: [{'story': id}, {'reportPeople': user.id}]})
+            .exec((err3, rp) => {
+              if (err3) {
+                res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+              } else {
+                if (rp) {
+                  res.send({error: false, type: 'db', message: '您的举报已经在处理中'})
+                } else {
+                  let report = {
+                    story: id,
+                    reportPeople: user._id
+                  }
+                  let newReport = new Report(report)
+                  newReport.save(err2 => {
+                    if (err2) {
+                      res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
+                    } else {
+                      res.send({error: false, message: '举报成功'})
+                    }
+                  })
+                }
+              }
+            })
+        }
+      })
+  } else {
+    res.send({error: false, message: '该功能需要登录后才能使用'})
   }
 })
 module.exports = router

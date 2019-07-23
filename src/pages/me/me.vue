@@ -79,14 +79,14 @@
             删除好友
           </div>
         </div>
-      <!--<div class="new-message-info">-->
-        <!--New!-->
-      <!--</div>-->
     </div>
+    <!--<keep-alive>-->
+      <!--<router-view v-if="$route.meta.keepAlive"></router-view>-->
+    <!--</keep-alive>-->
+    <!--<router-view v-if="!$route.meta.keepAlive"></router-view>-->
     <keep-alive>
-      <router-view v-if="$route.meta.keepAlive"></router-view>
+      <router-view></router-view>
     </keep-alive>
-    <router-view v-if="!$route.meta.keepAlive"></router-view>
     <foot-menu v-if="!isLoginCustomer"></foot-menu>
   </div>
 </template>
@@ -208,7 +208,7 @@
         }
       }
       .user-operation {
-        margin-top: 20px;
+        margin-top: 15px;
         padding-bottom: 90px;
         .line {
           display: flex;
@@ -350,7 +350,7 @@
           {
             name: '我的创作',
             icon: require('../../img/icon/my_creation.png'),
-            router: `/creation`,
+            router: `/creation/root`,
             path: ''
           },
           {
@@ -388,7 +388,7 @@
           {
             name: '的创作',
             icon: require('../../img/icon/my_creation.png'),
-            router: `/creation`,
+            router: `/creation/root`,
             path: ''
           },
           {
@@ -436,6 +436,9 @@
         } else {
           return '我'
         }
+      },
+      ka: function () {
+        return this.$store.state.keepAlive
       }
     },
     mounted () {
@@ -638,7 +641,7 @@
                 this.sex = res.data.sex   // 设置性别
                 this.userStatus = 'isCustomer'
                 // 以下手动修改路径和name标示
-                this.operation[0].path = `/people/${this.$route.params.user}/creation`
+                this.operation[0].path = `/people/${this.$route.params.user}/creation/root`
                 this.operation[1].path = `/people/${this.$route.params.user}/focusList`
                 this.operation[0].name = `${this.sex}的创作`
                 this.operation[1].name = `${this.sex}的关注`

@@ -1,5 +1,5 @@
 <template>
-  <div id="app" :style="{'min-height': scroll + 'px'}">
+  <div id="app" :style="{'height': scroll + 'px'}">
     <transition>
       <keep-alive>
         <router-view v-on:error="closeSelf" v-if="!errorPage && $route.meta.keepAlive"></router-view>
@@ -72,6 +72,7 @@
     margin: auto;
     font-size: 13px;
     -webkit-tap-highlight-color: transparent;
+    overflow: auto;
   }
   @media (min-width: 768px) {
     #app {

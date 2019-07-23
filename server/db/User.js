@@ -88,11 +88,7 @@ const UserSchema = new Schema({
       name: String,
       content: String,
       writePermit: Boolean
-    },
-    story: [{
-      id: String,
-      content: String
-    }]
+    }
   },
   pending: {     //  待处理请求
     request: [

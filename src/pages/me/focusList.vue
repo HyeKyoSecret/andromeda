@@ -46,16 +46,20 @@
         position: absolute;
         top: 0;
         left: 0;
-        min-height: 100%;
+        height: 100%;
         width: 100%;
         background: $bg-gray;
-        margin-top: 42px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         .search {
             background-color: white;
             height: 42px;
             display: flex;
             align-items: center;
             width: 100%;
+            position: fixed;
+            top: 42px;
+            left: 0;
             .magnifier {
                 margin-left: 10px;
                 margin-right: 12px;
@@ -98,7 +102,7 @@
         }
         .search-board {
             width: 100%;
-            min-height: calc(100vh - 250px);
+            min-height: calc(100vh - 138px);
             background: $bg-gray;
         }
         .star-friend {
@@ -118,7 +122,7 @@
             }
         }
         .friend-list {
-            margin-top: 15px;
+            margin-top: 93px;
             &:last-child {
                 margin-bottom: 100px;
             }

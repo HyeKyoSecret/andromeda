@@ -17,7 +17,7 @@ router.post('/register', (req, res) => {
   let nickReg = /^[\u4E00-\u9FA5A-Za-z0-9]{2,12}$/  // 中文数字字母
   let psReg = /^[A-Za-z0-9]{6,16}$/
   // console.log('收到的验证码' + captcha)
-  // ('session验证码' + req.session.captchaText)
+  //   // ('session验证码' + req.session.captchaText)
   // console.log(req.session.captchaText === captcha)
   if (captcha.toLowerCase() === req.session.captchaText) {
     if (userReg.test(username) && nickReg.test(nickname) && psReg.test(password)) {
@@ -103,16 +103,23 @@ router.get('/register/getCaptcha', (req, res) => {
   res.set('Content-Type', 'image/svg+xml')
   res.status(200).send(captcha.data)
 })
-router.get('/login/getCaptcha', (req, res) => {
+router.get('/register/getLoginCaptcha', (req, res) => {
   let captcha = svgCaptcha.create({ size: 4, noise: 3, ignoreChars: '0o1il' })
   req.session.loginCaptchaText = captcha.text.toLowerCase()
   res.set('Content-Type', 'image/svg+xml')
   res.status(200).send(captcha.data)
 })
+// router.get('/register/getCurrentSession', (req, res) => { // 用来测试验证码获取是否正确的
+//   let result = req.session.loginCaptchaText
+//   res.send({result: result})
+// })
 router.post('/register/login', (req, res) => {
   'use strict'
   let username = req.body.username
   let password = req.body.password
+  // console.log('收到的验证码' + req.body.captcha.toLowerCase())
+  // console.log('session验证码' + req.session.loginCaptchaText)
+  // console.log(req.body.captcha.toLowerCase() === req.session.loginCaptchaText)
   // User.findOne({username: username}, (err, user) => {
   //   if (err) {
   //     res.send({permit: false, message: '服务器忙，请稍后再试'})
@@ -132,8 +139,6 @@ router.post('/register/login', (req, res) => {
   //   }
   // })
   if (req.body.captcha.toLowerCase() === req.session.loginCaptchaText) {
-    // let username = req.body.username
-    // let password = req.body.password
     User.findOne({username: username}, (err, user) => {
       if (err) {
         res.send({permit: false, message: '服务器忙，请稍后再试'})

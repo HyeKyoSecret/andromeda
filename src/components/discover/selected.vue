@@ -1,8 +1,11 @@
 <template>
   <mt-loadmore :top-method="loadTop" ref= "loadmore" v-infinite-scroll="getData"
-               infinite-scroll-disabled=false
+               infinite-scroll-disabled=loading
                infinite-scroll-distance="10"
-               infinite-scroll-immediate-check=true>
+               infinite-scroll-immediate-check=true
+               class="selected"
+               id="selected"
+               :style="{'height': (scroll - 82) + 'px'}">
     <router-link tag="div" v-for="(item, index) in storyList" :to="item.path" :key='item.path'
                  class="one-recommendation">
       <div class="story-information">
@@ -38,13 +41,26 @@
       created: function () {
         this.getData()
       },
-      data () {
-        return {
-          storyList: []
+      activated () {
+        if (this.$route.meta.savedPosition > 0 && document.getElementById('selected')) {
+          document.getElementById('selected').scrollTop = this.$route.meta.savedPosition
         }
       },
+      data () {
+        return {
+          storyList: [],
+          loading: true,
+          scroll: window.innerHeight
+        }
+      },
+      mounted () {
+        window.addEventListener('resize', this.getHeight)
+      },
+      destroyed () {
+        window.removeEventListener('resize', this.getHeight)
+      },
       beforeRouteLeave (to, from, next) {
-        from.meta.savedPosition = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
+        from.meta.savedPosition = document.getElementById('selected') ? document.getElementById('selected').scrollTop : 0
         next()
       },
       methods: {
@@ -53,7 +69,11 @@
           this.getData()
           this.$refs.loadmore.onTopLoaded()
         },
+        getHeight () {
+          this.scroll = window.innerHeight
+        },
         getData () {
+          this.loading = true
           Axios.get('/story/getDefaultDiscovery', {
             params: {
               storyLength: parseInt(this.storyList.length / 8)
@@ -84,6 +104,7 @@
                 }
               }
             })
+          this.loading = false
         },
         setErrorImg (x) {
           this.storyList[x].cover = require('../../img/photo/defaultPic.png')
@@ -93,11 +114,15 @@
 </script>
 <style lang="scss" scoped>
   @import "../../scss/config";
+  .selected {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
   .one-recommendation {
     height: 145px;
     width: 100%;
     background-color: white;
-    margin-top: 10px;
+    margin-bottom: 10px;
     &:last-child:after {
       content: '';
       display: block;
@@ -153,6 +178,14 @@
           -moz-box-orient: vertical;
           -moz-line-clamp: 3;
           overflow: hidden;
+        }
+        @-moz-document url-prefix(){
+          .story-content{
+            position: relative;
+            line-height: 20px;
+            max-height: 60px;
+            overflow: hidden;
+          }
         }
       }
     }

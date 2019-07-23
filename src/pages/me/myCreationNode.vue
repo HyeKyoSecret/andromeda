@@ -15,7 +15,7 @@
     <label id="input">
       <input type="file" ref="input" accept="image" @change="change">
     </label>
-    <mt-loadmore :top-method="loadTop" ref="loadmore" v-if="result" class="main-content">
+    <mt-loadmore :top-method="loadTop" ref="loadmore" v-if="result.id" class="main-content" id="mainContent">
       <transition
         name="custom-classes-transition"
         leave-active-class="animated bounceOutUp">
@@ -57,11 +57,9 @@
         </div>
       </div>
     </mt-loadmore>
-    <foot-menu></foot-menu>
   </div>
 </template>
 <script>
-  import FootMenu from '../../components/foot-menu.vue'
   import Cropper from 'cropperjs'
   import notice from '../../components/notice/notice.vue'
   import Axios from 'axios'
@@ -70,11 +68,21 @@
   export default {
     name: 'creationNode',
     components: {
-      notice,
-      FootMenu
+      notice
+    },
+    activated () {
+      let self = this
+      if (this.result && this.result.userId === this.$route.params.user && this.$route.params.rootName === this.result.rootName) {
+        setTimeout(function () {
+          document.getElementById('mainContent').scrollTop = self.$route.meta.savedPosition
+        }, 100)
+      } else if (typeof (this.result.rootName) !== 'undefined') {
+        this.result = {}
+        this.getMyCreationNode()
+      }
     },
     beforeRouteLeave (to, from, next) {
-      from.meta.savedPosition = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
+      from.meta.savedPosition = document.getElementById('mainContent').scrollTop
       next()
     },
     data () {
@@ -119,9 +127,6 @@
             this.writePermit = false
           })
         }
-      },
-      '$route': function () {
-        this.getMyCreationNode()
       }
     },
     created: function () {
@@ -294,7 +299,11 @@
             }
             this.imgSrc = response.data.result.coverImg
           } else {
-            this.$emit('error')
+            // Toast({
+            //   position: 'middle',
+            //   duration: 1000,
+            //   message: response.data.message
+            // })
           }
         })
       },
@@ -313,14 +322,23 @@
     position: absolute;
     top: 0;
     left: 0;
-    min-height: 100%;
+    height: 100%;
     width: 100%;
     background: $bg-gray;
+
+    #input {
+      position: absolute;
+      top: 0;
+      height: 0;
+    }
     .image-item {
       max-width: 100%;
     }
     .main-content {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       margin-top: 42px;
+      height: calc(100vh - 42px);
     }
     .open-authorized {
       margin-top: 10px;
@@ -385,11 +403,10 @@
             font-weight: 600;
             display: flex;
             .name {
-              flex:3;
+              flex:3.3;
               text-align: left;
             }
             .beginning {
-              margin-left: 50px;
               flex: 1;
               text-align: center;
               height: 20px;
@@ -412,6 +429,14 @@
             -moz-box-orient: vertical;
             -moz-line-clamp: 3;
             overflow: hidden;
+          }
+          @-moz-document url-prefix(){
+            .story-content{
+              position: relative;
+              line-height: 20px;
+              max-height: 60px;
+              overflow: hidden;
+            }
           }
           .like-quantity  {
             text-align: right;
@@ -458,6 +483,14 @@
           overflow: hidden;
           font-size: 14px;
           color: $font-dark;
+        }
+        @-moz-document url-prefix(){
+          .content{
+            position: relative;
+            line-height: 20px;
+            max-height: 40px;
+            overflow: hidden;
+          }
         }
         .info {
           height: 30px;

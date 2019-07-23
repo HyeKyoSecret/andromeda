@@ -1,5 +1,5 @@
 <template>
-  <div class="login">
+  <div class="login" :style="{'height': pageHeight}">
     <div class="notice">
       <span class="icon" @click="$router.go(-1)">
         <img src="../../img/icon/back.png">
@@ -48,18 +48,33 @@
         password: '',
         passwordError: '',
         captcha: '',
-        captchaPic: null
+        captchaPic: null,
+        windowHeight: window.innerHeight,
+        changedHeight: 0,
+        pageHeight: window.innerHeight + 'px'
       }
+    },
+    destroyed () {
+      window.removeEventListener('resize', this.getHeight)
     },
     components: {
       FootMenu
     },
-    created: function () {
+    mounted: function () {
+      window.addEventListener('resize', this.getHeight)
       this.getCaptcha()
     },
     methods: {
+      getHeight () {
+        this.changedHeight = window.innerHeight
+        if (this.windowHeight - this.changedHeight > 50) {
+          this.pageHeight = this.windowHeight + 'px'
+        } else {
+          this.pageHeight = '100%'
+        }
+      },
       getCaptcha () {
-        Axios.get('/login/getCaptcha')
+        Axios.get('/register/getLoginCaptcha')
           .then((response) => {
             this.captchaPic = response.data
           })
@@ -155,7 +170,6 @@
   @import "../../scss/config";
   @import "../../scss/style.css";
   .login {
-    height: 100%;
     width: 100%;
     background: $bg-gray;
     .notice {

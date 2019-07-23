@@ -50,7 +50,7 @@
         </div>
       </div>
     </div>
-    <blank v-if="requestList.request.length < 1 && requestList.addFriend.length < 1"></blank>
+      <blank v-if="requestList.request.length < 1 && requestList.addFriend.length < 1"></blank>
   </div>
 </template>
 <style lang='scss'>
@@ -65,7 +65,6 @@
   }
   .request-template {
     width: 100%;
-    margin-top: 47px;
     min-height: calc(100vh - 140px);
     .label {
       margin-bottom: 5px;
@@ -149,6 +148,7 @@
       }
     }
     .label {
+      margin-top: 5px;
       margin-left: 5px;
       color: $w-gray;
     }

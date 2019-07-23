@@ -343,7 +343,7 @@ router.get('/user/acceptFriend', (req, res) => {
         $push: {
           'promote': {'description': 'friendRequest', 'content_1': user.nickname, 'content_2': '接受了你的好友请求'}
         },
-        $pull: {'pending.request': {'to': user._id}}
+        $pull: {'pending.request': {'to': user._id}, 'pending.addFriend': {'from': user._id}}
       })
         .exec((err2, doc) => {
           if (err2) {
@@ -351,7 +351,7 @@ router.get('/user/acceptFriend', (req, res) => {
           } else {
             User.updateOne({id: id}, {
               $addToSet: {'friendList': {'friend': doc._id}},
-              $pull: {'pending.addFriend': {'from': doc._id}}
+              $pull: {'pending.addFriend': {'from': doc._id}, 'pending.request': {'to': doc._id}}
             })
               .exec(err3 => {
                 if (err3) {
@@ -459,7 +459,7 @@ router.get('/user/getMessageData', (req, res) => {
                 })
                 res.send({error: false, user: duser.id, result: result})
               } else {
-                res.send({error: true, type: 'user', message: '发生错误，请检查url'})
+                res.send({error: false, type: 'user', result: []})
               }
             }
           })
@@ -1190,7 +1190,8 @@ router.get('/user/getMyCreation', (req, res) => {
                         nodeCounts: count.nodeCounts,
                         zanCounts: count.zanCounts,
                         readCounts: count.readCounts,
-                        label: 'story'
+                        label: 'story',
+                        author: user.nickname
                       })
                       if (storyList.length === array.length) {
                         let map = {}
@@ -1206,7 +1207,8 @@ router.get('/user/getMyCreation', (req, res) => {
                               nodeCounts: ai.nodeCounts,
                               zanCounts: ai.zanCounts,
                               readCounts: ai.readCounts,
-                              timeStamp: ai.timeStamp
+                              timeStamp: ai.timeStamp,
+                              author: user.nickname
                             })
                             map[ai.root] = ai
                           } else {
@@ -1251,6 +1253,7 @@ router.get('/user/getMyCreationNode', (req, res) => {
   let root = req.query.root
   let result = {
     user: false,
+    userId: '',
     id: '',
     rootName: '',
     rootContent: '',
@@ -1258,7 +1261,12 @@ router.get('/user/getMyCreationNode', (req, res) => {
     date: '',
     story: []
   }
-  let loginUser = req.session.userId || req.cookies.And ? req.cookies.And.userId : undefined
+  let loginUser
+  if (req.session.user) {
+    loginUser = req.session.user
+  } else if (req.cookies.And) {
+    loginUser = req.cookies.And.user
+  }
   User.findOne({id: user})
     .populate({
       path: 'myCreation.root',
@@ -1289,9 +1297,10 @@ router.get('/user/getMyCreationNode', (req, res) => {
                 result.rootContent = o.content
                 result.coverImg = tool.formImg(o.coverImg)
                 result.date = moment(o.date).format('YYYY年M月D日 HH:mm')
-                result.user = loginUser === user.id
+                result.user = loginUser === user.username
                 result.zan = o.zan ? o.zan.length : 0
                 result.writePermit = o.writePermit
+                result.userId = user.id
                 if (user.myCreation && user.myCreation.story) {
                   for (let i = 0; i < user.myCreation.story.length; i++) {
                     if (user.myCreation.story[i].root.name === root) {
@@ -1312,6 +1321,7 @@ router.get('/user/getMyCreationNode', (req, res) => {
                 for (let i = 0; i < user.myCreation.story.length; i++) {
                   if (user.myCreation.story[i].root.name === root) {
                     let o = user.myCreation.story[i]
+                    result.userId = user.id
                     result.id = o.root.id
                     result.rootName = o.root.name
                     result.rootContent = o.root.content
@@ -1339,6 +1349,7 @@ router.get('/user/getMyCreationNode', (req, res) => {
               for (let i = 0; i < user.myCreation.story.length; i++) {
                 if (user.myCreation.story[i].root.name === root) {
                   let o = user.myCreation.story[i]
+                  result.userId = user.id
                   result.id = o.root.id
                   result.rootName = o.root.name
                   result.rootContent = o.root.content
@@ -1887,6 +1898,26 @@ router.get('/user/getSearchHistory', (req, res) => {
     }
   }
 })
+router.post('/user/clearDraft', (req, res) => {
+  let user
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  if (user) {
+    User.updateOne({username: user}, {$set: {'myCreationDraft': {}}})
+      .exec(err => {
+        if (err) {
+          res.send({error: true, type: 'db', message: '草稿清除错误'})
+        } else {
+          res.send({error: false})
+        }
+      })
+  } else {
+    res.send({error: true, type: 'auth', message: '请先登录'})
+  }
+})
 router.post('/user/changeFontSize', (req, res) => {
   let user
   let value = req.body.value
@@ -2000,34 +2031,38 @@ router.get('/user/getSubscribeMessage', (req, res) => {
       if (err) {
         res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
       } else {
-        for (let i = 0; i < doc.subscribe.length; i++) {
-          let count = 0
-          let temp = []
-          for (let j = 0; j < doc.subscribe[i].new.length; j++) {
-            if (!doc.subscribe[i].new[j].readed) {
-              count++
+        if (doc) {
+          for (let i = 0; i < doc.subscribe.length; i++) {
+            let count = 0
+            let temp = []
+            for (let j = 0; j < doc.subscribe[i].new.length; j++) {
+              if (!doc.subscribe[i].new[j].readed) {
+                count++
+              }
+              temp.push(doc.subscribe[i].new[j])
             }
-            temp.push(doc.subscribe[i].new[j])
-          }
-          temp.reverse()    // 倒序
-          if (doc.subscribe[i].new.length > 0) {
-            result.push({
-              coverImg: tool.formImg(doc.subscribe[i].root.coverImg),
-              id: doc.subscribe[i].root.id,
-              name: doc.subscribe[i].root.name,
-              words: temp.length > 0 ? temp[0].id.content : doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.content,
-              notReaded: count,
-              date: temp.length ? moment(temp[0].id.date).fromNow() : moment(doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.date).fromNow(),
-            })
-            if (temp.length) {
-              result[result.length - 1].timeStamp = temp[0].id.date.getTime()
-            } else {
-              result[result.length - 1].timeStamp = doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.date.getTime()
+            temp.reverse()    // 倒序
+            if (doc.subscribe[i].new.length > 0) {
+              result.push({
+                coverImg: tool.formImg(doc.subscribe[i].root.coverImg),
+                id: doc.subscribe[i].root.id,
+                name: doc.subscribe[i].root.name,
+                words: temp.length > 0 ? temp[0].id.content : doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.content,
+                notReaded: count,
+                date: temp.length ? moment(temp[0].id.date).fromNow() : moment(doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.date).fromNow(),
+              })
+              if (temp.length) {
+                result[result.length - 1].timeStamp = temp[0].id.date.getTime()
+              } else {
+                result[result.length - 1].timeStamp = doc.subscribe[i].new[doc.subscribe[i].new.length - 1].id.date.getTime()
+              }
             }
           }
+          bubbleSort(result)
+          res.send({error: false, result: result})
+        } else {
+          res.send({error: false, result: []})
         }
-        bubbleSort(result)
-        res.send({error: false, result: result})
       }
     })
 })
@@ -2249,14 +2284,14 @@ router.get('/user/getMessageWords', (req, res) => {
       path: 'dialogue',
       populate: {
         path: 'people1',
-        select: 'id headImg'
+        select: 'id headImg username'
       }
     })
     .populate({
       path: 'dialogue',
       populate: {
         path: 'people2',
-        select: 'id headImg'
+        select: 'id headImg username'
       }
     })
     .populate({
@@ -2310,7 +2345,9 @@ router.get('/user/getMessageWords', (req, res) => {
                 headImg: tool.formImg(doc.dialogue[i].people2.headImg),
                 words: temp[0].content,
                 notReaded: count,
-                date: moment(temp[0].date).fromNow()
+                date: moment(temp[0].date).fromNow(),
+                x: moment(temp[0].date).format('lll'),
+                updatedAt: doc.dialogue[i].updatedAt
               })
             } else {
               result.push({
@@ -2318,14 +2355,56 @@ router.get('/user/getMessageWords', (req, res) => {
                 headImg: tool.formImg(doc.dialogue[i].people1.headImg),
                 words: temp[0].content,
                 notReaded: count,
-                date: moment(temp[0].date).fromNow()
+                date: moment(temp[0].date).fromNow(),
+                x: moment(temp[0].date).format('lll'),
+                updatedAt: doc.dialogue[i].updatedAt
               })
             }
           }
-          bubbleSort(result)
           res.send({error: false, result: result})
         } else {
           res.send({error: true, type: 'db', message: '发生错误, 请重新登录'})
+        }
+      }
+    })
+})
+router.post('/user/checkCreationRoot', (req, res) => {
+  let userId = req.body.userId
+  let root = req.body.root
+  console.log(userId)
+  User.findOne({id: userId})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'db', message: '发生错误'})
+      } else {
+        if (doc) {
+          Root.findOne({name: root})
+            .populate('author', 'nickname')
+            .exec((err2, droot) => {
+              if (err2) {
+                res.send({error: true, type: 'db', message: '发生错误'})
+              } else {
+                res.send({error: false, userCheck: droot.author.nickname === doc.nickname})
+              }
+            })
+        } else {
+          res.send({error: true, type: 'user', message: '用户不存在'})
+        }
+      }
+    })
+})
+router.post('/user/checkCreationStory', (req, res) => {
+  let userId = req.body.userId
+  let author = req.body.author
+  User.findOne({id: userId})
+    .exec((err, doc) => {
+      if (err) {
+        res.send({error: true, type: 'db', message: '发生错误'})
+      } else {
+        if (doc) {
+          res.send({error: false, userCheck: doc.nickname === author})
+        } else {
+          res.send({error: true, type: 'user', message: '用户不存在'})
         }
       }
     })

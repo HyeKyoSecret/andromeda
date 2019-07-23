@@ -1,5 +1,5 @@
 <template>
-  <div class="register">
+  <div class="register" :style="{'height': pageHeight}">
     <div class="notice">
       <span class="icon" @click="$router.go(-1)">
         <img src="../../img/icon/back.png">
@@ -62,7 +62,10 @@
         captchaError: '',
         userCheck: false,
         nickCheck: false,
-        psCheck: false
+        psCheck: false,
+        windowHeight: window.innerHeight,
+        changedHeight: 0,
+        pageHeight: window.innerHeight + 'px'
       }
     },
     computed: {
@@ -70,10 +73,22 @@
         return this.userCheck && this.nickCheck && this.psCheck && (this.captcha.length === 5)
       }
     },
-    created: function () {
+    mounted: function () {
+      window.addEventListener('resize', this.getHeight)
       this.getCaptcha()
     },
+    destroyed () {
+      window.removeEventListener('resize', this.getHeight)
+    },
     methods: {
+      getHeight () {
+        this.changedHeight = window.innerHeight
+        if (this.windowHeight - this.changedHeight > 50) {
+          this.pageHeight = this.windowHeight + 'px'
+        } else {
+          this.pageHeight = '100%'
+        }
+      },
       getCaptcha () {
         Axios.get('/register/getCaptcha')
           .then((response) => {
@@ -192,7 +207,6 @@
   @import "../../scss/config";
   @import "../../scss/style.css";
   .register {
-    height: 100%;
     width: 100%;
     background: $bg-gray;
     .notice {

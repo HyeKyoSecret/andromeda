@@ -52,7 +52,7 @@
     },
     computed: {
       messageCheck: function () {
-        if (this.message.length > 0 && this.message.length <= 140) {
+        if (this.message.length > 0 && this.message.length <= 250) {
           this.fakeSubmit = false
           return true
         } else {

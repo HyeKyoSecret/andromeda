@@ -1,6 +1,7 @@
 <template>
-  <div class="read-story" :class="{bigFont: (settings.fontSize === '大'), superFont: (settings.fontSize === '特大')}">
-      <notice v-bind:title="storyInfo.title" v-bind:more="moreList" v-bind:id="id" v-on:getMark="getMark" :mark="markActive" v-on:openFontSettings="openFont" v-on:openSearch="openSearch"></notice>
+  <transition :name="transitionName">
+    <div class="read-story" :class="{bigFont: (settings.fontSize === '大'), superFont: (settings.fontSize === '特大')}" :key="id">
+      <notice v-bind:title="storyInfo.title" v-bind:more="moreList" v-bind:id="id" v-on:getMark="getMark" :mark="markActive" :searchBoard="searchBoard" v-on:openFontSettings="openFont" v-on:openSearch="openSearch" v-on:closeSearchBoard="closeSearchBoard"></notice>
       <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight" class="read-story-content">
         <div class="context"><p v-for="item in storyInfo.content">{{item}}</p></div>
         <div class="related-info">
@@ -8,9 +9,9 @@
             <div class="like">
               <router-link :to='storyInfo.authorId' tag="span">作者:&nbsp;{{storyInfo.author}}</router-link>
               <span v-if="showFocus">
-          <img src="../../img/icon/redheart.png" v-if="hasFocus"/>
-          <img src="../../img/icon/zan.png" v-else>
-        </span>
+                <img src="../../img/icon/redheart.png" v-if="hasFocus"/>
+                <img src="../../img/icon/zan.png" v-else>
+               </span>
               <span v-else class="blank"></span>
             </div>
             <div class="time">{{storyInfo.date}}</div>
@@ -76,7 +77,7 @@
           <div class="search-content">
             <scroll-lock :lock="true" :bodyLock="true" class="lock">
               <div class="one-search" v-for="item in readSearchResult" @click="goStory2(item.id)">
-              <div class="search-id">{{item.id}}</div>
+                <div class="search-id">{{item.id}}</div>
                 <div class="search-words" v-html="item.highlight"></div>
               </div>
             </scroll-lock>
@@ -86,8 +87,9 @@
       <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
       <mt-radio ref="radio" v-on:refresh= 'getSettings' v-bind:id="id"></mt-radio>
       <div class="mask" v-if="searchBoard"></div>
-    <router-view></router-view>
+      <router-view></router-view>
     </div>
+  </transition>
 </template>
 <style lang='scss'>
   @import "../../scss/config";
@@ -348,9 +350,9 @@
     }
     .context {
       margin: 30px 10px 0 11px;
-      padding: 15px 0 0 5px;
+      padding: 13px 0 0 5px;
       font-size: 16px;
-      height: calc(100vh - 190px);
+      height: calc(100vh - 235px);
       color: $font-dark;
       white-space: pre-wrap;
       p {
@@ -376,6 +378,9 @@
         flex: 1;
         text-align: right;
         margin-right: 15px;
+        position: absolute;
+        bottom: 80px;
+        right: -2px;
         .like {
           span{
             img {
@@ -557,7 +562,8 @@
         rightNode: null,
         contentActive: true,    // 文本搜索激活
         authorActive: false,
-        active: 'content'
+        active: 'content',
+        transitionName: ''
       }
     },
     beforeRouteLeave (to, from, next) {
@@ -592,6 +598,9 @@
       }
     },
     methods: {
+      closeSearchBoard () {
+        this.searchBoard = false
+      },
       onMaskTouchMove (e) {
         e.preventDefault()
         return false

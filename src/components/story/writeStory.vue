@@ -7,7 +7,7 @@
       <span class="title">
         续写&nbsp;{{title}}
       </span>
-      <span class="fake-commit" v-if='!writeCheck'>发布</span>
+      <span class="fake-commit" v-if='!writeCheck' @click="showFailReason">发布</span>
       <span class="commit" @click="buildStory" v-else="">发布</span>
     </div>
     <div class="story-content">
@@ -26,14 +26,11 @@
       }
     },
     props: ['ftNode', 'title'],
-    created: function () {
-      // this.loadDraft()
-    },
     watch: {
       storyContent: function () {
         var tmp = document.querySelector('#context').value
         var lines = tmp.split(/\r*\n/)
-        var linesCount = lines.length - (navigator.userAgent.indexOf('MSIE') !== -1)
+        var linesCount = lines.length
         if (!this.storyContent) {
           this.writeCheck = false
           Toast({
@@ -42,14 +39,15 @@
             duration: 1000
           })
         } else {
-          if (this.storyContent.length > 220) {
+          if (this.storyContent.length > 240) {
             this.writeCheck = false
             Toast({
-              message: `您已超过最大字数${this.storyContent.length - 220}字`,
+              message: `您已超过最大字数${this.storyContent.length - 240}字`,
               position: 'middle',
               duration: 1000
             })
-          } else if (linesCount > 13) {
+          } else if (linesCount > 14) {
+            this.writeCheck = false
             Toast({
               message: `行数超过限制`,
               position: 'middle',
@@ -62,6 +60,32 @@
       }
     },
     methods: {
+      showFailReason () {
+        if (!this.storyContent) {
+          Toast({
+            message: `内容不能为空`,
+            position: 'middle',
+            duration: 1000
+          })
+        } else {
+          var tmp = document.querySelector('#context').value
+          var lines = tmp.split(/\r*\n/)
+          var linesCount = lines.length - (navigator.userAgent.indexOf('MSIE') !== -1)
+          if (this.storyContent.length > 240) {
+            Toast({
+              message: `您已超过最大字数${this.storyContent.length - 240}字`,
+              position: 'middle',
+              duration: 1000
+            })
+          } else if (linesCount > 14) {
+            Toast({
+              message: `行数超过限制`,
+              position: 'middle',
+              duration: 1000
+            })
+          }
+        }
+      },
       buildStory: function () {
         Axios.post('/story/buildStory', {
           ftNode: this.ftNode,
@@ -72,7 +96,12 @@
             position: 'middle',
             duration: 1000
           })
-          this.$router.go(-1)
+          if (response.data.storyId) {
+            this.closeWindow()
+            this.$router.push(`/story/${response.data.storyId}`)
+          } else {
+            this.$router.go(-1)
+          }
         })
       },
       closeWindow () {

@@ -38,7 +38,7 @@
   import Axios from 'axios'
   import { Toast } from 'mint-ui'
   export default {
-    props: ['title', 'more', 'id', 'mark', 'message', 'search'],
+    props: ['title', 'more', 'id', 'mark', 'message', 'search', 'searchBoard'],
     data () {
       return {
         menu: [
@@ -57,7 +57,8 @@
           {
             name: 'report',
             label: '举报',
-            icon: require('../../img/icon/report.png')
+            icon: require('../../img/icon/report.png'),
+            methods: 'report'
           }
         ],
         menuList: [],
@@ -77,7 +78,11 @@
         this.$router.go(-1)
       },
       showMenu () {
-        this.menuActive = !this.menuActive
+        if (this.searchBoard) {
+          this.$emit('closeSearchBoard')
+        } else {
+          this.menuActive = !this.menuActive
+        }
       },
       sendMessage (id) {
         this.$router.push('/dialogue/' + id)
@@ -124,6 +129,18 @@
       openSearch () {
         this.menuActive = false
         this.$emit('openSearch')
+      },
+      report () {
+        Axios.post('/story/reportStory', {
+          id: this.$route.params.id
+        }).then(response => {
+          this.menuActive = false
+          Toast({
+            message: response.data.message,
+            position: 'middle',
+            duration: 1000
+          })
+        })
       }
     }
   }
@@ -254,7 +271,7 @@
 
     }
   }
-  @media (min-width: 768px) {
+  @media (min-width: 700px) {
     .notice {
       max-width: 700px;
     }

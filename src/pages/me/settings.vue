@@ -72,7 +72,7 @@
     min-height: calc(100vh - 42px);
     background: $bg-gray;
     .content {
-      margin-top: 30px;
+      margin-top: 15px;
       .line {
         display: flex;
         align-items: center;

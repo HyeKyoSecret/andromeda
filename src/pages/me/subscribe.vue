@@ -123,7 +123,7 @@
             }
           }
           .continue-read {
-            margin-top: 10%;
+            margin-top: 6%;
             margin-left: 17%;
             margin-right: 17%;
             height :25px;
@@ -211,19 +211,19 @@
     computed: {
       bookStyle: function () {
         if (this.baseWidth >= 700) {
-          return {'margin-top': this.subList.length > 0 ? (630 * 0.666) + 32 + 'px' : 0}
+          return {'margin-top': this.subList.length > 0 ? (630 * 0.666) + 42 + 'px' : 0}
         } else {
           return {
-            'margin-top': this.subList.length > 0 ? (this.baseWidth * 0.9 * 0.666 + 32) + 'px' : 0
+            'margin-top': this.subList.length > 0 ? (this.baseWidth * 0.9 * 0.666 + 42) + 'px' : 0
           }
         }
       },
       shelfStyle: function () {
         if (this.baseWidth >= 700) {
-          return {'height': this.subList.length > 0 ? (700 * 0.333 * 0.6 * 4 / 3) + 28 + 'px' : 0}
+          return {'height': this.subList.length > 0 ? (700 * 0.333 * 0.6 * 4 / 3) + 38 + 'px' : 0}
         } else {
           return {
-            'height': this.subList.length > 0 ? (this.baseWidth * 0.333 * 0.6 * 4 / 3) + 28 + 'px' : 0
+            'height': this.subList.length > 0 ? (this.baseWidth * 0.333 * 0.6 * 4 / 3) + 38 + 'px' : 0
           }
         }
       }

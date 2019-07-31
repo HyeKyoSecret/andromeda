@@ -48,9 +48,8 @@
     position: absolute;
     top: 0;
     left: 0;
-    min-height: calc(100vh - 42px);
+    min-height: 100%;
     width: 100%;
-    margin-top: 40px;
     background: $bg-gray;
     .show-story {
       margin-top: 54px;
@@ -211,10 +210,10 @@
     computed: {
       bookStyle: function () {
         if (this.baseWidth >= 700) {
-          return {'margin-top': this.subList.length > 0 ? (630 * 0.666) + 42 + 'px' : 0}
+          return {'margin-top': this.subList.length > 0 ? (630 * 0.666) + 84 + 'px' : 0}
         } else {
           return {
-            'margin-top': this.subList.length > 0 ? (this.baseWidth * 0.9 * 0.666 + 42) + 'px' : 0
+            'margin-top': this.subList.length > 0 ? (this.baseWidth * 0.9 * 0.666 + 84) + 'px' : 0
           }
         }
       },

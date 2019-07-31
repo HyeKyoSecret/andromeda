@@ -2,8 +2,8 @@
 const path = require('path')
 const bodyParser = require('body-parser')
 const api = require('./server/api.js')
-const easyMonitor = require('easy-monitor')
-easyMonitor('andromeda')
+// const easyMonitor = require('easy-monitor')
+// easyMonitor('andromeda')
 // const fs = require('fs')
 // 引入处理post数据的模块
 // 引入Express
@@ -36,7 +36,8 @@ app.use(express.static(path.resolve(__dirname, 'dist')))
 //   const html = fs.readFileSync(path.resolve(__dirname, 'dist/index.html'), 'utf-8')
 //   res.send(html)
 // })
-// 监听8088端口
-app.listen(8088)
-console.log('success listen at 8088……')
+// 监听80端口
+app.listen(80, '0.0.0.0', () => {
+  console.log('success listen at 80……')
+})
 module.exports = app

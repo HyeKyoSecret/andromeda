@@ -98,7 +98,6 @@
     position: absolute;
     width: 100%;
     height: calc(100vh - 42px);
-    margin-top: 42px;
     top: 0;
     left: 0;
     z-index: 990;
@@ -207,78 +206,78 @@
         }
       }
     }
-   .read-search-content {
-     position: absolute;
-     z-index: 999;
-     top: 99px;
-     right: 5px;
-     background: white;
-     border-bottom-left-radius: 10px;
-     border-bottom-right-radius: 10px;
-     .search-content {
-       .lock {
-         width: 100%;
-         overflow: scroll;
-         height: 100%;
-       }
-     }
-     .select-bar {
-       height: 20px;
-       margin-top: 10px;
-       background: rgb(223, 223, 223);
-       width: 100%;
-       .words {
-         color: $font-dark;
-         font-size: 13px;
-         display: inline-flex;
-         margin-left: 10px;
-         font-weight: 600;
-       }
-       .words.active {
-         color: $font-dark;
-         font-size: 13px;
-         display: inline-flex;
-         margin-left: 10px;
-         font-weight: 600;
-         border-bottom: 1px solid $font-dark;
-       }
-       .author {
-         color: $font-dark;
-         font-size: 13px;
-         display: inline-flex;
-         margin-left: 65px;
-         font-weight: 600;
-       }
-       .author.active {
-         color: $font-dark;
-         font-size: 13px;
-         display: inline-flex;
-         margin-left: 65px;
-         font-weight: 600;
-         border-bottom: 1px solid $font-dark;
-       }
-     }
-     .one-search {
-       width: 92%;
-       margin: 0 auto;
-       padding: 5px;
-       font-size: 12px;
-       color: $font-dark;
-       border-bottom: 1px solid $border-gray;
-       .search-words {
-         display: -webkit-box;
-         display: -moz-box;
-         -webkit-box-orient: vertical;
-         -webkit-line-clamp: 3;
-         -moz-box-orient: vertical;
-         -moz-line-clamp: 3;
-         overflow: hidden;
-       }
-       em {
-         color: $main-red;
-       }
-     }
-   }
+    .read-search-content {
+      position: absolute;
+      z-index: 999;
+      top: 99px;
+      right: 5px;
+      background: white;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      .search-content {
+        .lock {
+          width: 100%;
+          overflow: scroll;
+          height: 100%;
+        }
+      }
+      .select-bar {
+        height: 20px;
+        margin-top: 10px;
+        background: rgb(223, 223, 223);
+        width: 100%;
+        .words {
+          color: $font-dark;
+          font-size: 13px;
+          display: inline-flex;
+          margin-left: 10px;
+          font-weight: 600;
+        }
+        .words.active {
+          color: $font-dark;
+          font-size: 13px;
+          display: inline-flex;
+          margin-left: 10px;
+          font-weight: 600;
+          border-bottom: 1px solid $font-dark;
+        }
+        .author {
+          color: $font-dark;
+          font-size: 13px;
+          display: inline-flex;
+          margin-left: 65px;
+          font-weight: 600;
+        }
+        .author.active {
+          color: $font-dark;
+          font-size: 13px;
+          display: inline-flex;
+          margin-left: 65px;
+          font-weight: 600;
+          border-bottom: 1px solid $font-dark;
+        }
+      }
+      .one-search {
+        width: 92%;
+        margin: 0 auto;
+        padding: 5px;
+        font-size: 12px;
+        color: $font-dark;
+        border-bottom: 1px solid $border-gray;
+        .search-words {
+          display: -webkit-box;
+          display: -moz-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 3;
+          -moz-box-orient: vertical;
+          -moz-line-clamp: 3;
+          overflow: hidden;
+        }
+        em {
+          color: $main-red;
+        }
+      }
+    }
   }
   .rq-mark {
     text-align: left;
@@ -313,10 +312,10 @@
         margin-top: 3px;
         display: -webkit-box;
         display: -moz-box;
-         -webkit-box-orient: vertical;
-         -webkit-line-clamp: 1;
-         -moz-box-orient: vertical;
-         -moz-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+        -moz-box-orient: vertical;
+        -moz-line-clamp: 1;
         overflow: hidden;
       }
       .mt-time {
@@ -325,14 +324,12 @@
         color: $font-color;
       }
     }
-
     &:nth-child(1){
       margin-top: 30px;
     }
   }
   .read-story {
-    min-height: calc(100vh - 42px);
-    margin-top: 42px;
+    min-height: 100%;
     background: $content-gray;
     .marker {
       position: absolute;
@@ -349,12 +346,12 @@
       height: calc(100vh - 42px);
     }
     .context {
-      margin: 30px 10px 0 11px;
-      padding: 13px 0 0 5px;
+      padding: 43px 10px 0 16px;
       font-size: 16px;
-      height: calc(100vh - 235px);
+      height: calc(100vh - 200px);
       color: $font-dark;
       white-space: pre-wrap;
+      box-sizing: border-box;
       p {
         /*!*text-indent: 2em;*! 首行缩进*/
         margin: 5px 0 5px 0;
@@ -392,7 +389,6 @@
             color: $font-gray;
             font-size: 16px;
             text-align: right;
-
           }
           .blank {
             width: 10px;
@@ -419,7 +415,6 @@
             vertical-align: middle;
           }
         }
-
       }
     }
     .read-foot-menu {
@@ -517,7 +512,7 @@
       }
     }
   }
-  </style>
+</style>
 <script>
   import Axios from 'axios'
   import debounce from '../../js/debounce.js'
@@ -639,6 +634,7 @@
       }, 500),
       swipeUp () {
         if (this.downList.length > 0) {
+          this.$emit('slideUp')
           this.$router.replace(`/story/${this.downList[0].id}`)
         } else {
           Toast({
@@ -650,6 +646,7 @@
       },
       swipeDown () {
         if (this.frontNode) {
+          this.$emit('slideDown')
           this.$router.replace(`/story/${this.frontNode}`)
         } else {
           Toast({
@@ -661,6 +658,7 @@
       },
       swipeLeft () {
         if (this.rightNode) {
+          this.$emit('slideLeft')
           this.$router.replace(`/story/${this.rightNode}`)
         } else {
           Toast({
@@ -672,6 +670,7 @@
       },
       swipeRight () {
         if (this.leftNode) {
+          this.$emit('slideRight')
           this.$router.replace(`/story/${this.leftNode}`)
         } else {
           Toast({
@@ -998,6 +997,4 @@
       }
     }
   }
-
 </script>
-

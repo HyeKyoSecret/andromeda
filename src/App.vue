@@ -1,12 +1,26 @@
 <template>
   <div id="app" :style="{'height': scroll + 'px'}">
-    <transition>
+    <transition :enter-active-class="enterTransition"
+                :leave-active-class="leaveTransition"
+                mode="out-in"
+                duration="300">
       <keep-alive>
-        <router-view v-on:error="closeSelf" v-if="!errorPage && $route.meta.keepAlive"></router-view>
+        <router-view v-on:error="closeSelf" v-if="!errorPage && $route.meta.keepAlive" :key="key"
+                     v-on:slideLeft="slideLeft"
+                     v-on:slideRight="slideRight"
+                     v-on:slideUp="slideUp"
+                     v-on:slideDown="slideDown"></router-view>
       </keep-alive>
     </transition>
-    <transition>
-      <router-view v-on:error="closeSelf" v-if="!errorPage && !$route.meta.keepAlive"></router-view>
+    <transition :enter-active-class="enterTransition"
+                :leave-active-class="leaveTransition"
+                mode="out-in"
+                duration="300">
+      <router-view v-on:error="closeSelf" v-if="!errorPage && !$route.meta.keepAlive" :key="key"
+                   v-on:slideLeft="slideLeft"
+                   v-on:slideRight="slideRight"
+                   v-on:slideUp="slideUp"
+                   v-on:slideDown="slideDown"></router-view>
     </transition>
     <ErrorPage v-if="errorPage" v-on:close="closeSelf"></ErrorPage>
   </div>
@@ -19,11 +33,26 @@
     data () {
       return {
         errorPage: false,
-        scroll: window.innerHeight
+        scroll: window.innerHeight,
+        enterTransition: 'animated fadeIn',
+        leaveTransition: 'animated fadeOut'
       }
     },
     components: {
       ErrorPage
+    },
+    computed: {
+      key () {
+        return this.$route.fullPath
+      }
+    },
+    watch: {
+      '$route' (to, from) {
+        if (to.name !== 'story') {
+          this.enterTransition = 'animated fadeIn'
+          this.leaveTransition = 'animated fadeOut'
+        }
+      }
     },
     methods: {
       closeSelf () {
@@ -31,6 +60,26 @@
       },
       getHeight () {
         this.scroll = window.innerHeight
+      },
+      slideLeft () {
+        console.log('slideLeft')
+        this.enterTransition = 'animated slideInRight'
+        this.leaveTransition = 'animated slideOutLeft'
+      },
+      slideRight () {
+        console.log('slideRight')
+        this.enterTransition = 'animated slideInLeft'
+        this.leaveTransition = 'animated slideOutRight'
+      },
+      slideUp () {
+        console.log('slideUp')
+        this.enterTransition = 'animated slideInUp'
+        this.leaveTransition = 'animated slideOutUp'
+      },
+      slideDown () {
+        console.log('slideDown')
+        this.enterTransition = 'animated slideInDown'
+        this.leaveTransition = 'animated slideOutDown'
       }
     },
     // created: function () {
@@ -47,6 +96,7 @@
   }
 </script>
 <style lang="scss">
+  @import "scss/animate.min.css";
   html, body{
     margin: 0;
     padding: 0;
@@ -81,5 +131,11 @@
         max-width: 700px;
       }
     }
+  }
+  .fade-enter-active, .fade-leave-active {
+    transition: opacity .5s;
+  }
+  .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+    opacity: 0;
   }
 </style>

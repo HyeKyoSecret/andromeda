@@ -233,6 +233,7 @@ db.grantRolesToUser( "es" , [ { role: "dbOwner", db: "admin" },{role: "clusterAd
   { role: "dbAdminAnyDatabase", db: "admin" }, { role: "restore", db: "admin" }, {role: 'dbOwner', db: 'andromeda'} ])
 
 /* eslint-disable */
+user配置
 {
   "settings" : {
   "refresh_interval" : "5s",
@@ -398,7 +399,7 @@ db.grantRolesToUser( "es" , [ { role: "dbOwner", db: "admin" },{role: "clusterAd
   }
 }
 }
-
+故事配置
 /* eslint-enable */
 {
   "settings" : {
@@ -553,8 +554,8 @@ db.grantRolesToUser( "es" , [ { role: "dbOwner", db: "admin" },{role: "clusterAd
   }
 }
 }
-
-
+根故事配置
+/* eslint-enable */
 {
   "settings" : {
   "refresh_interval" : "5s",
@@ -588,7 +589,7 @@ db.grantRolesToUser( "es" , [ { role: "dbOwner", db: "admin" },{role: "clusterAd
       "ngram_filter": {
         "type": "ngram",
           "min_gram": "1",
-          "max_gram": "12"
+          "max_gram": "15"
       }
     },
     "analyzer": {
@@ -684,9 +685,8 @@ db.grantRolesToUser( "es" , [ { role: "dbOwner", db: "admin" },{role: "clusterAd
   "mappings": {
   "_doc": {
     "properties": {
-      "nickname": {
-        "type": "text",
-          "index_options": "offsets",
+      "content": {
+        "type": "keyword",
           "fields": {
           "IKS": {
             "search_analyzer": "ikSearchAnalyzer",
@@ -702,21 +702,41 @@ db.grantRolesToUser( "es" , [ { role: "dbOwner", db: "admin" },{role: "clusterAd
             "search_analyzer": "ngramSearchAnalyzer",
               "analyzer": "ngramIndexAnalyzer",
               "type": "text"
-          },
-          "EN": {
-            "analyzer": "standard",
-              "type": "text"
-          },
-          "SPY": {
-            "analyzer": "pinyinSimpleIndexAnalyzer",
-              "type": "text"
-          },
-          "FPY": {
-            "analyzer": "pinyinFullIndexAnalyzer",
-              "type": "text"
           }
         }
-      }
+      },
+            "name": {
+              "type": "keyword",
+                "fields": {
+                "IKS": {
+                  "search_analyzer": "ikSearchAnalyzer",
+                    "analyzer": "ikIndexAnalyzer",
+                    "type": "text"
+                },
+                "words": {
+                  "search_analyzer": "edgeNgramSearchAnalyzer",
+                    "analyzer": "edgeNgramIndexAnalyzer",
+                    "type": "text"
+                },
+                "NG": {
+                  "search_analyzer": "ngramSearchAnalyzer",
+                    "analyzer": "ngramIndexAnalyzer",
+                    "type": "text"
+                },
+                "EN": {
+                  "analyzer": "standard",
+                    "type": "text"
+                },
+                "SPY": {
+                  "analyzer": "pinyinSimpleIndexAnalyzer",
+                    "type": "text"
+                },
+                "FPY": {
+                  "analyzer": "pinyinFullIndexAnalyzer",
+                    "type": "text"
+                }
+              }
+            }
     }
   }
 }

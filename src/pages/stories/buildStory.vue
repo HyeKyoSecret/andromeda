@@ -1,5 +1,5 @@
 <template>
-  <div class="new-story">
+  <div class="new-story" :style="{'height': pageHeight}">
     <div class="first-step" v-show="firstStep">
       <div class="notice">
       <span class="icon" @click="leaveBuild">
@@ -390,7 +390,10 @@
         coverErrorMessage: '',
         buildPermit: true,
         percent: 0,
-        recommend: []   //  推荐列表
+        recommend: [],   //  推荐列表
+        windowHeight: window.innerHeight,
+        changedHeight: 0,
+        pageHeight: window.innerHeight + 'px'
       }
     },
     computed: {
@@ -461,6 +464,7 @@
       }
     },
     mounted () {
+      window.addEventListener('resize', this.getHeight)
       // 初始化这个裁剪框
       let self = this
       let image = document.getElementById('image')
@@ -479,10 +483,21 @@
         }
       })
     },
+    destroyed () {
+      window.removeEventListener('resize', this.getHeight)
+    },
     created: function () {
       this.loadDraft()
     },
     methods: {
+      getHeight () {
+        this.changedHeight = window.innerHeight
+        if (this.windowHeight - this.changedHeight > 50) {
+          this.pageHeight = this.windowHeight + 'px'
+        } else {
+          this.pageHeight = '100%'
+        }
+      },
       showFailReason () {
         if (!this.rootContent) {
           Toast({

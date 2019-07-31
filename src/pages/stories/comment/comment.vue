@@ -448,6 +448,7 @@
             //     }
             //   })
             // }.bind(this))
+
             this.commentList = response.data.result
             this.author = response.data.author
           } else {

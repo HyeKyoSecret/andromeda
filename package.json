@@ -11,7 +11,9 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
+    "cropperjs": "^1.5.5",
     "css-loader": "^0.28.7",
+    "express-favicon": "^2.0.1",
     "hammerjs": "^2.0.8",
     "lrz": "^4.9.40",
     "mint-ui": "^2.2.13",
@@ -42,7 +44,6 @@
     "connect-history-api-fallback": "^1.3.0",
     "cookie-parser": "^1.4.3",
     "copy-webpack-plugin": "^4.0.1",
-    "cropperjs": "^1.3.5",
     "css-loader": "^0.28.0",
     "cssnano": "^3.10.0",
     "elasticsearch": "^15.2.0",

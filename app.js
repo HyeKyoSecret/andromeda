@@ -2,6 +2,7 @@
 const path = require('path')
 const bodyParser = require('body-parser')
 const api = require('./server/api.js')
+const favicon = require('express-favicon')
 // const easyMonitor = require('easy-monitor')
 // easyMonitor('andromeda')
 // const fs = require('fs')
@@ -25,6 +26,7 @@ app.use(api)
 app.use(history())
 // 访问静态资源文件 这里是访问所有dist目录下的静态资源文件
 app.use(express.static(path.resolve(__dirname, 'dist')))
+app.use(favicon('/static/favicon.ico'))
 // app.all('*', function (req, res, next) {
 //   res.header('Access-Control-Allow-Origin', '*')
 //   res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS')

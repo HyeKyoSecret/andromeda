@@ -216,7 +216,7 @@
       }
       .right-part {
         margin-top: 8px;
-        flex: 3.2;
+        flex: 3.5;
         .story-name {
           color: $font-dark;
           font-size: 15px;

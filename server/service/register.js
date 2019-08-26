@@ -44,6 +44,7 @@ router.post('/register', (req, res) => {
                   let newUser = new User(user)
                   newUser.save((err, doc) => {
                     if (err) {
+                      // console.log(err)
                       res.send({error: true, type: 'DB', message: '注册失败，请稍后再试'})
                     } else {
                       req.session.user = doc.username
@@ -120,24 +121,6 @@ router.post('/register/login', (req, res) => {
   // console.log('收到的验证码' + req.body.captcha.toLowerCase())
   // console.log('session验证码' + req.session.loginCaptchaText)
   // console.log(req.body.captcha.toLowerCase() === req.session.loginCaptchaText)
-  // User.findOne({username: username}, (err, user) => {
-  //   if (err) {
-  //     res.send({permit: false, message: '服务器忙，请稍后再试'})
-  //   } else {
-  //     if (user) {
-  //       if (user.password === md5(password)) {
-  //         req.session.user = user.username
-  //         req.session.userId = user.id
-  //         res.cookie('And', {user: user.username, userId: user.id}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
-  //         res.send({permit: true, id: user.id, message: '登录成功'})
-  //       } else {
-  //         res.send({permit: false, message: '用户名密码不正确'})
-  //       }
-  //     } else {
-  //       res.send({permit: false, message: '用户名不存在'})
-  //     }
-  //   }
-  // })
   if (req.body.captcha.toLowerCase() === req.session.loginCaptchaText) {
     User.findOne({username: username}, (err, user) => {
       if (err) {

@@ -13,7 +13,7 @@
         <img src="../../img/images/killerwhale._logo.png" alt="">
       </div>
     </div>
-    <div class="login-input">
+    <div class="login-input" :class="{'captcha': inputCheck}">
       <div>
         <input type="text" placeholder="用户名" v-model.trim="username" @blur="userCheck">
         <span class="error-info">{{usernameError}}</span>
@@ -22,7 +22,7 @@
         <input type="password" placeholder="密码" v-model.trim="password" @blur="passwordCheck">
         <span class="error-info">{{passwordError}}</span>
       </div>
-      <div>
+      <div v-if="inputCheck">
         <input type="text" placeholder="验证码" v-model.trim="captcha" @blur="passwordCheck">
         <span class="vc" v-html='captchaPic' @click="getCaptcha"></span>
       </div>
@@ -30,7 +30,10 @@
     <div class="goRegister">
       您还没有账号？前往<router-link to="/register">注册</router-link>
     </div>
-    <div class="login-btn" @click="login">
+    <div class="login-btn" @click="login" v-if="inputCheck && this.captcha.length === 4">
+      登录
+    </div>
+    <div class="fake-login-btn" v-else>
       登录
     </div>
     <foot-menu></foot-menu>
@@ -60,6 +63,18 @@
     components: {
       FootMenu
     },
+    computed: {
+      inputCheck: function () {
+        let userReg = /^[0-9a-zA-Z_]{6,16}$/
+        let pwReg = /^[A-Za-z0-9]{6,16}$/
+        if (userReg.test(this.username) && pwReg.test(this.password)) {
+          this.getCaptcha()
+          return true
+        } else {
+          return false
+        }
+      }
+    },
     mounted: function () {
       window.addEventListener('resize', this.getHeight)
       this.getCaptcha()
@@ -80,7 +95,7 @@
           })
           .catch((error) => {
             console.log(error)
-            this.captchaPic = '<span style="line-height: 48px">验证码获取错误</span>'
+            this.captchaPic = '<span style="line-height: 48px">验证码错误</span>'
           })
       },
       userCheck () {
@@ -204,7 +219,7 @@
       width: 80%;
       margin: 0 auto;
       border-radius: 9px;
-      height: 149px;
+      height: 100px;
       background: white;
       div {
         width: 96%;
@@ -245,6 +260,9 @@
         }
       }
     }
+    .login-input.captcha {
+      height: 149px;
+    }
     .goRegister {
       width: 80%;
       margin: 20px auto 0 auto;
@@ -260,6 +278,17 @@
       border-radius: 8px;
       margin: 20px auto 0 auto;
       background: $main-color;
+      color: white;
+      text-align: center;
+      line-height: 42px;
+      font-size: 14px;
+    }
+    .fake-login-btn {
+      width: 80%;
+      height: 42px;
+      border-radius: 8px;
+      margin: 20px auto 0 auto;
+      background: rgba(150, 210, 142, 0.6);
       color: white;
       text-align: center;
       line-height: 42px;

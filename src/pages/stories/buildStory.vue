@@ -1,5 +1,5 @@
 <template>
-  <div class="new-story" :style="{'height': pageHeight}">
+  <div class="new-story">
     <div class="first-step" v-show="firstStep">
       <div class="notice">
       <span class="icon" @click="leaveBuild">

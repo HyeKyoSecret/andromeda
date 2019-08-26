@@ -41,7 +41,10 @@
         <div class="clear-history" @click="clearSearchHistory">清除浏览记录</div>
       </div>
     </div>
-    <div class="search-result" :class="{contentActive: contentActive, titleActive: titleActive, authorActive: authorActive}">
+    <div class="no-result" v-if="searchContent && result.length === 0">
+      <div class="content">抱歉，未找到相关内容</div>
+    </div>
+    <div class="search-result" :class="{contentActive: contentActive, titleActive: titleActive, authorActive: authorActive}" v-else>
       <div class="one-search" v-if="contentActive || titleActive" v-for="item in result" @click="goSearch(item.raw, active, item.id)">
         <div class="story-information">
           <div class="cover">
@@ -337,6 +340,18 @@
         input {
           width: 82% !important;
         }
+      }
+    }
+    .no-result {
+      margin-top: 100px;
+      width: 100%;
+      .content {
+        background: white;
+        height: 42px;
+        width: 100%;
+        line-height: 42px;
+        padding-left: 20px;
+        box-sizing: border-box;
       }
     }
     .top-search {

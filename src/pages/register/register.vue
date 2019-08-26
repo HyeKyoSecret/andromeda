@@ -13,7 +13,7 @@
         <img src="../../img/images/killerwhale._logo.png" alt="">
       </div>
     </div>
-    <div class="register-input">
+    <div class="register-input" :class="{'captcha': captchaOk}">
       <div>
         <input type="text" v-model.trim="userName" placeholder="用户名" @blur="userNameValidator">
         <span class="error-info">{{userNameError}}</span>
@@ -27,6 +27,10 @@
         <span class="error-info">{{passwordError}}</span>
       </div>
       <div>
+        <input type="password" v-model.trim="passwordAgain" placeholder="再次输入密码">
+        <span class="error-info">{{passwordAgainError}}</span>
+      </div>
+      <div v-if="captchaOk">
         <input type="text" v-model.trim="captcha" placeholder="验证码">
         <span class="vc" v-html='captchaPic' @click="getCaptcha">
         </span>
@@ -57,7 +61,9 @@
         nickName: '',
         nickNameError: '',
         password: '',
+        passwordAgain: '',
         passwordError: '',
+        passwordAgainError: '',
         captcha: '',
         captchaError: '',
         userCheck: false,
@@ -69,13 +75,25 @@
       }
     },
     computed: {
+      ps2Check: function () {
+        if (this.password.length > 0 && this.password !== this.passwordAgain) {
+          this.passwordAgainError = '两次输入的密码不一致'
+          return false
+        } else {
+          this.passwordAgainError = ''
+          return true
+        }
+      },
       registerPermit: function () {
         return this.userCheck && this.nickCheck && this.psCheck && (this.captcha.length === 5)
+      },
+      captchaOk: function () {
+        this.getCaptcha()
+        return this.userCheck && this.nickCheck && this.psCheck && this.ps2Check
       }
     },
     mounted: function () {
       window.addEventListener('resize', this.getHeight)
-      this.getCaptcha()
     },
     destroyed () {
       window.removeEventListener('resize', this.getHeight)
@@ -241,7 +259,7 @@
       width: 80%;
       margin: 0 auto;
       border-radius: 9px;
-      height: 200px;
+      height: 199px;
       background: white;
       div {
         width: 96%;
@@ -280,6 +298,9 @@
           color: $main-red;
         }
       }
+    }
+    .register-input.captcha {
+      height: 250px;
     }
     .licence {
       width: 75%;

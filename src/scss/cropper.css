@@ -47,15 +47,28 @@
   }
   .container {
     z-index:  999;
+    width: 100%;
     position:  fixed;
     padding-top:  60px;
     left:  0;
     top:  0;
-    right:  0;
     bottom:  0;
     background: rgba(0,0,0,1);
   }
 
+  @media screen and  (min-width: 700px){
+    .container {
+      z-index:  999;
+      max-width: 700px;
+      position:  fixed;
+      padding-top:  60px;
+      left:  50%;
+      top:  0;
+      bottom:  0;
+      background: rgba(0,0,0,1);
+      margin-left: -350px;
+    }
+  }
   .img-item {
     max-width:  100%;
   }

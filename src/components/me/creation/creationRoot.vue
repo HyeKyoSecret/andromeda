@@ -172,7 +172,7 @@
         this.$refs.loadmore.onTopLoaded()
       },
       setErrorImg (x) {
-        this.story[x].cover = require('../../../img/photo/defaultPic.png')
+        this.root[x].cover = require('../../../img/photo/defaultPic.png')
       }
     }
   }
@@ -220,7 +220,7 @@
       }
       .right-part {
         margin-top: 8px;
-        flex: 3.2;
+        flex: 3.5;
         .story-name {
           color: $font-dark;
           font-size: 15px;

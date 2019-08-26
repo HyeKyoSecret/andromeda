@@ -1376,10 +1376,9 @@ router.get('/story/getDefaultDiscovery', (req, res) => {
     .skip(existLength)
     .exec((err, root) => {
       if (err) {
-        res.send({error: true, type: 'database', message: '发生错误请稍后再试'})
-      }
-      if (root) {
-        if (root.length > 0) {
+        res.send({error: true, type: 'database', message: '发生错误,请稍后再试'})
+      } else {
+        if (root) {
           root.forEach((sRoot) => {
             result.push({
               storyName: sRoot.name,
@@ -1394,8 +1393,6 @@ router.get('/story/getDefaultDiscovery', (req, res) => {
         } else {
           res.send({result: result})
         }
-      } else {
-        res.send({result: result})
       }
     })
 })

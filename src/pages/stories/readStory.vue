@@ -1,98 +1,87 @@
 <template>
-  <transition :name="transitionName">
     <div class="read-story" :class="{bigFont: (settings.fontSize === '大'), superFont: (settings.fontSize === '特大')}" :key="id">
       <notice v-bind:title="storyInfo.title" v-bind:more="moreList" v-bind:id="id" v-on:getMark="getMark" :mark="markActive" :searchBoard="searchBoard" v-on:openFontSettings="openFont" v-on:openSearch="openSearch" v-on:closeSearchBoard="closeSearchBoard"></notice>
-      <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight" class="read-story-content">
-        <div class="context"><p v-for="item in storyInfo.content">{{item}}</p></div>
-        <div class="related-info">
-          <div class="author-info">
-            <div class="like">
-              <router-link :to='storyInfo.authorId' tag="span">作者:&nbsp;{{storyInfo.author}}</router-link>
-              <span v-if="showFocus">
-                <img src="../../img/icon/redheart.png" v-if="hasFocus"/>
-                <img src="../../img/icon/zan.png" v-else>
-               </span>
-              <span v-else class="blank"></span>
-            </div>
-            <div class="time">{{storyInfo.date}}</div>
-          </div>
-        </div>
-      </v-touch>
+        <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight" class="read-story-content">
+           <transition :enter-active-class="enterTransition"
+                       :leave-active-class="leaveTransition" duration="800">
+             <story :storyInfo="storyInfo" :id="id" :showFocus="showFocus" :hasFocus="hasFocus" :key="id" v-show="showContent"></story>
+           </transition>
+        </v-touch>
       <div class="read-foot-menu">
-        <div class="button" v-if='menuInfo.zan'>
-          <img v-if='menuInfo.zan' src="../../img/icon/yellowthumb.png" @click="cancelZan"/>
-          <div>{{menuInfo.num}}赞</div>
-        </div>
-        <div class="button" v-else>
-          <img src="../../img/icon/yellowthumb_unselected.png"  @click="addZan"/>
-          <div>{{menuInfo.num}}赞</div>
-        </div>
-        <div class="button" v-if='menuInfo.subscribe' @click="cancelSubscribe">
-          <img src="../../img/icon/yellowstar.png" />
-          <div>已订阅</div>
-        </div>
-        <div class="button" v-else @click="addSubscribe">
-          <img src="../../img/icon/yellowstar_unselected.png" />
-          <div>订阅</div>
-        </div>
-        <div class="write-continue">
-          <div><img src="../../img/icon/writecontinue.png" @click="writeStory"/></div>
-        </div>
-        <div class="button" @click="openComment">
-          <img src="../../img/icon/yellowcomment.png" />
-          <div>评论</div>
-        </div>
-        <div class="button" @click="openMark">
-          <img src="../../img/icon/index.png" />
-          <div>书签</div>
-        </div>
-      </div>
-      <div class="arrow">
-        <div class="left-arrow">
-          <img src="../../img/icon/left_arrow.png" alt="" v-if="leftNode" @click="swipeRight">
-        </div>
-        <div class="right-arrow">
-          <img src="../../img/icon/right_arrow.png" alt="" v-if="rightNode" @click="swipeLeft">
-        </div>
-      </div>
-      <div class="read-search" v-if="searchBoard">
-        <div class="entry-triangle-top"></div>
-        <div class="main-search">
-          <div class="search-content">
-            <div class="search-icon">
-              <img src="../../img/icon/search_gray.png" alt="">
-            </div>
-            <div class="input">
-              <form action="javascript:void(0)">
-                <input type="text" placeholder="输入一段文字或作者名" v-model="smallSearch" @input="search">
-              </form>
-            </div>
+          <div class="button" v-if='menuInfo.zan'>
+            <img v-if='menuInfo.zan' src="../../img/icon/yellowthumb.png" @click="cancelZan"/>
+            <div>{{menuInfo.num}}赞</div>
+          </div>
+          <div class="button" v-else>
+            <img src="../../img/icon/yellowthumb_unselected.png"  @click="addZan"/>
+            <div>{{menuInfo.num}}赞</div>
+          </div>
+          <div class="button" v-if='menuInfo.subscribe' @click="cancelSubscribe">
+            <img src="../../img/icon/yellowstar.png" />
+            <div>已订阅</div>
+          </div>
+          <div class="button" v-else @click="addSubscribe">
+            <img src="../../img/icon/yellowstar_unselected.png" />
+            <div>订阅</div>
+          </div>
+          <div class="write-continue">
+            <div><img src="../../img/icon/writecontinue.png" @click="writeStory"/></div>
+          </div>
+          <div class="button" @click="openComment">
+            <img src="../../img/icon/yellowcomment.png" />
+            <div>评论</div>
+          </div>
+          <div class="button" @click="openMark">
+            <img src="../../img/icon/index.png" />
+            <div>书签</div>
           </div>
         </div>
-        <div class="read-search-content">
-          <div class="select-bar">
-            <span class="words" :class="{active: contentActive}" @click="changeActive('content')">文本</span>
-            <span class="author" :class="{active: authorActive}" @click="changeActive('author')">作者</span>
+        <div class="arrow">
+          <div class="left-arrow">
+            <img src="../../img/icon/left_arrow.png" alt="" v-if="leftNode" @click="swipeRight">
           </div>
-          <div class="search-content">
-            <scroll-lock :lock="true" :bodyLock="true" class="lock">
-              <div class="one-search" v-for="item in readSearchResult" @click="goStory2(item.id)">
-                <div class="search-id">{{item.id}}</div>
-                <div class="search-words" v-html="item.highlight"></div>
+          <div class="right-arrow">
+            <img src="../../img/icon/right_arrow.png" alt="" v-if="rightNode" @click="swipeLeft">
+          </div>
+        </div>
+        <div class="read-search" v-if="searchBoard">
+          <div class="entry-triangle-top"></div>
+          <div class="main-search">
+            <div class="search-content">
+              <div class="search-icon">
+                <img src="../../img/icon/search_gray.png" alt="">
               </div>
-            </scroll-lock>
+              <div class="input">
+                <form action="javascript:void(0)">
+                  <input type="text" placeholder="输入一段文字或作者名" v-model="smallSearch" @input="search">
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="read-search-content">
+            <div class="select-bar">
+              <span class="words" :class="{active: contentActive}" @click="changeActive('content')">文本</span>
+              <span class="author" :class="{active: authorActive}" @click="changeActive('author')">作者</span>
+            </div>
+            <div class="search-content">
+              <scroll-lock :lock="true" :bodyLock="true" class="lock">
+                <div class="one-search" v-for="item in readSearchResult" @click="goStory2(item.id)">
+                  <div class="search-id">{{item.id}}</div>
+                  <div class="search-words" v-html="item.highlight"></div>
+                </div>
+              </scroll-lock>
+            </div>
           </div>
         </div>
-      </div>
-      <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
-      <mt-radio ref="radio" v-on:refresh= 'getSettings' v-bind:id="id"></mt-radio>
-      <div class="mask" v-if="searchBoard"></div>
-      <router-view></router-view>
+        <writeStory v-show="writeWindow" v-on:close="closeWrite" v-bind:ftNode="ftNode" v-bind:title="storyInfo.title"></writeStory>
+        <mt-radio ref="radio" v-on:refresh= 'getSettings' v-bind:id="id"></mt-radio>
+        <div class="mask" v-if="searchBoard"></div>
+        <router-view></router-view>
     </div>
-  </transition>
 </template>
 <style lang='scss'>
   @import "../../scss/config";
+  @import "../../scss/animate.min.css";
   .mask {
     background: rgba(0,0,0,0.5);
     position: absolute;
@@ -348,7 +337,7 @@
     .context {
       padding: 43px 10px 0 16px;
       font-size: 16px;
-      height: calc(100vh - 200px);
+      height: calc(100vh - 140px);
       color: $font-dark;
       white-space: pre-wrap;
       box-sizing: border-box;
@@ -358,6 +347,7 @@
       }
     }
     .related-info {
+      height: 50px;
       display: flex;
       margin-top: 5px;
       justify-content: space-between;
@@ -375,9 +365,7 @@
         flex: 1;
         text-align: right;
         margin-right: 15px;
-        position: absolute;
-        bottom: 80px;
-        right: -2px;
+
         .like {
           span{
             img {
@@ -387,7 +375,7 @@
               vertical-align: middle;
             }
             color: $font-gray;
-            font-size: 16px;
+            font-size: 14px;
             text-align: right;
           }
           .blank {
@@ -488,11 +476,11 @@
   }
   .read-story.bigFont {
     .context {
-      font-size: $b-font-7;
+      font-size: $b-font-5;
     }
     .author-info {
       .like span{
-        font-size: $b-font-7;
+        font-size: $b-font-5;
       }
       .time {
         font-size: $b-font-3;
@@ -501,11 +489,11 @@
   }
   .read-story.superFont {
     .context {
-      font-size: $s-font-8;
+      font-size: $s-font-6;
     }
     .author-info {
       .like span{
-        font-size: $s-font-8;
+        font-size: $s-font-6;
       }
       .time {
         font-size: $b-font-4;
@@ -520,11 +508,13 @@
   import { Toast, MessageBox } from 'mint-ui'
   import writeStory from '../../components/story/writeStory.vue'
   import MtRadio from '../../components/me/settings/changeFontSize.vue'
+  import story from '../../components/story/story.vue'
   export default {
     components: {
       notice,
       writeStory,
-      MtRadio
+      MtRadio,
+      story
     },
     data () {
       return {
@@ -558,7 +548,9 @@
         contentActive: true,    // 文本搜索激活
         authorActive: false,
         active: 'content',
-        transitionName: ''
+        enterTransition: '',
+        leaveTransition: '',
+        showContent: false
       }
     },
     beforeRouteLeave (to, from, next) {
@@ -569,6 +561,7 @@
       }
     },
     created: function () {
+      this.storyTransition()
       this.getData()
       this.getMark() // 获取书签
       this.ftNode = this.$route.params.id
@@ -593,6 +586,22 @@
       }
     },
     methods: {
+      storyTransition () {
+        this.showContent = false
+        let self = this
+        setTimeout(function () {
+          self.showContent = true
+        }, 300)
+        if (this.$route.query.trans === 'up') {
+          this.enterTransition = 'animated slideInUp'
+        } else if (this.$route.query.trans === 'down') {
+          this.enterTransition = 'animated slideInDown'
+        } else if (this.$route.query.trans === 'left') {
+          this.enterTransition = 'animated slideInRight'
+        } else if (this.$route.query.trans === 'right') {
+          this.enterTransition = 'animated slideInLeft'
+        }
+      },
       closeSearchBoard () {
         this.searchBoard = false
       },
@@ -634,8 +643,8 @@
       }, 500),
       swipeUp () {
         if (this.downList.length > 0) {
-          this.$emit('slideUp')
-          this.$router.replace(`/story/${this.downList[0].id}`)
+          this.showContent = false
+          this.$router.replace({ path: `/story/${this.downList[0].id}`, query: { trans: 'up' } })
         } else {
           Toast({
             message: '后面没有啦',
@@ -646,8 +655,7 @@
       },
       swipeDown () {
         if (this.frontNode) {
-          this.$emit('slideDown')
-          this.$router.replace(`/story/${this.frontNode}`)
+          this.$router.replace({ path: `/story/${this.frontNode}`, query: { trans: 'down' } })
         } else {
           Toast({
             message: '上面没有啦',
@@ -658,8 +666,7 @@
       },
       swipeLeft () {
         if (this.rightNode) {
-          this.$emit('slideLeft')
-          this.$router.replace(`/story/${this.rightNode}`)
+          this.$router.replace({ path: `/story/${this.rightNode}`, query: { trans: 'left' } })
         } else {
           Toast({
             message: '右边没有啦',
@@ -670,8 +677,7 @@
       },
       swipeRight () {
         if (this.leftNode) {
-          this.$emit('slideRight')
-          this.$router.replace(`/story/${this.leftNode}`)
+          this.$router.replace({ path: `/story/${this.leftNode}`, query: { trans: 'right' } })
         } else {
           Toast({
             message: '左边没有啦',

@@ -19,10 +19,6 @@ if (process.env.NODE_ENV !== 'production') {
 Vue.use(VueScrollLock)
 Vue.use(Vuex)
 Axios.defaults.withCredentials = true
-// const allRoute = ['home', 'people', 'message', 'message_words', 'message_promote', 'fc', 'cm', 'sub', 'rs', 'message_request', 'message_announcement',
-//   'creation', 'myCreation', 'history', 'subscribe', 'friendList', 'focusList', 'changeInfo', 'settings', 'register', 'addFriend', 'login',
-//   'test', 'build', 'story', 'storyComment', 'mark', 'comment', 'reply', 'buildStoryRecommend', 'discover', 'selected', 'focus', 'friend',
-//   'start', 'myCreationNode', 'search', 'writeStory', 'marker', 'dialogue', 'sError', 'error']
 const router = new VueRouter({
   mode: 'history',
   routes,

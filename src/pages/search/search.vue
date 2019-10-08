@@ -41,14 +41,14 @@
         <div class="clear-history" @click="clearSearchHistory">清除浏览记录</div>
       </div>
     </div>
-    <div class="no-result" v-if="searchContent && result.length === 0">
+    <div class="no-result" v-if="searchContent && result.length === 0 && searchFinishedSingle">
       <div class="content">抱歉，未找到相关内容</div>
     </div>
     <div class="search-result" :class="{contentActive: contentActive, titleActive: titleActive, authorActive: authorActive}" v-else>
-      <div class="one-search" v-if="contentActive || titleActive" v-for="item in result" @click="goSearch(item.raw, active, item.id)">
+      <div class="one-search" v-if="contentActive || titleActive" v-for="(item, index) in result" @click="goSearch(item.raw, active, item.id)">
         <div class="story-information">
           <div class="cover">
-            <div><img :src="item.coverImg" /></div>
+            <div><img :src="item.coverImg" @error="setContentErrorImg(index)"/></div>
             <div class="book-number">
               <span><img src="../../img/icon/graybook.png" /></span>
               <span class="number">{{item.subNumber}}</span>
@@ -104,7 +104,8 @@
         deleteBtn: false,  // 删除按钮
         cancelBtn: false, // 取消按钮
         searchHistory: false, // 历史菜单
-        searchHistoryList: [] // 历史菜单列表
+        searchHistoryList: [], // 历史菜单列表
+        searchFinishedSingle: false
       }
     },
     beforeRouteEnter (to, from, next) {
@@ -263,6 +264,7 @@
         //
       },
       search: debounce(function () {
+        this.searchFinishedSingle = false
         if (this.searchContent) {
           Indicator.open({
             text: '加载中...',
@@ -271,7 +273,7 @@
           Axios.post('/story/search', {
             active: this.active,
             content: this.searchContent
-          }).then(response => {
+          }, {timeout: 10000}).then(response => {
             Indicator.close()
             if (response.data.error) {
               Toast({
@@ -281,7 +283,9 @@
               })
             } else {
               this.result = response.data.result
+              this.searchFinishedSingle = true
             }
+            this.searchFinishedSingle = true
           }).catch(err => {
             Indicator.close()
             if (err) {
@@ -290,9 +294,11 @@
                 position: 'middle',
                 duration: 1000
               })
+              this.searchFinishedSingle = true
             }
           })
         } else {
+          Indicator.close()
           this.result = []
         }
       }, 400),
@@ -319,6 +325,9 @@
       },
       setErrorImg (index) {
         this.result[index].head = require('../../img/images/defaultHeadImg.png')
+      },
+      setContentErrorImg (index) {
+        this.result[index].coverImg = require('../../img/photo/default2.png')
       }
     }
   }

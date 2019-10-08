@@ -100,6 +100,13 @@
         width: 95%;
       }
     }
+    @media screen and (min-width: 700px) {
+      .search {
+        max-width: 700px;
+        left: 50%;
+        margin-left: -350px;
+      }
+    }
     .search-board {
       width: 100%;
       min-height: calc(100vh - 192px);

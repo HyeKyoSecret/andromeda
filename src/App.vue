@@ -6,21 +6,14 @@
                 duration="300">
       <keep-alive>
         <router-view v-on:error="closeSelf" v-if="!errorPage && $route.meta.keepAlive" :key="key"
-                     v-on:slideLeft="slideLeft"
-                     v-on:slideRight="slideRight"
-                     v-on:slideUp="slideUp"
-                     v-on:slideDown="slideDown"></router-view>
+                     ></router-view>
       </keep-alive>
     </transition>
     <transition :enter-active-class="enterTransition"
                 :leave-active-class="leaveTransition"
                 mode="out-in"
-                duration="300">
-      <router-view v-on:error="closeSelf" v-if="!errorPage && !$route.meta.keepAlive" :key="key"
-                   v-on:slideLeft="slideLeft"
-                   v-on:slideRight="slideRight"
-                   v-on:slideUp="slideUp"
-                   v-on:slideDown="slideDown"></router-view>
+                duration="200">
+      <router-view v-on:error="closeSelf" v-if="!errorPage && !$route.meta.keepAlive" :key="key"></router-view>
     </transition>
     <ErrorPage v-if="errorPage" v-on:close="closeSelf"></ErrorPage>
   </div>
@@ -34,8 +27,8 @@
       return {
         errorPage: false,
         scroll: window.innerHeight,
-        enterTransition: 'animated fadeIn',
-        leaveTransition: 'animated fadeOut'
+        enterTransition: 'none',
+        leaveTransition: 'none'
       }
     },
     components: {
@@ -48,9 +41,15 @@
     },
     watch: {
       '$route' (to, from) {
-        if (to.name !== 'story') {
+        let routes = ['start', 'discover', 'people', 'subscribe', 'myCreation', 'history', 'settings', 'message', 'friendList', 'focusList']
+        if (routes.some(function (name) {
+          return to.name === name
+        })) {
           this.enterTransition = 'animated fadeIn'
           this.leaveTransition = 'animated fadeOut'
+        } else {
+          this.enterTransition = 'none'
+          this.leaveTransition = 'none'
         }
       }
     },
@@ -60,26 +59,6 @@
       },
       getHeight () {
         this.scroll = window.innerHeight
-      },
-      slideLeft () {
-        console.log('slideLeft')
-        this.enterTransition = 'animated slideInRight'
-        this.leaveTransition = 'animated slideOutLeft'
-      },
-      slideRight () {
-        console.log('slideRight')
-        this.enterTransition = 'animated slideInLeft'
-        this.leaveTransition = 'animated slideOutRight'
-      },
-      slideUp () {
-        console.log('slideUp')
-        this.enterTransition = 'animated slideInUp'
-        this.leaveTransition = 'animated slideOutUp'
-      },
-      slideDown () {
-        console.log('slideDown')
-        this.enterTransition = 'animated slideInDown'
-        this.leaveTransition = 'animated slideOutDown'
       }
     },
     // created: function () {

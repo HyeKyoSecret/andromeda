@@ -187,7 +187,7 @@ export default [
     component: resolve => require(['../pages/register/login.vue'], resolve)
   },
   {
-    path: '/test',
+    path: '/test/:id',
     name: 'test',
     component: resolve => require(['../pages/test.vue'], resolve),
     meta: { keepAlive: true }

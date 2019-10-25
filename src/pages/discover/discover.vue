@@ -81,9 +81,6 @@
         }
       }
     }
-    .child {
-      margin-top: 50px;
-    }
     .router-link-active {
       border-bottom: 2px solid $font-dark;
       color: $font-dark;

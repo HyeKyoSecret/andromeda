@@ -15,7 +15,7 @@
                 duration="200">
       <router-view v-on:error="closeSelf" v-if="!errorPage && !$route.meta.keepAlive" :key="key"></router-view>
     </transition>
-    <ErrorPage v-if="errorPage" v-on:close="closeSelf"></ErrorPage>
+    <ErrorPage v-if="errorPage" v-on:close="leaveError"></ErrorPage>
   </div>
 </template>
 <script>
@@ -56,6 +56,9 @@
     methods: {
       closeSelf () {
         this.errorPage = true
+      },
+      leaveError () {
+        this.errorPage = false
       },
       getHeight () {
         this.scroll = window.innerHeight

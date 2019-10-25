@@ -17,7 +17,6 @@ router.post('/register', (req, res) => {
   let nickReg = /^[\u4E00-\u9FA5A-Za-z0-9]{2,12}$/  // 中文数字字母
   let psReg = /^[A-Za-z0-9]{6,16}$/
   // console.log('收到的验证码' + captcha)
-  //   // ('session验证码' + req.session.captchaText)
   // console.log(req.session.captchaText === captcha)
   if (captcha.toLowerCase() === req.session.captchaText) {
     if (userReg.test(username) && nickReg.test(nickname) && psReg.test(password)) {
@@ -44,7 +43,6 @@ router.post('/register', (req, res) => {
                   let newUser = new User(user)
                   newUser.save((err, doc) => {
                     if (err) {
-                      // console.log(err)
                       res.send({error: true, type: 'DB', message: '注册失败，请稍后再试'})
                     } else {
                       req.session.user = doc.username
@@ -110,10 +108,6 @@ router.get('/register/getLoginCaptcha', (req, res) => {
   res.set('Content-Type', 'image/svg+xml')
   res.status(200).send(captcha.data)
 })
-// router.get('/register/getCurrentSession', (req, res) => { // 用来测试验证码获取是否正确的
-//   let result = req.session.loginCaptchaText
-//   res.send({result: result})
-// })
 router.post('/register/login', (req, res) => {
   'use strict'
   let username = req.body.username

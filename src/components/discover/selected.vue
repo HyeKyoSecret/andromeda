@@ -6,7 +6,7 @@
                class="selected"
                id="selected"
                :style="{'height': (scroll - 82) + 'px'}">
-    <router-link tag="div" v-for="(item, index) in storyList" :to="item.path" :key='item.path'
+    <div v-for="(item, index) in storyList" :to="item.path" :key='item.path' @click="goStory(item.path)"
                  class="one-recommendation">
       <div class="story-information">
         <div class="cover">
@@ -29,7 +29,7 @@
           <div class="time">{{item.date}}</div>
         </div>
       </div>
-    </router-link>
+    </div>
     <div class="blank"></div>
   </mt-loadmore>
 </template>
@@ -64,6 +64,23 @@
         next()
       },
       methods: {
+        goStory (story) {
+          Axios.get('/story/getLatestStory', {
+            params: {
+              id: story
+            }
+          }).then(response => {
+            if (response.data.error) {
+              Toast({
+                position: 'middle',
+                duration: 800,
+                message: response.data.message
+              })
+            } else {
+              this.$router.push(`/story/${response.data.id}`)
+            }
+          })
+        },
         loadTop () {
           this.storyList = []
           this.getData()
@@ -88,7 +105,7 @@
                 })
               } else {
                 let existStory = this.storyList.some(function (story) {
-                  return story.path && response.data.result[0] && story.path.split('/story/')[1].toString() === response.data.result[0].path.toString()
+                  return story.path && response.data.result[0] && story.path[1].toString() === response.data.result[0].path.toString()
                 })
                 if (!existStory) {
                   response.data.result.forEach((o) => {
@@ -97,7 +114,7 @@
                       content: o.content,
                       author: o.author,
                       date: o.date,
-                      path: `/story/${o.path}`,
+                      path: o.path,
                       cover: o.cover
                     })
                   })
@@ -115,6 +132,7 @@
 <style lang="scss" scoped>
   @import "../../scss/config";
   .selected {
+    margin-top: 40px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -122,7 +140,7 @@
     height: 145px;
     width: 100%;
     background-color: white;
-    margin-bottom: 10px;
+    margin-top: 10px;
     &:last-child:after {
       content: '';
       display: block;

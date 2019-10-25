@@ -1,19 +1,19 @@
 <template>
  <div class="story-component">
-   <div class="context" :key="id"><p v-for="item in storyInfo.content">{{item}}</p></div>
    <div class="related-info">
      <div class="author-info">
        <div class="like">
-         <router-link :to='storyInfo.authorId' tag="span">作者:&nbsp;{{storyInfo.author}}</router-link>
+         <router-link :to='storyInfo.authorId' tag="span">{{storyInfo.author}}</router-link>
          <span v-if="showFocus">
             <img src="../../img/icon/redheart.png" v-if="hasFocus"/>
             <img src="../../img/icon/zan.png" v-else>
          </span>
          <span v-else class="blank"></span>
+         <span class="time">{{storyInfo.date}}</span>
        </div>
-       <div class="time">{{storyInfo.date}}</div>
      </div>
    </div>
+   <div class="context" :key="id"><p v-for="item in storyInfo.content">{{item}}</p></div>
  </div>
 </template>
 <script>
@@ -32,7 +32,10 @@
 <style scoped lang="scss">
   @import "../../scss/animate.min.css";
   .story-component {
-    height: calc(100vh - 42px);
+    padding-top: 42px;
+    /*min-height: calc(100vh - 90px);*/
+    box-sizing: border-box;
+    overflow: scroll;
   }
   .bounce-enter-active {
     animation: bounce-in .5s;

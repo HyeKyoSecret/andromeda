@@ -199,6 +199,7 @@ router.get('/story/getStory', (req, res) => {
                         }
                       })
                   } else {
+                    result.showFocus = false
                     res.send({permit: true, result: result})
                   }
                 }
@@ -1456,33 +1457,37 @@ router.get('/story/getFocusDiscovery', (req, res) => {
       if (err) {
         res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
       } else {
-        for (let i = 0; i < doc.focus.length; i++) {
-          for (let j = 0; j < doc.focus[i].myCreation.root.length; j++) {
-            temp.push({
-              storyName: doc.focus[i].myCreation.root[j].name,
-              content: doc.focus[i].myCreation.root[j].content,
-              author: doc.focus[i].myCreation.root[j].author.nickname,
-              date: moment(doc.focus[i].myCreation.root[j].date).format('YYYY.MM.DD HH:mm'),
-              path: doc.focus[i].myCreation.root[j].id,
-              cover: tool.formImg(doc.focus[i].myCreation.root[j].coverImg),
-              timeStamp: doc.focus[i].myCreation.root[j].date.getTime()
-            })
+        if (doc) {
+          for (let i = 0; i < doc.focus.length; i++) {
+            for (let j = 0; j < doc.focus[i].myCreation.root.length; j++) {
+              temp.push({
+                storyName: doc.focus[i].myCreation.root[j].name,
+                content: doc.focus[i].myCreation.root[j].content,
+                author: doc.focus[i].myCreation.root[j].author.nickname,
+                date: moment(doc.focus[i].myCreation.root[j].date).format('YYYY.MM.DD HH:mm'),
+                path: doc.focus[i].myCreation.root[j].id,
+                cover: tool.formImg(doc.focus[i].myCreation.root[j].coverImg),
+                timeStamp: doc.focus[i].myCreation.root[j].date.getTime()
+              })
+            }
+            for (let j = 0; j < doc.focus[i].myCreation.story.length; j++) {
+              temp.push({
+                storyName: doc.focus[i].myCreation.story[j].root.name,
+                content: doc.focus[i].myCreation.story[j].content,
+                author: doc.focus[i].myCreation.story[j].author.nickname,
+                date: moment(doc.focus[i].myCreation.story[j].date).format('YYYY.MM.DD HH:mm'),
+                path: doc.focus[i].myCreation.story[j].id,
+                cover: tool.formImg(doc.focus[i].myCreation.story[j].root.coverImg),
+                timeStamp: doc.focus[i].myCreation.story[j].date.getTime()
+              })
+            }
           }
-          for (let j = 0; j < doc.focus[i].myCreation.story.length; j++) {
-            temp.push({
-              storyName: doc.focus[i].myCreation.story[j].root.name,
-              content: doc.focus[i].myCreation.story[j].content,
-              author: doc.focus[i].myCreation.story[j].author.nickname,
-              date: moment(doc.focus[i].myCreation.story[j].date).format('YYYY.MM.DD HH:mm'),
-              path: doc.focus[i].myCreation.story[j].id,
-              cover: tool.formImg(doc.focus[i].myCreation.story[j].root.coverImg),
-              timeStamp: doc.focus[i].myCreation.story[j].date.getTime()
-            })
-          }
+          bubbleSort(temp)
+          result = temp.slice(existLength, existLength + 8)
+          res.send({result: result})
+        } else {
+          res.send({result: result})
         }
-        bubbleSort(temp)
-        result = temp.slice(existLength, existLength + 8)
-        res.send({result: result})
       }
     })
 })
@@ -1998,7 +2003,11 @@ router.get('/story/prepareTraversal', (req, res) => {
       }
     })
   }
-  exe()
+  exe().catch(err => {
+    if (err) {
+      res.send({error: true, message: '发生错误'})
+    }
+  })
 })
 router.get('/story/getFrontNode', (req, res) => {
   const fid = req.query.id
@@ -2129,41 +2138,45 @@ router.get('/story/getFrontNode', (req, res) => {
       })
     }
     let root = await getRootObj()
-    traversal(root).then(stlist => {
-      let loopList
-      for (let i = 0; i < stlist.length; i++) {
-        if (stlist[i].id === fid) {
-          loopList = stlist.slice(0, i + 1)
-          break
+    if (root) {
+      traversal(root).then(stlist => {
+        let loopList
+        for (let i = 0; i < stlist.length; i++) {
+          if (stlist[i].id === fid) {
+            loopList = stlist.slice(0, i + 1)
+            break
+          }
         }
-      }
-      loopList.reverse()
-      function getFront () {
-        (async function () {
-          tempObj = await getObjById(fid)
-          for (let i = 0; i < loopList.length; i++) {
-            if (tempObj) {
-              let _tp = await getObjById(loopList[i].id)
-              if (_tp.rb && _tp.rb.toString() === tempObj._id.toString()) {
-                tempObj = _tp
-                nIndex = i
+        loopList.reverse()
+        function getFront () {
+          (async function () {
+            tempObj = await getObjById(fid)
+            for (let i = 0; i < loopList.length; i++) {
+              if (tempObj) {
+                let _tp = await getObjById(loopList[i].id)
+                if (_tp.rb && _tp.rb.toString() === tempObj._id.toString()) {
+                  tempObj = _tp
+                  nIndex = i
+                }
               }
             }
-          }
-          if (loopList.length > 1) {
-            frontNode = await getObjById(loopList[nIndex + 1].id)
-          } else {
-            frontNode = null
-          }
-          let result = null
-          if (frontNode) {
-            result = frontNode.id
-          }
-          res.send({result: result})
-        })()
-      }
-      getFront()
-    })
+            if (loopList.length > 1) {
+              frontNode = await getObjById(loopList[nIndex + 1].id)
+            } else {
+              frontNode = null
+            }
+            let result = null
+            if (frontNode) {
+              result = frontNode.id
+            }
+            res.send({result: result})
+          })()
+        }
+        getFront()
+      })
+    } else {
+      res.send({error: true, type: 'value', message: '该故事不存在'})
+    }
   }
   exe()
 })
@@ -3112,7 +3125,7 @@ router.post('/story/reportStory', (req, res) => {
         if (err) {
           res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
         } else {
-          Report.findOne({$and: [{'story': id}, {'reportPeople': user.id}]})
+          Report.findOne({$and: [{'story': id}, {'reportPeople': doc.id}]})
             .exec((err3, rp) => {
               if (err3) {
                 res.send({error: true, type: 'db', message: '发生错误，请稍后再试'})
@@ -3139,6 +3152,62 @@ router.post('/story/reportStory', (req, res) => {
       })
   } else {
     res.send({error: false, message: '该功能需要登录后才能使用'})
+  }
+})
+router.get('/story/getLatestStory', (req, res) => {
+  let user
+  let id = req.query.id
+  if (req.session.user) {
+    user = req.session.user
+  } else if (req.cookies.And) {
+    user = req.cookies.And.user
+  }
+  let node = id
+  if (user) {
+    try {
+      User.findOne({username: user})
+        .exec((err, doc) => {
+          if (err) {
+            res.send({error: true, type: 'DB', message: '发生错误, 请稍后再试'})
+          } else {
+            if (doc) {
+              if (rootReg.test(id)) {
+                for (let i = 0; i < doc.depth.length; i++) {
+                  if (doc.depth[i].rootId === id) {
+                    node = doc.depth[i].latest
+                    break
+                  }
+                }
+                res.send({error: false, id: node})
+              } else if (storyReg.test(id)) {
+                Story.findOne({id: id})
+                  .populate('root')
+                  .exec((err2, story) => {
+                    if (err2) {
+                      res.send({error: true, type: 'DB', message: '发生错误, 请稍后再试'})
+                    } else {
+                      for (let i = 0; i < doc.depth.length; i++) {
+                        if (doc.depth[i].rootId === story.root.id) {
+                          node = doc.depth[i].latest
+                          break
+                        }
+                      }
+                      res.send({error: false, id: node})
+                    }
+                  })
+              } else {
+                res.send({error: true, type: 'value', message: '故事不存在'})
+              }
+            } else {
+              res.send({error: true, type: 'DB', message: '发生错误, 请重新登录'})
+            }
+          }
+        })
+    } catch (e) {
+      console.log(e)
+    }
+  } else {
+    res.send({error: false, id: id})
   }
 })
 module.exports = router

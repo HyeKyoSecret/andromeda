@@ -1,7 +1,7 @@
 <template>
     <div class="read-story" :class="{bigFont: (settings.fontSize === '大'), superFont: (settings.fontSize === '特大')}" :key="id">
       <notice v-bind:title="storyInfo.title" v-bind:more="moreList" v-bind:id="id" v-on:getMark="getMark" :mark="markActive" :searchBoard="searchBoard" v-on:openFontSettings="openFont" v-on:openSearch="openSearch" v-on:closeSearchBoard="closeSearchBoard"></notice>
-        <v-touch v-on:swipeup="swipeUp" v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight" class="read-story-content">
+        <v-touch  v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight" class="read-story-content">
            <transition :enter-active-class="enterTransition"
                        :leave-active-class="leaveTransition" duration="800">
              <story :storyInfo="storyInfo" :id="id" :showFocus="showFocus" :hasFocus="hasFocus" :key="id" v-show="showContent"></story>
@@ -320,6 +320,7 @@
   .read-story {
     min-height: 100%;
     background: $content-gray;
+    overflow: scroll;
     .marker {
       position: absolute;
       top: 27px;
@@ -332,12 +333,12 @@
     }
     .read-story-content {
       width: 100%;
-      height: calc(100vh - 42px);
+      /*min-height: calc(100vh - 90px);*/
     }
     .context {
-      padding: 43px 10px 0 16px;
+      padding: 0 10px 0 16px;
       font-size: 16px;
-      height: calc(100vh - 140px);
+      max-height: 150%;
       color: $font-dark;
       white-space: pre-wrap;
       box-sizing: border-box;
@@ -347,10 +348,8 @@
       }
     }
     .related-info {
-      height: 50px;
       display: flex;
-      margin-top: 5px;
-      justify-content: space-between;
+      margin-top: 10px;
       .anchor {
         flex: 2;
         flex-grow: 0;
@@ -363,32 +362,30 @@
       }
       .author-info {
         flex: 1;
-        text-align: right;
-        margin-right: 15px;
-
+        text-align: left;
+        margin-left: 15px;
+        font-size: 12px;
         .like {
           span{
             img {
-              height: 20px;
-              width: 20px;
+              height: 13px;
+              width: 13px;
               margin-left: 5px;
               vertical-align: middle;
             }
             color: $font-gray;
-            font-size: 14px;
-            text-align: right;
+            font-size: 12px;
+            text-align: left;
           }
           .blank {
             width: 10px;
             height: 20px;
             display: inline-block;
           }
-        }
-        .time {
-          font-size: 12px;
-          color: $font-gray;
-          margin-top: 5px;
-          margin-right: 15px;
+          .time {
+            display: inline-block;
+            margin-left: 5px;
+          }
         }
         .follow-number {
           color: $font-gray;
@@ -409,7 +406,7 @@
       width: 100%;
       height: 48px;
       background: white;
-      position: absolute;
+      position: fixed;
       bottom: 0;
       display: flex;
       color: $menu-color;
@@ -478,26 +475,10 @@
     .context {
       font-size: $b-font-5;
     }
-    .author-info {
-      .like span{
-        font-size: $b-font-5;
-      }
-      .time {
-        font-size: $b-font-3;
-      }
-    }
   }
   .read-story.superFont {
     .context {
       font-size: $s-font-6;
-    }
-    .author-info {
-      .like span{
-        font-size: $s-font-6;
-      }
-      .time {
-        font-size: $b-font-4;
-      }
     }
   }
 </style>

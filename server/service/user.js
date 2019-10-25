@@ -1652,58 +1652,6 @@ router.post('/user/addDepth', (req, res) => {
       }
     })
 })
-// router.post('/user/buildHistory', (req, res) => {  // 修复数据
-//   let user
-//   if (req.session.user) {
-//     user = req.session.user
-//   } else if (req.cookies.And) {
-//     user = req.cookies.And.user
-//   }
-//   let result = []
-//   let storyResult = []
-//   User.findOne({username: user})
-//     .exec((err, doc) => {
-//       if (err) {
-//         console.log(err)
-//       } else {
-//         let id = doc._id
-//         console.log(id)
-//         Root.find({author: id})
-//           .exec((err2, root) => {
-//             if (err2) {
-//               console.log(err2)
-//             } else {
-//               root.forEach(item => {
-//                 result.push(
-//                   item._id
-//                 )
-//               })
-//               Story.find({author: id})
-//                 .exec((err3, story) => {
-//                   if (err3) {
-//                     console.log(err3)
-//                   } else {
-//                     story.forEach(item => {
-//                       storyResult.push(item._id)
-//                     })
-//                     console.log(storyResult)
-//                     console.log(result)
-//                     User.updateOne({username: user}, {$set: {'myCreation.root': result, 'myCreation.story': storyResult}})
-//                       .exec(err3 => {
-//                         if (err3) {
-//                           console.log(err3)
-//                         } else {
-//                           res.send('yes')
-//                         }
-//                       })
-//                   }
-//                 })
-//             }
-//           })
-//       }
-//     })
-// })
-
 router.post('/user/getUserByName', (req, res) => {
   User.findOne({nickname: req.body.name})
     .exec((err, doc) => {
@@ -2371,7 +2319,6 @@ router.get('/user/getMessageWords', (req, res) => {
 router.post('/user/checkCreationRoot', (req, res) => {
   let userId = req.body.userId
   let root = req.body.root
-  console.log(userId)
   User.findOne({id: userId})
     .exec((err, doc) => {
       if (err) {

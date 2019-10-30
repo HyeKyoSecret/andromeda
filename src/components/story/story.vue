@@ -13,7 +13,7 @@
        </div>
      </div>
    </div>
-   <div class="context" :key="id"><p v-for="item in storyInfo.content">{{item}}</p></div>
+   <div class="context" :key="id"><p v-for="item in storyInfo.content">{{item}}</p><div class="blankP"></div></div>
  </div>
 </template>
 <script>
@@ -33,9 +33,14 @@
   @import "../../scss/animate.min.css";
   .story-component {
     padding-top: 42px;
-    /*min-height: calc(100vh - 90px);*/
+    height: calc(100vh - 42px);
     box-sizing: border-box;
-    overflow: scroll;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    .blankP {
+      width: 100%;
+      height: 80px;
+    }
   }
   .bounce-enter-active {
     animation: bounce-in .5s;

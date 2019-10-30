@@ -1752,23 +1752,24 @@ router.post('/user/addSearchHistory', (req, res) => {
         }
       })
   } else {
-    if (req.cookies.ANDSH) {
-      if (req.cookies.ANDSH.sh.length <= 10) {
-        req.cookies.ANDSH.sh.push({
-          content: content,
-          style: active
-        })
-        res.cookie('AndSH', {sh: req.cookies.ANDSH.sh}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
-      } else {
-        req.cookies.ANDSH.sh.reverse().pop()
-        req.cookies.ANDSH.sh.reverse()
-        req.cookies.ANDSH.sh.push({
-          content: content,
-          style: active
-        })
-        res.cookie('AndSH', {sh: req.cookies.ANDSH.sh}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
-      }
-    }
+    // if (req.cookies.ANDSH) {
+    //   if (req.cookies.ANDSH.sh.length <= 10) {
+    //     req.cookies.ANDSH.sh.push({
+    //       content: content,
+    //       style: active
+    //     })
+    //     res.cookie('AndSH', {sh: req.cookies.ANDSH.sh}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
+    //   } else {
+    //     req.cookies.ANDSH.sh.reverse().pop()
+    //     req.cookies.ANDSH.sh.reverse()
+    //     req.cookies.ANDSH.sh.push({
+    //       content: content,
+    //       style: active
+    //     })
+    //     res.cookie('AndSH', {sh: req.cookies.ANDSH.sh}, { expires: new Date(Date.now() + 3600 * 1000 * 24 * 30), httpOnly: true })
+    //   }
+    // }
+    res.send({error: false})
   }
 })
 router.post('/user/deleteSearchHistory', (req, res) => {

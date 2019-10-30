@@ -1746,6 +1746,7 @@ router.get('/story/prepareTraversal', (req, res) => {
   const getObjById = function (id) {
     return new Promise((resolve, reject) => {
       Story.findOne({id: id})
+        .populate('author', 'nickname')
         .exec((err, story) => {
           if (err) {
             console.log(err)
@@ -1753,16 +1754,18 @@ router.get('/story/prepareTraversal', (req, res) => {
           if (story) {
             resolve(story)
           } else {
-            Root.findOne({id: id}, (err, root) => {
-              if (err) {
-                console.log(err)
-              }
-              if (root) {
-                resolve(root)
-              } else {
-                resolve('error')
-              }
-            })
+            Root.findOne({id: id})
+              .populate('author', 'nickname')
+              .exec((err, root) => {
+                if (err) {
+                  console.log(err)
+                }
+                if (root) {
+                  resolve(root)
+                } else {
+                  resolve('error')
+                }
+              })
           }
         })
     })
@@ -1944,11 +1947,13 @@ router.get('/story/prepareTraversal', (req, res) => {
                   id: _temp.id,
                   content: _temp.content,
                   zan: _temp.zan.length,
+                  author: _temp.author.nickname,
                   index: 0,
                   nodeNum: 0,
                   selfCreate: 0,
                   friendCreate: 0,
-                  focusCreate: 0
+                  focusCreate: 0,
+                  authorCreate: 0
                 }
               )
               p = _temp.rb
@@ -1980,10 +1985,17 @@ router.get('/story/prepareTraversal', (req, res) => {
             zanRankWeight(0.2, candidate)
             focusCreateRankWeight(0.4, candidate)
             rank(candidate, 'focusCreate')
+            let storyAuthor = (await getObjById(fid))['author']['nickname']
             for (let i = 0; i < candidate.length; i++) {
-              candidate[i].sumWeight = candidate[i].timeWeight + candidate[i].zanWeight + candidate[i].selfWeight + candidate[i].friendWeight + candidate[i].focusWeight + candidate[i].nodeWeight
+              if (candidate[i].author === storyAuthor) {
+                candidate[i].authorCreate = expFun(1)
+              }
+            }
+            for (let i = 0; i < candidate.length; i++) {
+              candidate[i].sumWeight = candidate[i].timeWeight + candidate[i].zanWeight + candidate[i].selfWeight + candidate[i].friendWeight + candidate[i].focusWeight + candidate[i].nodeWeight + candidate[i].authorCreate
             }
             rank(candidate, 'sumWeight')
+            // console.log('------------------------------------' + JSON.stringify(candidate))
             let result = []
             candidate.forEach((item) => {
               result.push({

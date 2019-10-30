@@ -1,7 +1,8 @@
+<script src="../../../../andback/node_modules/_mint-ui@2.2.13@mint-ui/lib/loadmore/index.js"></script>
 <template>
     <div class="read-story" :class="{bigFont: (settings.fontSize === '大'), superFont: (settings.fontSize === '特大')}" :key="id">
       <notice v-bind:title="storyInfo.title" v-bind:more="moreList" v-bind:id="id" v-on:getMark="getMark" :mark="markActive" :searchBoard="searchBoard" v-on:openFontSettings="openFont" v-on:openSearch="openSearch" v-on:closeSearchBoard="closeSearchBoard"></notice>
-        <v-touch  v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight" class="read-story-content">
+        <v-touch  v-on:swipedown="swipeDown" v-on:swipeleft="swipeLeft" v-on:swiperight="swipeRight"  :swipe-options="{direction: 'horizontal'}" class="read-story-content">
            <transition :enter-active-class="enterTransition"
                        :leave-active-class="leaveTransition" duration="800">
              <story :storyInfo="storyInfo" :id="id" :showFocus="showFocus" :hasFocus="hasFocus" :key="id" v-show="showContent"></story>
@@ -320,7 +321,6 @@
   .read-story {
     min-height: 100%;
     background: $content-gray;
-    overflow: scroll;
     .marker {
       position: absolute;
       top: 27px;
@@ -333,7 +333,7 @@
     }
     .read-story-content {
       width: 100%;
-      /*min-height: calc(100vh - 90px);*/
+      height: calc(100vh - 90px);
     }
     .context {
       padding: 0 10px 0 16px;
@@ -452,6 +452,8 @@
       margin: 0 10px 0 10px;
       display: flex;
       width: calc(100vw - 20px);
+      height: 30px;
+      z-index: 998;
       img {
         width: 20px;
       }
@@ -585,10 +587,6 @@
       },
       closeSearchBoard () {
         this.searchBoard = false
-      },
-      onMaskTouchMove (e) {
-        e.preventDefault()
-        return false
       },
       changeActive (params) {
         if (params === 'content') {

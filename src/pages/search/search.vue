@@ -190,7 +190,7 @@
       },
       goSearch (content, active, id) {
         Indicator.open({
-          text: '加载中...',
+          text: '加载中？？？...',
           spinnerType: 'fading-circle'
         })
         if (active === 'author') {
@@ -234,6 +234,7 @@
                 position: 'middle',
                 duration: 1000
               })
+              Indicator.close()
             } else {
               Indicator.close()
               Axios.post('/user/addSearchHistory', {
@@ -246,6 +247,7 @@
             }
           })
         } else {
+          Indicator.close()
           Axios.post('/user/addSearchHistory', {
             content: this.searchContent,
             active: active,
@@ -253,6 +255,10 @@
           }).then(response => {
             Indicator.close()
             return true
+          }).catch(err => {
+            if (err) {
+              Indicator.close()
+            }
           })
           this.$router.push(`/story/${id}`)
         }

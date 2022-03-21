@@ -37,8 +37,9 @@ app.use(express.static(path.resolve(__dirname, 'dist')))
 //   const html = fs.readFileSync(path.resolve(__dirname, 'dist/index.html'), 'utf-8')
 //   res.send(html)
 // })
-// 监听80端口
-app.listen(80, '0.0.0.0', () => {
-  console.log('success listen at 80……')
+
+const port = 8088
+app.listen(port, '0.0.0.0', () => {
+  console.log('success listen at ' + port)
 })
 module.exports = app

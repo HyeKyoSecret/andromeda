@@ -7,16 +7,15 @@ import routes from './routes/routes'
 import App from './App.vue'
 import MintUI from 'mint-ui'
 import Axios from 'axios'
-import VueScrollLock from 'vue-scroll-lock'
+// import VueScrollLock from 'vue-scroll-lock'
 import VueFinger from './js/vueFinger'
 import Vuex from 'vuex'
 const VueTouch = require('vue-touch')
 import store from './store'
 Vue.use(VueTouch, {name: 'v-touch'})
 if (process.env.NODE_ENV !== 'production') {
-  Axios.defaults.baseURL = 'http://localhost:8080/api'
+  Axios.defaults.baseURL = 'http://localhost:8088/'
 }
-Vue.use(VueScrollLock)
 Vue.use(Vuex)
 Axios.defaults.withCredentials = true
 const router = new VueRouter({
@@ -81,7 +80,7 @@ router.beforeEach((to, from, next) => {
 Vue.use(MintUI)
 Vue.use(VueRouter)
 Vue.use(VueFinger)
-Vue.use(VueScrollLock)
+// Vue.use(VueScrollLock)
 /* eslint-disable */
 new Vue({
   router,

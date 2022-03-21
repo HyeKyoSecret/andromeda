@@ -2357,4 +2357,22 @@ router.post('/user/checkCreationStory', (req, res) => {
       }
     })
 })
+router.get('/user/back', (req, res) => {
+  function asFunc (callback) {
+    setTimeout(function () {
+      console.log('执行完毕')
+      callback()
+    }, 5000)
+  }
+  asFunc(function () {
+    console.log('我在两秒后执行')
+  })
+  res.send({x: '33434'})
+})
+
+router.get('/user/test', (req, res) => {
+  let a = req.query.name
+  console.log(a)
+  res.send({value: `yyw的${a}`})
+})
 module.exports = router

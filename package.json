@@ -18,7 +18,6 @@
     "lrz": "^4.9.40",
     "mint-ui": "^2.2.13",
     "moment": "^2.19.4",
-    "node-sass": "^4.12.0",
     "vue-style-loader": "^3.0.3"
   },
   "devDependencies": {
@@ -70,6 +69,7 @@
     "md5": "^2.2.1",
     "mocha": "^5.0.2",
     "mongoose": "^4.11.12",
+    "node-sass": "^7.0.1",
     "opn": "^5.1.0",
     "optimize-css-assets-webpack-plugin": "^2.0.0",
     "ora": "^1.2.0",

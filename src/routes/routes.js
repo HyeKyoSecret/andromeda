@@ -187,12 +187,6 @@ export default [
     component: resolve => require(['../pages/register/login.vue'], resolve)
   },
   {
-    path: '/test',
-    name: 'test',
-    component: resolve => require(['../pages/test.vue'], resolve),
-    meta: { keepAlive: true }
-  },
-  {
     path: '/buildStory', // 创建新故事
     name: 'build',
     component: resolve => require(['../pages/stories/buildStory.vue'], resolve),
